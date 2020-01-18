@@ -5,7 +5,7 @@ OCaml libraries for functional sound synthesis
 
 The libraries have been tested and developed using the
 ```4.09.0+flambda``` compiler variant available on ```opam```. Further
-requirements are ```ctypes.foreign`` and ```dune``` (installable via
+requirements are ```ctypes.foreign``` and ```dune``` (installable via
 ```opam```) and the jack audio library (e.g. using the package
 ```libjack-dev```).
 

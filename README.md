@@ -19,7 +19,7 @@ $ dune build simplesine.ml
 or, after starting jack, by compiling and running test programs at once:
 
 ```
-$ dune ./exec simplesine.exe
+$ dune exec ./simplesine.exe
 ```
 
 ## Documentation

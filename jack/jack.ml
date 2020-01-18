@@ -37,7 +37,7 @@ let play in_channels sample_rate stream_lst =
           streams
       done)
     (out_channels, in_channels)
-    (fun sr -> sample_rate := sr)
+    (fun sr -> sample_rate := float_of_int sr)
 
 (* TODO
  * midi in

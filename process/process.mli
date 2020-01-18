@@ -2,7 +2,7 @@
 
 (** {2 Globals} *)
 
-val sample_rate : int ref
+val sample_rate : float ref
 (** All processes that need to take the current sample rate into
    account need to refer to this variable.*)
 
@@ -54,9 +54,9 @@ val ( -~ ) : float Seq.t -> float Seq.t -> float Seq.t
 
 val ( /~ ) : float Seq.t -> float Seq.t -> float Seq.t
 
-val mulS : float -> float Seq.t -> float Seq.t
+val mul : float -> float Seq.t -> float Seq.t
 
-val sumS : float Seq.t list -> float Seq.t
+val sum : float Seq.t list -> float Seq.t
 
 (** {2 Audio Input} *)
 
@@ -96,6 +96,14 @@ val inc : float -> float -> float Seq.t
 (** {2 Delays} *)
 
 val del1 : 'a -> 'a Seq.t -> unit -> 'a Seq.node
+
+(** {2 Filters} *)
+
+val lpf1 : float Seq.t -> float Seq.t -> float Seq.t
+
+(** {2 Analysis} *)
+
+val rms : float Seq.t -> float Seq.t -> float Seq.t
 
 (** {2 Oscillators} *)
 

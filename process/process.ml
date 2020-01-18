@@ -2,7 +2,7 @@ open Seq
 
 (* Global settings *)
 
-let sample_rate = ref 44100
+let sample_rate = ref 44100.
 
 let input_array = Array.create_float 64
 
@@ -17,7 +17,7 @@ let two_pi = 2.0 *. pi
 (* Utility functions *)
 let pair a b = (a, b)
 
-let calc_ph_inc sr = 2.0 *. pi /. float_of_int sr
+let calc_ph_inc sr = 2.0 *. pi /. sr
 
 (* type frequency = {frequency: float; samplerate: float}
  * 
@@ -71,9 +71,9 @@ let ( -~ ) = zip ( -. )
 
 let ( /~ ) = zip ( /. )
 
-let mulS amp = map (fun f -> f *. amp)
+let mul amp = map (fun f -> f *. amp)
 
-let sumS = List.fold_left ( +~ ) (const 0.0)
+let sum = List.fold_left ( +~ ) (const 0.0)
 
 (* Audio input *)
 
@@ -173,6 +173,19 @@ let rec inc start_value increment () =
 (* Delays *)
 
 let del1 init stream () = Cons (init, stream)
+
+(* Filters *)
+
+let calc_p freq = 1. -. (2. *. tan (freq /. !sample_rate))
+
+let lpf1 in_proc freq =
+  recursive 0.0 (fun last ->
+      let p = map calc_p freq in
+      ((~.1. -~ p) *~ in_proc) +~ (p *~ last))
+
+(* Analysis  *)
+
+let rms in_proc freq = map sqrt (lpf1 (map (fun x -> x *. x) in_proc) freq)
 
 (* Oscillators  *)
 

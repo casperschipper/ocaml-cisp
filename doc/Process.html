@@ -19,6 +19,8 @@
 <link title="Recursive Connections" rel="Section" href="#2_RecursiveConnections">
 <link title="Integration" rel="Section" href="#2_Integration">
 <link title="Delays" rel="Section" href="#2_Delays">
+<link title="Filters" rel="Section" href="#2_Filters">
+<link title="Analysis" rel="Section" href="#2_Analysis">
 <link title="Oscillators" rel="Section" href="#2_Oscillators">
 <title>Process</title>
 </head>
@@ -35,7 +37,7 @@
 </div>
 <hr width="100%">
 <h3 id="2_Globals">Globals</h3>
-<pre><span id="VALsample_rate"><span class="keyword">val</span> sample_rate</span> : <code class="type">int Stdlib.ref</code></pre><div class="info ">
+<pre><span id="VALsample_rate"><span class="keyword">val</span> sample_rate</span> : <code class="type">float Stdlib.ref</code></pre><div class="info ">
 <div class="info-desc">
 <p>All processes that need to take the current sample rate into
    account need to refer to this variable.</p>
@@ -81,8 +83,8 @@
 <pre><span id="VAL( *~ )"><span class="keyword">val</span> ( *~ )</span> : <code class="type">float Stdlib.Seq.t -> float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre>
 <pre><span id="VAL(-~)"><span class="keyword">val</span> (-~)</span> : <code class="type">float Stdlib.Seq.t -> float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre>
 <pre><span id="VAL(/~)"><span class="keyword">val</span> (/~)</span> : <code class="type">float Stdlib.Seq.t -> float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre>
-<pre><span id="VALmulS"><span class="keyword">val</span> mulS</span> : <code class="type">float -> float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre>
-<pre><span id="VALsumS"><span class="keyword">val</span> sumS</span> : <code class="type">float Stdlib.Seq.t list -> float Stdlib.Seq.t</code></pre><h3 id="2_AudioInput">Audio Input</h3>
+<pre><span id="VALmul"><span class="keyword">val</span> mul</span> : <code class="type">float -> float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre>
+<pre><span id="VALsum"><span class="keyword">val</span> sum</span> : <code class="type">float Stdlib.Seq.t list -> float Stdlib.Seq.t</code></pre><h3 id="2_AudioInput">Audio Input</h3>
 <pre><span id="VALinput"><span class="keyword">val</span> input</span> : <code class="type">int -> float Stdlib.Seq.t</code></pre><h3 id="2_MultichannelOperations">Multichannel Operations</h3>
 <pre><span id="VALevert"><span class="keyword">val</span> evert</span> : <code class="type">'a list Stdlib.Seq.t -> 'a Stdlib.Seq.t list</code></pre>
 <pre><span id="VALsplit"><span class="keyword">val</span> split</span> : <code class="type">('a * 'a) Stdlib.Seq.t -> 'a Stdlib.Seq.t list</code></pre>
@@ -96,7 +98,9 @@
 <pre><span id="VALrecursion_map"><span class="keyword">val</span> recursion_map</span> : <code class="type">'a -> ('b -> 'a) -> ('a -> 'b) -> 'a Stdlib.Seq.t</code></pre><h3 id="2_Integration">Integration</h3>
 <pre><span id="VALintegrate"><span class="keyword">val</span> integrate</span> : <code class="type">float Stdlib.Seq.t -> unit -> float Stdlib.Seq.node</code></pre>
 <pre><span id="VALinc"><span class="keyword">val</span> inc</span> : <code class="type">float -> float -> float Stdlib.Seq.t</code></pre><h3 id="2_Delays">Delays</h3>
-<pre><span id="VALdel1"><span class="keyword">val</span> del1</span> : <code class="type">'a -> 'a Stdlib.Seq.t -> unit -> 'a Stdlib.Seq.node</code></pre><h3 id="2_Oscillators">Oscillators</h3>
+<pre><span id="VALdel1"><span class="keyword">val</span> del1</span> : <code class="type">'a -> 'a Stdlib.Seq.t -> unit -> 'a Stdlib.Seq.node</code></pre><h3 id="2_Filters">Filters</h3>
+<pre><span id="VALlpf1"><span class="keyword">val</span> lpf1</span> : <code class="type">float Stdlib.Seq.t -> float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre><h3 id="2_Analysis">Analysis</h3>
+<pre><span id="VALrms"><span class="keyword">val</span> rms</span> : <code class="type">float Stdlib.Seq.t -> float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre><h3 id="2_Oscillators">Oscillators</h3>
 <pre><span id="VALsinosc"><span class="keyword">val</span> sinosc</span> : <code class="type">float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre>
 <pre><span id="VALimpulse"><span class="keyword">val</span> impulse</span> : <code class="type">float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre>
 <pre><span id="VALfm_feedback"><span class="keyword">val</span> fm_feedback</span> : <code class="type">float Stdlib.Seq.t * float Stdlib.Seq.t -><br>       float Stdlib.Seq.t * float Stdlib.Seq.t -><br>       unit -> (float * float) Stdlib.Seq.node</code></pre>

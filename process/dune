@@ -1,0 +1,3 @@
+(library
+ (name            process)
+ (ocamlopt_flags -O3))

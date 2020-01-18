@@ -1,0 +1,86 @@
+open Seq
+
+external open_stream :
+     (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
+  -> (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
+  -> (int -> unit)
+  -> int * int
+  -> (int -> unit)
+  -> unit = "open_stream"
+
+let play in_channels sample_rate stream_lst =
+  let streams = Array.of_list stream_lst in
+  let out_channels = Array.length streams in
+  let ar_out =
+    Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout
+      (1024 * out_channels)
+  in
+  let ar_in =
+    Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout
+      (1024 * in_channels)
+  in
+  open_stream ar_out ar_in
+    (fun nframes ->
+      Process.input_channels := in_channels ;
+      for i = 0 to nframes - 1 do
+        for k = 0 to in_channels - 1 do
+          Process.input_array.(k) <- float_of_int i /. float_of_int nframes ;
+          Process.input_array.(k) <- ar_in.{(i * in_channels) + k}
+        done ;
+        Array.iteri
+          (fun c channel_stream ->
+            match channel_stream () with
+            | Nil -> ar_out.{(i * out_channels) + c} <- 0.0
+            | Cons (f, nextStream) ->
+                let () = streams.(c) <- nextStream in
+                ar_out.{(i * out_channels) + c} <- f)
+          streams
+      done)
+    (out_channels, in_channels)
+    (fun sr -> sample_rate := sr)
+
+(* TODO
+ * midi in
+ *)
+
+(* let play_lst sample_rate stream =
+ *   let first = Process.this stream in
+ *   let stream_ref = ref stream in
+ *   let n_channels = match first with Some l -> List.length l | _ -> 0 in
+ *   let ar =
+ *     Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout (1024 * n_channels)
+ *   in
+ *   open_stream ar
+ *     (fun nframes ->
+ *       for i = 0 to nframes - 1 do
+ *         match !stream_ref () with
+ *         | Nil ->
+ *             for c = 0 to n_channels - 1 do
+ *               ar.{(i * n_channels) + c} <- 0.0
+ *             done
+ *         | Cons (lst, nextStream) ->
+ *             let () = stream_ref := nextStream in
+ *             List.iteri (fun c f -> ar.{(i * n_channels) + c} <- f) lst
+ *       done)
+ *     n_channels
+ *     (fun sr -> sample_rate := sr) *)
+
+(* let play_generator sample_rate gen_lst =
+ *   let streams = Array.of_list gen_lst in
+ *   let n_channels = Array.length streams in
+ *   let ar =
+ *     Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout
+ *       (1024 * Array.length streams)
+ *   in
+ *   let sc = ref 0 in
+ *   open_stream ar
+ *     (fun nframes ->
+ *       for i = 0 to nframes - 1 do
+ *         Array.iteri
+ *           (fun c channel_stream ->
+ *             ar.{(i * n_channels) + c} <- Generator.generate channel_stream !sc)
+ *           streams ;
+ *         sc := !sc + 1
+ *       done)
+ *     n_channels
+ *     (fun sr -> sample_rate := sr) *)

@@ -1,0 +1,16 @@
+EXCLUDE_QUERY_DIR
+B /home/luc/.opam/4.09.0+flambda/lib/bytes
+B /home/luc/.opam/4.09.0+flambda/lib/ctypes
+B /home/luc/.opam/4.09.0+flambda/lib/integers
+B /home/luc/.opam/4.09.0+flambda/lib/ocaml
+B /home/luc/.opam/4.09.0+flambda/lib/ocaml/threads
+B ../_build/default/jack/.jack.objs/byte
+B ../_build/default/process/.process.objs/byte
+S /home/luc/.opam/4.09.0+flambda/lib/bytes
+S /home/luc/.opam/4.09.0+flambda/lib/ctypes
+S /home/luc/.opam/4.09.0+flambda/lib/integers
+S /home/luc/.opam/4.09.0+flambda/lib/ocaml
+S /home/luc/.opam/4.09.0+flambda/lib/ocaml/threads
+S .
+S ../process
+FLG -cclib -ljack

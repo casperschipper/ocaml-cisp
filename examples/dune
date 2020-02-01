@@ -32,3 +32,10 @@
  (ocamlopt_flags -O3)
  (modules inputexample)
  (libraries bigarray ctypes jack))
+
+(executable
+ (name filtertest)
+ (link_flags (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules filtertest)
+ (libraries bigarray ctypes jack))

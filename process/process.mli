@@ -95,9 +95,15 @@ val inc : float -> float -> float Seq.t
 
 (** {2 Delays} *)
 
-val del1 : 'a -> 'a Seq.t -> unit -> 'a Seq.node
+val del1 : 'a -> 'a Seq.t -> 'a Seq.t
+
+(** {2 Noise} *)
+
+val rnd : float Seq.t
 
 (** {2 Filters} *)
+
+val blpf : float Seq.t -> float Seq.t -> float Seq.t -> float Seq.t
 
 val lpf1 : float Seq.t -> float Seq.t -> float Seq.t
 

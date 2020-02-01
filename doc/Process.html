@@ -19,6 +19,7 @@
 <link title="Recursive Connections" rel="Section" href="#2_RecursiveConnections">
 <link title="Integration" rel="Section" href="#2_Integration">
 <link title="Delays" rel="Section" href="#2_Delays">
+<link title="Noise" rel="Section" href="#2_Noise">
 <link title="Filters" rel="Section" href="#2_Filters">
 <link title="Analysis" rel="Section" href="#2_Analysis">
 <link title="Oscillators" rel="Section" href="#2_Oscillators">
@@ -98,7 +99,9 @@
 <pre><span id="VALrecursion_map"><span class="keyword">val</span> recursion_map</span> : <code class="type">'a -> ('b -> 'a) -> ('a -> 'b) -> 'a Stdlib.Seq.t</code></pre><h3 id="2_Integration">Integration</h3>
 <pre><span id="VALintegrate"><span class="keyword">val</span> integrate</span> : <code class="type">float Stdlib.Seq.t -> unit -> float Stdlib.Seq.node</code></pre>
 <pre><span id="VALinc"><span class="keyword">val</span> inc</span> : <code class="type">float -> float -> float Stdlib.Seq.t</code></pre><h3 id="2_Delays">Delays</h3>
-<pre><span id="VALdel1"><span class="keyword">val</span> del1</span> : <code class="type">'a -> 'a Stdlib.Seq.t -> unit -> 'a Stdlib.Seq.node</code></pre><h3 id="2_Filters">Filters</h3>
+<pre><span id="VALdel1"><span class="keyword">val</span> del1</span> : <code class="type">'a -> 'a Stdlib.Seq.t -> 'a Stdlib.Seq.t</code></pre><h3 id="2_Noise">Noise</h3>
+<pre><span id="VALrnd"><span class="keyword">val</span> rnd</span> : <code class="type">float Stdlib.Seq.t</code></pre><h3 id="2_Filters">Filters</h3>
+<pre><span id="VALblpf"><span class="keyword">val</span> blpf</span> : <code class="type">float Stdlib.Seq.t -><br>       float Stdlib.Seq.t -> float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre>
 <pre><span id="VALlpf1"><span class="keyword">val</span> lpf1</span> : <code class="type">float Stdlib.Seq.t -> float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre><h3 id="2_Analysis">Analysis</h3>
 <pre><span id="VALrms"><span class="keyword">val</span> rms</span> : <code class="type">float Stdlib.Seq.t -> float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre><h3 id="2_Oscillators">Oscillators</h3>
 <pre><span id="VALsinosc"><span class="keyword">val</span> sinosc</span> : <code class="type">float Stdlib.Seq.t -> float Stdlib.Seq.t</code></pre>

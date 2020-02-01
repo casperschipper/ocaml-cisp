@@ -172,7 +172,15 @@ let rec inc start_value increment () =
 
 (* Delays *)
 
-let del1 init stream () = Cons (init, stream)
+(* let del1 init stream () = Cons (init, stream) *)
+let del1 init stream =
+  let mem = ref init in
+  map
+    (fun v ->
+      let output = !mem in
+      mem := v ;
+      output)
+    stream
 
 (* Filters *)
 
@@ -183,9 +191,35 @@ let lpf1 in_proc freq =
       let p = map calc_p freq in
       ((~.1. -~ p) *~ in_proc) +~ (p *~ last))
 
+(* https://www.w3.org/2011/audio/audio-eq-cookbook.html *)
+(* TODO static versions *)
+let biquad x a0 a1 a2 b0 b1 b2 =
+  recursive 0.0 (fun y ->
+      (b0 /~ a0 *~ x)
+      +~ (b1 /~ a0 *~ del1 0. x)
+      +~ (b2 /~ a0 *~ del1 0. (del1 0. x))
+      -~ (a1 /~ a0 *~ y)
+      -~ (a2 /~ a0 *~ del1 0. y))
+
+let blpf f q x =
+  let w = ~.two_pi *~ (f /~ ~.(!sample_rate)) in
+  let a = map sin w /~ (q *~ ~.2.) in
+  let cosw = map cos w in
+  let b1 = ~.1. -~ cosw in
+  let b0 = b1 /~ ~.2. in
+  let b2 = b0 in
+  let a0 = ~.1. +~ a in
+  let a1 = ~.(-2.) *~ cosw in
+  let a2 = ~.1. -~ a in
+  biquad x a0 a1 a2 b0 b1 b2
+
 (* Analysis  *)
 
 let rms in_proc freq = map sqrt (lpf1 (map (fun x -> x *. x) in_proc) freq)
+
+(* Noise  *)
+
+let rec rnd () = Cons (Random.float 2.0 -. 1.0, rnd)
 
 (* Oscillators  *)
 
@@ -226,7 +260,6 @@ let impulse ph =
 (* TODO
  * sort and document functions in this module
  * analyis
-   * rms
  * memory delay
    * load soundfile
    * write soundfile
@@ -242,11 +275,9 @@ let impulse ph =
    * more multichannel expansion
    * accesing, switching
  * filter
-   * interpolations
-   * lpf
-   * bandpass
-   * filterbank
    * lagging
+   * bpf, hpf, lpf
+   * filterbank
  * data/utility
    * cycle
    * seq (casper)
@@ -260,6 +291,8 @@ let impulse ph =
 
 (* Done
  * splay
+ * rms
+ * lpf
  * pan2
  * kuramoto
  * dirac

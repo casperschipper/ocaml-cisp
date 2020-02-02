@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Jack.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Process" rel="Chapter" href="Process.html">
+<link title="Jack" rel="Chapter" href="Jack.html">
+<link title="Sndfile" rel="Chapter" href="Sndfile.html"><title>Sndfile</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Jack.html" title="Jack">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Sndfile.html">Sndfile</a></h1>
+
+<pre><span id="MODULESndfile"><span class="keyword">module</span> Sndfile</span>: <code class="code">sig</code> <a href="Sndfile.html">..</a> <code class="code">end</code></pre><div class="info module top">
+<div class="info-desc">
+<p>Audio Utilities for OCaml</p>
+</div>
+</div>
+<hr width="100%">
+<p>A writing and a reading functions for several audio file formats using libsndfile</p>
+
+<pre><code><span id="TYPEsnd_format"><span class="keyword">type</span> <code class="type"></code>snd_format</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.WAV_8"><span class="constructor">WAV_8</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.WAV_16"><span class="constructor">WAV_16</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.WAV_24"><span class="constructor">WAV_24</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.WAV_32"><span class="constructor">WAV_32</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.WAV_FLOAT"><span class="constructor">WAV_FLOAT</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.AIFF_8"><span class="constructor">AIFF_8</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.AIFF_16"><span class="constructor">AIFF_16</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.AIFF_24"><span class="constructor">AIFF_24</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.AIFF_32"><span class="constructor">AIFF_32</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.AIFF_FLOAT"><span class="constructor">AIFF_FLOAT</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.RAW_8"><span class="constructor">RAW_8</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.RAW_16"><span class="constructor">RAW_16</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.RAW_24"><span class="constructor">RAW_24</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.RAW_32"><span class="constructor">RAW_32</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsnd_format.RAW_FLOAT"><span class="constructor">RAW_FLOAT</span></span></code></td>
+
+</tr></table>
+
+<div class="info ">
+<div class="info-desc">
+<p>The output formats.</p>
+</div>
+</div>
+
+
+<pre><span id="VALsnd_write"><span class="keyword">val</span> snd_write</span> : <code class="type">(float, Stdlib.Bigarray.float32_elt, Stdlib.Bigarray.c_layout)<br>       Stdlib.Bigarray.Array1.t -><br>       string -> int -> int -> <a href="Sndfile.html#TYPEsnd_format">snd_format</a> -> unit</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">snd_write array filename sample_rate channels format</code></p>
+</div>
+</div>
+
+<pre><span id="VALsnd_read"><span class="keyword">val</span> snd_read</span> : <code class="type">string -><br>       (float, Stdlib.Bigarray.float32_elt, Stdlib.Bigarray.c_layout)<br>       Stdlib.Bigarray.Array1.t</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">snd_read filename</code>. This function can read files of more formats then the above. 
+    (see libsndfile api for list of formats)</p>
+</div>
+</div>
+
+<pre><span id="VALsnd_channels"><span class="keyword">val</span> snd_channels</span> : <code class="type">string -> int</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">snd_channels filename</code>. Returns the number of channels in the audio file.</p>
+</div>
+</div>
+
+<pre><span id="VALsnd_sr"><span class="keyword">val</span> snd_sr</span> : <code class="type">string -> int</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">snd_sr filename</code>. Returns the samplerate of the audio file.</p>
+</div>
+</div>
+</body></html>

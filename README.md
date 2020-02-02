@@ -7,7 +7,7 @@ The libraries have been tested and developed using the
 ```4.09.0+flambda``` compiler variant available on ```opam```. Further
 requirements are ```ctypes.foreign``` and ```dune``` (installable via
 ```opam```) and the jack audio library (e.g. using the package
-```libjack-dev```).
+```libjack-dev``` and libsndfile).
 
 Once these requirements are installed, the tests can be compiled by
 running (from inside the ```example``` directory):

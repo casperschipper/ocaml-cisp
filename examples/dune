@@ -1,41 +1,49 @@
 (executable
  (name multisine)
- (link_flags (-cclib -ljack))
+ (link_flags (-cclib -ljack -cclib  -lsndfile))
  (ocamlopt_flags -O3)
  (modules multisine)
- (libraries bigarray ctypes jack))
+ (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name simplesine)
- (link_flags (-cclib -ljack))
+ (link_flags (-cclib -ljack -cclib  -lsndfile))
  (ocamlopt_flags -O3)
  (modules simplesine)
- (libraries bigarray ctypes jack))
+ (libraries bigarray ctypes jack -lsndfile sndfile))
 
 (executable
  (name fmfb)
- (link_flags (-cclib -ljack))
+ (link_flags (-cclib -ljack -cclib  -lsndfile))
  (ocamlopt_flags -O3)
  (modules fmfb)
- (libraries bigarray ctypes jack))
+ (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name kuramoto)
- (link_flags (-cclib -ljack))
+ (link_flags (-cclib -ljack -cclib  -lsndfile))
  (ocamlopt_flags -O3)
  (modules kuramoto)
- (libraries bigarray ctypes jack))
+ (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name inputexample)
- (link_flags (-cclib -ljack))
+ (link_flags (-cclib -ljack -cclib  -lsndfile))
  (ocamlopt_flags -O3)
  (modules inputexample)
- (libraries bigarray ctypes jack))
+ (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name filtertest)
- (link_flags (-cclib -ljack))
+ (link_flags (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules filtertest)
- (libraries bigarray ctypes jack))
+ (libraries bigarray ctypes jack sndfile))
+
+
+(executable
+ (name sndfiletest)
+ (link_flags (-cclib -ljack -cclib -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules sndfiletest)
+ (libraries bigarray ctypes jack sndfile))

@@ -192,7 +192,6 @@ let lpf1 in_proc freq =
       ((~.1. -~ p) *~ in_proc) +~ (p *~ last))
 
 (* https://www.w3.org/2011/audio/audio-eq-cookbook.html *)
-(* TODO static versions *)
 let biquad x a0 a1 a2 b0 b1 b2 =
   recursive 0.0 (fun y ->
       (b0 /~ a0 *~ x)
@@ -200,6 +199,19 @@ let biquad x a0 a1 a2 b0 b1 b2 =
       +~ (b2 /~ a0 *~ del1 0. (del1 0. x))
       -~ (a1 /~ a0 *~ y)
       -~ (a2 /~ a0 *~ del1 0. y))
+
+let biquad_static x a0 a1 a2 b0 b1 b2 =
+  let b0a0 = b0 /. a0 in
+  let b1a0 = b1 /. a0 in
+  let b2a0 = b2 /. a0 in
+  let a1a0 = a1 /. a0 in
+  let a2a0 = a2 /. a0 in
+  recursive 0.0 (fun y ->
+      (~.b0a0 *~ x)
+      +~ (~.b1a0 *~ del1 0. x)
+      +~ (~.b2a0 *~ del1 0. (del1 0. x))
+      -~ (~.a1a0 *~ y)
+      -~ (~.a2a0 *~ del1 0. y))
 
 let blpf f q x =
   let w = ~.two_pi *~ (f /~ ~.(!sample_rate)) in
@@ -212,6 +224,44 @@ let blpf f q x =
   let a1 = ~.(-2.) *~ cosw in
   let a2 = ~.1. -~ a in
   biquad x a0 a1 a2 b0 b1 b2
+
+let blpf_static f q x =
+  let w = two_pi *. (f /. !sample_rate) in
+  let a = sin w /. (q *. 2.) in
+  let cosw = cos w in
+  let b1 = 1. -. cosw in
+  let b0 = b1 /. 2. in
+  let b2 = b0 in
+  let a0 = 1. +. a in
+  let a1 = -2. *. cosw in
+  let a2 = 1. -. a in
+  biquad_static x a0 a1 a2 b0 b1 b2
+
+(* TODO dynamic version *)
+let bhpf_static f q x =
+  let w = two_pi *. (f /. !sample_rate) in
+  let a = sin w /. (q *. 2.) in
+  let cosw = cos w in
+  let b0 = (1. +. cosw) /. 2. in
+  let b1 = (1. +. cosw) *. -1. in
+  let b2 = b0 in
+  let a0 = 1. +. a in
+  let a1 = -2. *. cosw in
+  let a2 = 1. -. a in
+  biquad_static x a0 a1 a2 b0 b1 b2
+
+(* TODO dynamic version *)
+let bbpf_static f q x =
+  let w = two_pi *. (f /. !sample_rate) in
+  let a = sin w /. (q *. 2.) in
+  let cosw = cos w in
+  let b0 = a in
+  let b1 = 0. in
+  let b2 = a *. -1. in
+  let a0 = 1. +. a in
+  let a1 = -2. *. cosw in
+  let a2 = 1. -. a in
+  biquad_static x a0 a1 a2 b0 b1 b2
 
 (* Analysis  *)
 
@@ -276,7 +326,6 @@ let impulse ph =
    * accesing, switching
  * filter
    * lagging
-   * bpf, hpf, lpf
    * filterbank
  * data/utility
    * cycle
@@ -290,6 +339,7 @@ let impulse ph =
  *)
 
 (* Done
+ * bpf, hpf, lpf
  * splay
  * rms
  * lpf

@@ -105,6 +105,12 @@ val rnd : float Seq.t
 
 val blpf : float Seq.t -> float Seq.t -> float Seq.t -> float Seq.t
 
+val blpf_static : float -> float -> float Seq.t -> float Seq.t
+
+val bhpf_static : float -> float -> float Seq.t -> float Seq.t
+
+val bbpf_static : float -> float -> float Seq.t -> float Seq.t
+
 val lpf1 : float Seq.t -> float Seq.t -> float Seq.t
 
 (** {2 Analysis} *)

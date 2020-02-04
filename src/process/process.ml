@@ -266,6 +266,16 @@ let bbpf_static f q x =
   let a2 = 1. -. a in
   biquad_static x a0 a1 a2 b0 b1 b2
 
+let rec geo_series n start f =
+  if n < 2 then [start] else start :: geo_series (n - 1) (start *. f) f
+
+let geo_from_to n from to_f =
+  let fac = (to_f /. from) ** (1. /. float_of_int (n - 1)) in
+  geo_series n from fac
+
+let fbank filter_fun q n start_f end_f x =
+  List.map (fun f -> filter_fun f q x) (geo_from_to n start_f end_f)
+
 (* Analysis  *)
 
 let rms in_proc freq = map sqrt (lpf1 (map (fun x -> x *. x) in_proc) freq)

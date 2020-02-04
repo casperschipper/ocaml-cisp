@@ -113,6 +113,9 @@ val bbpf_static : float -> float -> float Seq.t -> float Seq.t
 
 val lpf1 : float Seq.t -> float Seq.t -> float Seq.t
 
+val fbank :
+  (float -> 'a -> 'b -> 'c) -> 'a -> int -> float -> float -> 'b -> 'c list
+
 (** {2 Analysis} *)
 
 val rms : float Seq.t -> float Seq.t -> float Seq.t

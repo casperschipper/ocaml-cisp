@@ -47,3 +47,11 @@
  (ocamlopt_flags -O3)
  (modules sndfiletest)
  (libraries bigarray ctypes jack sndfile))
+
+
+(executable
+ (name nonrt)
+ (link_flags (-cclib -ljack -cclib -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules nonrt)
+ (libraries bigarray ctypes jack sndfile))

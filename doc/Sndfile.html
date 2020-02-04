@@ -28,110 +28,113 @@
 <hr width="100%">
 <p>A writing and a reading functions for several audio file formats using libsndfile</p>
 
-<pre><code><span id="TYPEsnd_format"><span class="keyword">type</span> <code class="type"></code>snd_format</span> = </code></pre><table class="typetable">
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+
+
+<pre><code><span id="TYPEformat"><span class="keyword">type</span> <code class="type"></code>format</span> = </code></pre><table class="typetable">
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.WAV_8"><span class="constructor">WAV_8</span></span></code></td>
+<code><span id="TYPEELTformat.WAV_8"><span class="constructor">WAV_8</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.WAV_16"><span class="constructor">WAV_16</span></span></code></td>
+<code><span id="TYPEELTformat.WAV_16"><span class="constructor">WAV_16</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.WAV_24"><span class="constructor">WAV_24</span></span></code></td>
+<code><span id="TYPEELTformat.WAV_24"><span class="constructor">WAV_24</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.WAV_32"><span class="constructor">WAV_32</span></span></code></td>
+<code><span id="TYPEELTformat.WAV_32"><span class="constructor">WAV_32</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.WAV_FLOAT"><span class="constructor">WAV_FLOAT</span></span></code></td>
+<code><span id="TYPEELTformat.WAV_FLOAT"><span class="constructor">WAV_FLOAT</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.AIFF_8"><span class="constructor">AIFF_8</span></span></code></td>
+<code><span id="TYPEELTformat.AIFF_8"><span class="constructor">AIFF_8</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.AIFF_16"><span class="constructor">AIFF_16</span></span></code></td>
+<code><span id="TYPEELTformat.AIFF_16"><span class="constructor">AIFF_16</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.AIFF_24"><span class="constructor">AIFF_24</span></span></code></td>
+<code><span id="TYPEELTformat.AIFF_24"><span class="constructor">AIFF_24</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.AIFF_32"><span class="constructor">AIFF_32</span></span></code></td>
+<code><span id="TYPEELTformat.AIFF_32"><span class="constructor">AIFF_32</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.AIFF_FLOAT"><span class="constructor">AIFF_FLOAT</span></span></code></td>
+<code><span id="TYPEELTformat.AIFF_FLOAT"><span class="constructor">AIFF_FLOAT</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.RAW_8"><span class="constructor">RAW_8</span></span></code></td>
+<code><span id="TYPEELTformat.RAW_8"><span class="constructor">RAW_8</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.RAW_16"><span class="constructor">RAW_16</span></span></code></td>
+<code><span id="TYPEELTformat.RAW_16"><span class="constructor">RAW_16</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.RAW_24"><span class="constructor">RAW_24</span></span></code></td>
+<code><span id="TYPEELTformat.RAW_24"><span class="constructor">RAW_24</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.RAW_32"><span class="constructor">RAW_32</span></span></code></td>
+<code><span id="TYPEELTformat.RAW_32"><span class="constructor">RAW_32</span></span></code></td>
 
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTsnd_format.RAW_FLOAT"><span class="constructor">RAW_FLOAT</span></span></code></td>
+<code><span id="TYPEELTformat.RAW_FLOAT"><span class="constructor">RAW_FLOAT</span></span></code></td>
 
 </tr></table>
 
@@ -142,28 +145,46 @@
 </div>
 
 
-<pre><span id="VALsnd_write"><span class="keyword">val</span> snd_write</span> : <code class="type">(float, Stdlib.Bigarray.float32_elt, Stdlib.Bigarray.c_layout)<br>       Stdlib.Bigarray.Array1.t -><br>       string -> int -> int -> <a href="Sndfile.html#TYPEsnd_format">snd_format</a> -> unit</code></pre><div class="info ">
+<pre><span id="VALwrite"><span class="keyword">val</span> write</span> : <code class="type"><a href="Sndfile.html#TYPEt">t</a> -> string -> <a href="Sndfile.html#TYPEformat">format</a> -> unit</code></pre><div class="info ">
 <div class="info-desc">
-<p><code class="code">snd_write array filename sample_rate channels format</code></p>
+<p><code class="code">write snd filename format</code></p>
 </div>
 </div>
 
-<pre><span id="VALsnd_read"><span class="keyword">val</span> snd_read</span> : <code class="type">string -><br>       (float, Stdlib.Bigarray.float32_elt, Stdlib.Bigarray.c_layout)<br>       Stdlib.Bigarray.Array1.t</code></pre><div class="info ">
+<pre><span id="VALread"><span class="keyword">val</span> read</span> : <code class="type">string -> <a href="Sndfile.html#TYPEt">t</a></code></pre><div class="info ">
 <div class="info-desc">
-<p><code class="code">snd_read filename</code>. This function can read files of more formats then the above. 
+<p><code class="code">read filename</code>. This function can read files of more formats then the above. 
     (see libsndfile api for list of formats)</p>
 </div>
 </div>
 
-<pre><span id="VALsnd_channels"><span class="keyword">val</span> snd_channels</span> : <code class="type">string -> int</code></pre><div class="info ">
+<pre><span id="VALchannels"><span class="keyword">val</span> channels</span> : <code class="type"><a href="Sndfile.html#TYPEt">t</a> -> int</code></pre><div class="info ">
 <div class="info-desc">
-<p><code class="code">snd_channels filename</code>. Returns the number of channels in the audio file.</p>
+<p><code class="code">channels snd</code>. Returns the number of channels in the audio file.</p>
 </div>
 </div>
 
-<pre><span id="VALsnd_sr"><span class="keyword">val</span> snd_sr</span> : <code class="type">string -> int</code></pre><div class="info ">
+<pre><span id="VALsr"><span class="keyword">val</span> sr</span> : <code class="type"><a href="Sndfile.html#TYPEt">t</a> -> int</code></pre><div class="info ">
 <div class="info-desc">
-<p><code class="code">snd_sr filename</code>. Returns the samplerate of the audio file.</p>
+<p><code class="code">sr snd</code>. Returns the samplerate of the audio file.</p>
+</div>
+</div>
+
+<pre><span id="VALidx"><span class="keyword">val</span> idx</span> : <code class="type"><a href="Sndfile.html#TYPEt">t</a> -> int -> float</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">idx snd idx</code></p>
+</div>
+</div>
+
+<pre><span id="VALidx_channel"><span class="keyword">val</span> idx_channel</span> : <code class="type"><a href="Sndfile.html#TYPEt">t</a> -> int -> int -> float</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">idx_channel snd channel idx</code></p>
+</div>
+</div>
+
+<pre><span id="VALfromSeq"><span class="keyword">val</span> fromSeq</span> : <code class="type">int -> int -> float Stdlib.Seq.t list -> <a href="Sndfile.html#TYPEt">t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">fromSeq length sample_rate streams </code></p>
 </div>
 </div>
 </body></html>

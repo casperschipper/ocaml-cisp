@@ -119,7 +119,7 @@ val rms : float Seq.t -> float Seq.t -> float Seq.t
 
 (** {2 Audio Files} *)
 
-val sndfile : string -> float Seq.t
+val sndfile : string -> int -> float Seq.t
 
 (** {2 Oscillators} *)
 

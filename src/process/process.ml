@@ -272,11 +272,9 @@ let rms in_proc freq = map sqrt (lpf1 (map (fun x -> x *. x) in_proc) freq)
 
 (* Audio Files  *)
 
-(* deal with multiple channels *)
-let sndfile fname =
-  let buf = Sndfile.snd_read fname in
-  let length = Bigarray.Array1.dim buf in
-  map (fun i -> buf.{i mod length}) (inc_int 0 1)
+let sndfile fname channel =
+  let snd = Sndfile.read fname in
+  map (Sndfile.idx_channel snd channel) (inc_int 0 1)
 
 (* Noise  *)
 

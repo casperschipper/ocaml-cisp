@@ -1,10 +1,12 @@
 (** Audio Utilities for OCaml *)
+
 (** A writing and a reading functions for several audio file formats using libsndfile *)
 
+type t
 
 (** The output formats. *)
-type snd_format =
-    WAV_8
+type format =
+  | WAV_8
   | WAV_16
   | WAV_24
   | WAV_32
@@ -19,24 +21,25 @@ type snd_format =
   | RAW_24
   | RAW_32
   | RAW_FLOAT
-      
-(** [snd_write array filename sample_rate channels format] *)
-val snd_write :
-  (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t ->
-  string -> int -> int -> snd_format -> unit
-  
-(** [snd_read filename]. This function can read files of more formats then the above. 
+
+val write : t -> string -> format -> unit
+(** [write snd filename format] *)
+
+val read : string -> t
+(** [read filename]. This function can read files of more formats then the above. 
     (see libsndfile api for list of formats) *)
-val snd_read :
-  string ->
-  (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
 
-(** [snd_channels filename]. Returns the number of channels in the audio file. *)
-val snd_channels :
-  string -> int
+val channels : t -> int
+(** [channels snd]. Returns the number of channels in the audio file. *)
 
-(** [snd_sr filename]. Returns the samplerate of the audio file. *)
-val snd_sr :
-  string -> int
+val sr : t -> int
+(** [sr snd]. Returns the samplerate of the audio file. *)
 
-    
+val idx : t -> int -> float
+(** [idx snd idx] *)
+
+val idx_channel : t -> int -> int -> float
+(** [idx_channel snd channel idx] *)
+
+val fromSeq : int -> int -> float Seq.t list -> t
+(** [fromSeq length sample_rate streams ] *)

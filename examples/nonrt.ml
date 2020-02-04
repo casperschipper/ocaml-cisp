@@ -1,6 +1,6 @@
 open Process
 
-(* reading the first channel of an audio file *)
+(* writing an audio file in nonrt *)
 let _ =
   let snd = Sndfile.fromSeq (44100 * 10) 44100 [sinosc ~.500.; sinosc ~.410.] in
   (* adjust path *)

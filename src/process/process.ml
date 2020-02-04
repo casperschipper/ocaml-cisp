@@ -320,8 +320,6 @@ let impulse ph =
  * sort and document functions in this module
  * analyis
  * memory delay
-   * load soundfile
-   * write soundfile
    * buffer read write
    * delayc
  * synth
@@ -342,12 +340,14 @@ let impulse ph =
    * muladd
    * gate
    * sample and hold
- * non-realtime
-   * render to disk
-   * non rt analysis tools, (like sc "signal" class)
  *)
 
 (* Done
+ * non-realtime
+   * non rt analysis tools, (like sc "signal" class)
+   * render to disk
+ * load soundfile
+ * write soundfile
  * bpf, hpf, lpf
  * splay
  * rms

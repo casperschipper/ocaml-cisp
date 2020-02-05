@@ -1,6 +1,6 @@
-open Seq
-
 (* Global settings *)
+
+let output_buffer_size = 32 (* HAS TO BE A POWER OF TWO *)
 
 let sample_rate = ref 44100.
 
@@ -19,278 +19,183 @@ let pair a b = (a, b)
 
 let calc_ph_inc sr = 2.0 *. pi /. sr
 
-(* type frequency = {frequency: float; samplerate: float}
- * 
- * let freq sr fr = {frequency= fr; samplerate= sr} *)
-
 let rec mkLstN f i = if i <= 0 then [] else f i :: mkLstN f (i - 1)
 
-(* Accessing data and creating sequences *)
+(* Process type *)
 
-let fromLst = List.to_seq
+let empty_state = ()
 
-let rec toLst n s =
+type sample_counter = int
+
+type ('state, 'output) t =
+  { mutable state: 'state
+  ; func: 'state -> int -> 'state * 'output
+  ; mutable last_output_idx: sample_counter
+  ; mutable outputs: 'output array }
+
+let mk init_state func init_out =
+  { state= init_state
+  ; func
+  ; last_output_idx= 0
+  ; outputs= Array.make output_buffer_size init_out }
+
+let mk_no_state func init_out =
+  { state= empty_state
+  ; func
+  ; last_output_idx= 0
+  ; outputs= Array.make output_buffer_size init_out }
+
+(* let inc_indices g =
+ *   match g.last_output_idx with
+ *   | counter, idx ->
+ *       g.last_output_idx <- (counter + 1, (idx + 1) mod output_buffer_size) *)
+
+let last_value g = g.outputs.(g.last_output_idx land (output_buffer_size - 1))
+
+let idx i =
+  if i < 0 then output_buffer_size - 1 + i else i land (output_buffer_size - 1)
+
+let previous_value g i =
+  let last_sc = g.last_output_idx in
+  let arr_idx = last_sc land (output_buffer_size - 1) in
+  g.outputs.(idx (arr_idx + (i - last_sc) - 1))
+
+let generate_next g =
+  let () = g.last_output_idx <- g.last_output_idx + 1 in
+  let counter = g.last_output_idx in
+  let new_state, output = g.func g.state counter in
+  g.state <- new_state ;
+  (* g.outputs.(counter mod output_buffer_size) <- output ; *)
+  g.outputs.(counter land (output_buffer_size - 1)) <- output ;
+  output
+
+let value_at g i =
+  let last_sc = g.last_output_idx in
+  let arr_idx = last_sc land (output_buffer_size - 1) in
+  while g.last_output_idx < i do
+    let _ = generate_next g in
+    ()
+  done ;
+  g.outputs.(idx (arr_idx + (i - last_sc)))
+
+let generate g i =
+  while g.last_output_idx < i do
+    let _ = generate_next g in
+    ()
+  done ;
+  last_value g
+
+let rec toLst n g =
   if n <= 0 then []
-  else match s () with Nil -> [] | Cons (a, seq) -> a :: toLst (n - 1) seq
+  else
+    let this = last_value g in
+    let _ = generate_next g in
+    this :: toLst (n - 1) g
 
-let this s = match s () with Nil -> None | Cons (a, _) -> Some a
+let rec toSeq g () =
+  let open Seq in
+  Cons (generate_next g, toSeq g)
 
-let next s = match s () with Nil -> None | Cons (_, a) -> Some a
-
-let rec const a () = Cons (a, const a)
+let const v = mk empty_state (fun _ _ -> (empty_state, v)) v
 
 let ( ~. ) = const
 
-let id_fun (x : float) = x
-
-let id = map id_fun
-
-let rec from_ref r () = Cons (!r, from_ref r)
-
-let print_float_stream label =
-  map (fun v ->
-      let () = Printf.printf "%s %f\n" label v in
-      v)
-
 (* Applying functions *)
 
-let rec zip f a b () =
-  match (a (), b ()) with
-  | Nil, _ | _, Nil -> Nil
-  | Cons (a1, aSeq), Cons (b1, bSeq) -> Cons (f a1 b1, zip f aSeq bSeq)
+let map f g =
+  mk_no_state (fun _ i -> (empty_state, f (value_at g i))) (f (last_value g))
 
-let map = Seq.map
+let zip f g1 g2 =
+  { state= empty_state
+  ; func= (fun _ i -> (empty_state, f (value_at g1 i) (value_at g2 i)))
+  ; last_output_idx= 0
+  ; outputs= Array.make output_buffer_size (f (last_value g1) (last_value g2))
+  }
 
-(* Alrithmetic operations *)
+(* Arithmetic operations *)
 
-let ( +~ ) = zip ( +. )
+let add g1 g2 =
+  { state= empty_state
+  ; func= (fun _ i -> (empty_state, value_at g1 i +. value_at g2 i))
+  ; last_output_idx= 0
+  ; outputs= Array.make output_buffer_size (last_value g1 +. last_value g2) }
 
-let ( *~ ) = zip ( *. )
+let sumS a = List.fold_left add (const 0.0) a
 
-let ( -~ ) = zip ( -. )
+let ( +~ ) a b = zip ( +. ) a b
 
-let ( /~ ) = zip ( /. )
+let ( *~ ) a b = zip ( *. ) a b
 
-let mul amp = map (fun f -> f *. amp)
+let ( -~ ) a b = zip ( -. ) a b
 
-let sum = List.fold_left ( +~ ) (const 0.0)
+let ( /~ ) a b = zip ( /. ) a b
+
+let ( **~ ) a b = zip ( ** ) a b
 
 (* Audio input *)
 
-let rec input c () = Cons (input_array.(c), input c)
-
-(* Multichannel *)
-
-(* check whether this may break state because we may be evaluating unnecessarily *)
-let evert lst_seq =
-  match lst_seq () with
-  | Nil -> [(fun () -> Nil)]
-  | Cons (lst, _) ->
-      let n = List.length lst in
-      mkLstN (fun i -> map (fun l -> List.nth l (n - i)) lst_seq) n
-
-let split str = [map fst str; map snd str]
-
-let ( |>> ) lst1 lst2 = List.map2 (fun s1 s2 -> s1 |> s2) lst1 lst2
-
-let ( ||> ) lst f = List.map (fun s -> f s) lst
-
-let pan_to_ph p = (p +. 1.) /. 2.0 *. (pi /. 2.0)
-
-let pan2 signal position =
-  let ph = map pan_to_ph position in
-  let left = map cos ph in
-  let right = map sin ph in
-  [left *~ signal; right *~ signal]
-
-let pan2_const signal position =
-  let ph = pan_to_ph position in
-  let left = cos ph in
-  let right = sin ph in
-  [~.left *~ signal; ~.right *~ signal]
-
-(* let pan2 signal position =
- *   let ph = map (fun p -> (p /. 2.) +. 0.5) position in
- *   let right = map sqrt ph in
- *   let left = map sqrt (map (fun p -> 1. -. p) ph) in
- *   [left *~ signal; right *~ signal] *)
-
-let rec sumPanPh start inc n =
-  if n <= 0 then [start] else start :: sumPanPh (start +. inc) inc (n - 1)
-
-let splay str_lst =
-  let n = List.length str_lst in
-  let positions =
-    if n == 0 then [0.] else sumPanPh (-1.) (2. /. float_of_int (n - 1)) (n - 1)
-  in
-  List.fold_left
-    (fun sum this_pair ->
-      match (sum, this_pair) with
-      | [sumL; sumR], [thisL; thisR] -> [sumL +~ thisL; sumR +~ thisR]
-      | _ -> sum)
-    [~.0.; ~.0.]
-    (List.map2 pan2_const str_lst positions)
-
-(* Recursive processes *)
-
-let simple_recursion_state_cont start_value stream () =
-  let current = ref start_value in
-  let rec_seq =
-    map
-      (fun this_value ->
-        let () = current := this_value in
-        this_value)
-      (stream (from_ref current))
-  in
-  rec_seq
-
-let recursion_state_cont start_value output input () =
-  let current = ref start_value in
-  let rec_seq =
-    map
-      (fun this_value ->
-        let () = current := this_value in
-        this_value)
-      (output (input (from_ref current)))
-  in
-  rec_seq
-
-let recursive_connection start_value output input () =
-  Cons (start_value, recursion_state_cont start_value output input ())
-
-let recursive start_value stream () =
-  Cons (start_value, simple_recursion_state_cont start_value stream ())
-
-let rec recursion_map start_value output input () =
-  let next_value = output (input start_value) in
-  Cons (start_value, recursion_map next_value output input)
-
-let integrate increment = recursive 0.0 (fun last -> increment +~ last)
-
-let rec inc start_value increment () =
-  Cons (start_value, inc (start_value +. increment) increment)
-
-let rec inc_int start_value increment () =
-  Cons (start_value, inc_int (start_value + increment) increment)
+let input c =
+  mk_no_state (fun _ _ -> (empty_state, input_array.(c))) input_array.(c)
 
 (* Delays *)
 
-(* let del1 init stream () = Cons (init, stream) *)
-let del1 init stream =
-  let mem = ref init in
-  map
-    (fun v ->
-      let output = !mem in
-      mem := v ;
-      output)
-    stream
+let del1 g =
+  { state= empty_state
+  ; func= (fun _ i -> (empty_state, value_at g (i - 1)))
+  ; last_output_idx= 0
+  ; outputs= Array.make output_buffer_size (last_value g) }
 
-(* Filters *)
+(* Increment and integration *)
 
-let calc_p freq = 1. -. (2. *. tan (freq /. !sample_rate))
+(* let integrate start g =
+ *   { state= 0.
+ *   ; func=
+ *       (fun s i ->
+ *         let incr = value_at g i in
+ *         let out = s +. incr in
+ *         (out, out))
+ *   ; last_output_idx= (0, 0)
+ *   ; outputs= Array.make output_buffer_size start } *)
 
-let lpf1 in_proc freq =
-  recursive 0.0 (fun last ->
-      let p = map calc_p freq in
-      ((~.1. -~ p) *~ in_proc) +~ (p *~ last))
+let inc start increment =
+  mk [|start|]
+    (fun s _ ->
+      let out = s.(0) +. increment in
+      ([|out|], out))
+    start
 
-(* https://www.w3.org/2011/audio/audio-eq-cookbook.html *)
-let biquad x a0 a1 a2 b0 b1 b2 =
-  recursive 0.0 (fun y ->
-      (b0 /~ a0 *~ x)
-      +~ (b1 /~ a0 *~ del1 0. x)
-      +~ (b2 /~ a0 *~ del1 0. (del1 0. x))
-      -~ (a1 /~ a0 *~ y)
-      -~ (a2 /~ a0 *~ del1 0. y))
+let inc_int start increment =
+  mk [|start|]
+    (fun s _ ->
+      let out = s.(0) + increment in
+      ([|out|], out))
+    start
 
-let biquad_static x a0 a1 a2 b0 b1 b2 =
-  let b0a0 = b0 /. a0 in
-  let b1a0 = b1 /. a0 in
-  let b2a0 = b2 /. a0 in
-  let a1a0 = a1 /. a0 in
-  let a2a0 = a2 /. a0 in
-  recursive 0.0 (fun y ->
-      (~.b0a0 *~ x)
-      +~ (~.b1a0 *~ del1 0. x)
-      +~ (~.b2a0 *~ del1 0. (del1 0. x))
-      -~ (~.a1a0 *~ y)
-      -~ (~.a2a0 *~ del1 0. y))
+(* Recursion *)
 
-let blpf f q x =
-  let w = ~.two_pi *~ (f /~ ~.(!sample_rate)) in
-  let a = map sin w /~ (q *~ ~.2.) in
-  let cosw = map cos w in
-  let b1 = ~.1. -~ cosw in
-  let b0 = b1 /~ ~.2. in
-  let b2 = b0 in
-  let a0 = ~.1. +~ a in
-  let a1 = ~.(-2.) *~ cosw in
-  let a2 = ~.1. -~ a in
-  biquad x a0 a1 a2 b0 b1 b2
+let from_ref r = mk_no_state (fun _ _ -> ((), !r)) !r
 
-let blpf_static f q x =
-  let w = two_pi *. (f /. !sample_rate) in
-  let a = sin w /. (q *. 2.) in
-  let cosw = cos w in
-  let b1 = 1. -. cosw in
-  let b0 = b1 /. 2. in
-  let b2 = b0 in
-  let a0 = 1. +. a in
-  let a1 = -2. *. cosw in
-  let a2 = 1. -. a in
-  biquad_static x a0 a1 a2 b0 b1 b2
+let recursive start_value proc =
+  let current = ref start_value in
+  let rec_seq =
+    map
+      (fun this_value ->
+        let () = current := this_value in
+        this_value)
+      (proc (from_ref current))
+  in
+  rec_seq
 
-(* TODO dynamic version *)
-let bhpf_static f q x =
-  let w = two_pi *. (f /. !sample_rate) in
-  let a = sin w /. (q *. 2.) in
-  let cosw = cos w in
-  let b0 = (1. +. cosw) /. 2. in
-  let b1 = (1. +. cosw) *. -1. in
-  let b2 = b0 in
-  let a0 = 1. +. a in
-  let a1 = -2. *. cosw in
-  let a2 = 1. -. a in
-  biquad_static x a0 a1 a2 b0 b1 b2
+let integrate increment = recursive 0.0 (fun last -> increment +~ last)
 
-(* TODO dynamic version *)
-let bbpf_static f q x =
-  let w = two_pi *. (f /. !sample_rate) in
-  let a = sin w /. (q *. 2.) in
-  let cosw = cos w in
-  let b0 = a in
-  let b1 = 0. in
-  let b2 = a *. -1. in
-  let a0 = 1. +. a in
-  let a1 = -2. *. cosw in
-  let a2 = 1. -. a in
-  biquad_static x a0 a1 a2 b0 b1 b2
+(* Noise *)
 
-let rec geo_series n start f =
-  if n < 2 then [start] else start :: geo_series (n - 1) (start *. f) f
+let rnd =
+  mk empty_state
+    (fun _ _ -> (empty_state, Random.float 2.0 -. 1.0))
+    (Random.float 2.0 -. 1.0)
 
-let geo_from_to n from to_f =
-  let fac = (to_f /. from) ** (1. /. float_of_int (n - 1)) in
-  geo_series n from fac
-
-let fbank filter_fun q n start_f end_f x =
-  List.map (fun f -> filter_fun f q x) (geo_from_to n start_f end_f)
-
-(* Analysis  *)
-
-let rms in_proc freq = map sqrt (lpf1 (map (fun x -> x *. x) in_proc) freq)
-
-(* Audio Files  *)
-
-let sndfile fname channel =
-  let snd = Sndfile.read fname in
-  map (Sndfile.idx_channel snd channel) (inc_int 0 1)
-
-(* Noise  *)
-
-let rec rnd () = Cons (Random.float 2.0 -. 1.0, rnd)
-
-(* Oscillators  *)
+(* Oscillators *)
 
 let sinosc freq =
   let phinc = calc_ph_inc !sample_rate in
@@ -324,54 +229,141 @@ let impulse ph =
     (fun cur last ->
       if last > cur && abs_float (last -. cur) +. last > two_pi then 1.0
       else 0.0)
-    ph (del1 0.0 ph)
+    ph (del1 ph)
 
-(* TODO
- * sort and document functions in this module
- * analyis
- * memory delay
-   * buffer read write
-   * delayc
- * synth
-   * fm
- * dynsys
-   * hopf
-   * kaneko 
-   * compander
- * panning: channels 
-   * more multichannel expansion
-   * accesing, switching
- * filter
-   * lagging
-   * filterbank
- * data/utility
-   * cycle
-   * seq (casper)
-   * muladd
-   * gate
-   * sample and hold
- *)
+(* Filters *)
 
-(* Done
- * non-realtime
-   * non rt analysis tools, (like sc "signal" class)
-   * render to disk
- * load soundfile
- * write soundfile
- * bpf, hpf, lpf
- * splay
- * rms
- * lpf
- * pan2
- * kuramoto
- * dirac
- * sinosc
- * phasor
- * infix operators
- * audio test
- * delay1
- * recursion
- * multichannel jack
- * compare rec fm to sc implementation: 
-   high values lead to differences (double vs float issue ??)
- *)
+let calc_p freq = 1. -. (2. *. tan (freq /. !sample_rate))
+
+let lpf1_static in_proc freq =
+  let p = calc_p freq in
+  mk 0.
+    (fun last i ->
+      let out = ((1. -. p) *. value_at in_proc i) +. (p *. last) in
+      (out, out))
+    0.
+
+(* https://www.w3.org/2011/audio/audio-eq-cookbook.html *)
+let biquad_static x a0 a1 a2 b0 b1 b2 =
+  let b0a0 = b0 /. a0 in
+  let b1a0 = b1 /. a0 in
+  let b2a0 = b2 /. a0 in
+  let a1a0 = a1 /. a0 in
+  let a2a0 = a2 /. a0 in
+  { state= [|0.; 0.; 0.; 0.|]
+  ; func=
+      (fun s i ->
+        let this_x = value_at x i in
+        let x1 = s.(0) in
+        let x2 = s.(1) in
+        let y1 = s.(2) in
+        let y2 = s.(3) in
+        let new_y =
+          (this_x *. b0a0) +. (b1a0 *. x1) +. (b2a0 *. x2) -. (a1a0 *. y1)
+          -. (a2a0 *. y2)
+        in
+        ([|this_x; x1; new_y; y1|], new_y))
+  ; last_output_idx= 0
+  ; outputs= Array.make output_buffer_size 0. }
+
+let blpf_static f q x =
+  let w = two_pi *. (f /. !sample_rate) in
+  let a = sin w /. (q *. 2.) in
+  let cosw = cos w in
+  let b1 = 1. -. cosw in
+  let b0 = b1 /. 2. in
+  let b2 = b0 in
+  let a0 = 1. +. a in
+  let a1 = -2. *. cosw in
+  let a2 = 1. -. a in
+  biquad_static x a0 a1 a2 b0 b1 b2
+
+let bhpf_static f q x =
+  let w = two_pi *. (f /. !sample_rate) in
+  let a = sin w /. (q *. 2.) in
+  let cosw = cos w in
+  let b0 = (1. +. cosw) /. 2. in
+  let b1 = (1. +. cosw) *. -1. in
+  let b2 = b0 in
+  let a0 = 1. +. a in
+  let a1 = -2. *. cosw in
+  let a2 = 1. -. a in
+  biquad_static x a0 a1 a2 b0 b1 b2
+
+let bbpf_static f q x =
+  let w = two_pi *. (f /. !sample_rate) in
+  let a = sin w /. (q *. 2.) in
+  let cosw = cos w in
+  let b0 = a in
+  let b1 = 0. in
+  let b2 = a *. -1. in
+  let a0 = 1. +. a in
+  let a1 = -2. *. cosw in
+  let a2 = 1. -. a in
+  biquad_static x a0 a1 a2 b0 b1 b2
+
+let rec geo_series n start f =
+  if n < 2 then [start] else start :: geo_series (n - 1) (start *. f) f
+
+let geo_from_to n from to_f =
+  let fac = (to_f /. from) ** (1. /. float_of_int (n - 1)) in
+  geo_series n from fac
+
+let fbank_subtract lp_filter_fun q n start_f end_f x =
+  List.fold_left
+    (fun (bands, total_signal) f ->
+      let this_band = lp_filter_fun f q total_signal in
+      (this_band :: bands, total_signal -~ this_band))
+    ([], x)
+    (geo_from_to n start_f end_f)
+  |> fst
+
+let fbank_map filter_fun q n start_f end_f x =
+  List.map (fun f -> filter_fun f q x) (geo_from_to n start_f end_f)
+
+(* Analysis  *)
+
+let rms in_proc freq =
+  map sqrt (lpf1_static (map (fun x -> x *. x) in_proc) freq)
+
+(* Multichannel  *)
+
+let evert lst_proc =
+  let n = List.length (last_value lst_proc) in
+  mkLstN (fun i -> map (fun l -> List.nth l (n - i)) lst_proc) n
+
+let pan_to_ph p = (p +. 1.) /. 2.0 *. (pi /. 2.0)
+
+let pan2 signal position =
+  let ph = map pan_to_ph position in
+  let left = map cos ph in
+  let right = map sin ph in
+  [left *~ signal; right *~ signal]
+
+let pan2_const signal position =
+  let ph = pan_to_ph position in
+  let left = cos ph in
+  let right = sin ph in
+  [~.left *~ signal; ~.right *~ signal]
+
+let rec sumPanPh start inc n =
+  if n <= 0 then [start] else start :: sumPanPh (start +. inc) inc (n - 1)
+
+let splay str_lst =
+  let n = List.length str_lst in
+  let positions =
+    if n == 0 then [0.] else sumPanPh (-1.) (2. /. float_of_int (n - 1)) (n - 1)
+  in
+  List.fold_left
+    (fun sum this_pair ->
+      match (sum, this_pair) with
+      | [sumL; sumR], [thisL; thisR] -> [sumL +~ thisL; sumR +~ thisR]
+      | _ -> sum)
+    [~.0.; ~.0.]
+    (List.map2 pan2_const str_lst positions)
+
+let split str = [map fst str; map snd str]
+
+let ( |>> ) lst1 lst2 = List.map2 (fun s1 s2 -> s1 |> s2) lst1 lst2
+
+let ( ||> ) lst f = List.map (fun s -> f s) lst

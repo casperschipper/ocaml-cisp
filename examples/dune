@@ -10,7 +10,7 @@
  (link_flags (-cclib -ljack -cclib  -lsndfile))
  (ocamlopt_flags -O3)
  (modules simplesine)
- (libraries bigarray ctypes jack -lsndfile sndfile))
+ (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name fmfb)
@@ -55,3 +55,4 @@
  (ocamlopt_flags -O3)
  (modules nonrt)
  (libraries bigarray ctypes jack sndfile))
+

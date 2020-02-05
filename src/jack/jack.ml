@@ -8,8 +8,8 @@ external open_stream :
   -> (int -> unit)
   -> unit = "open_stream"
 
-let play in_channels sample_rate stream_lst =
-  let streams = Array.of_list stream_lst in
+let play in_channels sample_rate proc_lst =
+  let streams = Array.of_list proc_lst in
   let out_channels = Array.length streams in
   let ar_out =
     Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout
@@ -28,12 +28,9 @@ let play in_channels sample_rate stream_lst =
           Process.input_array.(k) <- ar_in.{(i * in_channels) + k}
         done ;
         Array.iteri
-          (fun c channel_stream ->
-            match channel_stream () with
-            | Nil -> ar_out.{(i * out_channels) + c} <- 0.0
-            | Cons (f, nextStream) ->
-                let () = streams.(c) <- nextStream in
-                ar_out.{(i * out_channels) + c} <- f)
+          (fun c gen ->
+            let buf_i = (i * out_channels) + c in
+            ar_out.{buf_i} <- Process.generate_next gen)
           streams
       done)
     (out_channels, in_channels)

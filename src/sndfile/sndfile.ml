@@ -92,3 +92,22 @@ let fromSeq n sr slst =
       seq
   done ;
   {channels= n_channels; sr; buffer= buf}
+
+let fromProc n sr glst =
+  let n_channels = List.length glst in
+  let buf =
+    Bigarray.Array1.create Bigarray.Float32 Bigarray.c_layout (n * n_channels)
+  in
+  let seq = Array.of_list glst in
+  for i = 0 to n - 1 do
+    Array.iteri
+      (fun c gen ->
+        let buf_i = (i * n_channels) + c in
+        buf.{buf_i} <- Process.generate_next gen)
+      seq
+  done ;
+  {channels= n_channels; sr; buffer= buf}
+
+let toProc fname channel =
+  let snd = read fname in
+  Process.map (idx_channel snd channel) (Process.inc_int 0 1)

@@ -1,4 +1,4 @@
 (library
  (name            process)
- (libraries bigarray sndfile)
+ (libraries bigarray)
  (ocamlopt_flags -O3))

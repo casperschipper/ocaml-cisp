@@ -1,0 +1,11 @@
+{
+    "input": "/home/luc/Work/sounds/aurora.wav",
+    "output": "/home/luc/Work/sounds/aurora_band2_fluct.wav",
+    "min-freq": 20.0, 
+    "max-freq" : 10000.0,
+    "n-bands" : 10,
+    "fluct-n" : 4, 
+    "fluct-min-freq" : 0.001,
+    "fluct-max-freq" : 10.0,
+    "fluct-n-bands" : 10 
+}

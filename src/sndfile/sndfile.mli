@@ -32,6 +32,8 @@ val read : string -> t
 val channels : t -> int
 (** [channels snd]. Returns the number of channels in the audio file. *)
 
+val n_frames : t -> int
+
 val sr : t -> int
 (** [sr snd]. Returns the samplerate of the audio file. *)
 
@@ -44,7 +46,7 @@ val idx_channel : t -> int -> int -> float
 val fromSeq : int -> int -> float Seq.t list -> t
 (** [fromSeq length sample_rate streams ] *)
 
-val fromProc : int -> int -> ('a, float) Process.t list -> t
+val fromProc : int -> int -> float Process.t list -> t
 (** [fromProc length sample_rate processes ] *)
 
-val toProc : string -> int -> (unit, float) Process.t
+val toProc : t -> int -> float Process.t

@@ -71,6 +71,8 @@ let idx snd i = snd.buffer.{i}
 
 let idx_channel snd c i = snd.buffer.{(snd.channels * i) + c}
 
+let n_frames snd = Bigarray.Array1.dim snd.buffer / snd.channels
+
 let channels snd = snd.channels
 
 let sr snd = snd.sr
@@ -94,6 +96,7 @@ let fromSeq n sr slst =
   {channels= n_channels; sr; buffer= buf}
 
 let fromProc n sr glst =
+  let _ = Process.sample_rate := float_of_int sr in
   let n_channels = List.length glst in
   let buf =
     Bigarray.Array1.create Bigarray.Float32 Bigarray.c_layout (n * n_channels)
@@ -108,6 +111,5 @@ let fromProc n sr glst =
   done ;
   {channels= n_channels; sr; buffer= buf}
 
-let toProc fname channel =
-  let snd = read fname in
+let toProc snd channel =
   Process.map (idx_channel snd channel) (Process.inc_int 0 1)

@@ -23,13 +23,13 @@ let rec mkLstN f i = if i <= 0 then [] else f i :: mkLstN f (i - 1)
 
 (* Process type *)
 
-let empty_state = ()
+let empty_state = [||]
 
 type sample_counter = int
 
-type ('state, 'output) t =
-  { mutable state: 'state
-  ; func: 'state -> int -> 'state * 'output
+type 'output t =
+  { mutable state: float array
+  ; func: float array -> int -> float array * 'output
   ; mutable last_output_idx: sample_counter
   ; mutable outputs: 'output array }
 
@@ -120,7 +120,7 @@ let add g1 g2 =
   ; last_output_idx= 0
   ; outputs= Array.make output_buffer_size (last_value g1 +. last_value g2) }
 
-let sumS a = List.fold_left add (const 0.0) a
+let sum a = List.fold_left add (const 0.0) a
 
 let ( +~ ) a b = zip ( +. ) a b
 
@@ -165,15 +165,17 @@ let inc start increment =
     start
 
 let inc_int start increment =
-  mk [|start|]
+  let incr = float_of_int increment in
+  mk
+    [|float_of_int start|]
     (fun s _ ->
-      let out = s.(0) + increment in
-      ([|out|], out))
+      let out = s.(0) +. incr in
+      ([|out|], int_of_float out))
     start
 
 (* Recursion *)
 
-let from_ref r = mk_no_state (fun _ _ -> ((), !r)) !r
+let from_ref r = mk_no_state (fun _ _ -> (empty_state, !r)) !r
 
 let recursive start_value proc =
   let current = ref start_value in
@@ -237,10 +239,10 @@ let calc_p freq = 1. -. (2. *. tan (freq /. !sample_rate))
 
 let lpf1_static in_proc freq =
   let p = calc_p freq in
-  mk 0.
+  mk [|0.|]
     (fun last i ->
-      let out = ((1. -. p) *. value_at in_proc i) +. (p *. last) in
-      (out, out))
+      let out = ((1. -. p) *. value_at in_proc i) +. (p *. last.(0)) in
+      ([|out|], out))
     0.
 
 (* https://www.w3.org/2011/audio/audio-eq-cookbook.html *)
@@ -302,6 +304,10 @@ let bbpf_static f q x =
   let a2 = 1. -. a in
   biquad_static x a0 a1 a2 b0 b1 b2
 
+let rec map_succ f = function
+  | a :: b :: r -> f a b :: map_succ f (b :: r)
+  | _ -> []
+
 let rec geo_series n start f =
   if n < 2 then [start] else start :: geo_series (n - 1) (start *. f) f
 
@@ -309,21 +315,35 @@ let geo_from_to n from to_f =
   let fac = (to_f /. from) ** (1. /. float_of_int (n - 1)) in
   geo_series n from fac
 
+let min_sub_freq f1 f2 = min f1 (f2 -. f1)
+
+let min_sub_freqs freqs = map_succ min_sub_freq freqs
+
+let casc2_band f1 f2 q x =
+  bhpf_static f1 q (bhpf_static f1 q (blpf_static f2 q (blpf_static f2 q x)))
+
+let casc_bank q n start_f end_f x =
+  map_succ (fun f1 f2 -> casc2_band f1 f2 q x) (geo_from_to n start_f end_f)
+
+(* let rec keep_last = function [] -> [] | [a] -> [a] | _ :: r -> keep_last r *)
+
 let fbank_subtract lp_filter_fun q n start_f end_f x =
-  List.fold_left
-    (fun (bands, total_signal) f ->
-      let this_band = lp_filter_fun f q total_signal in
-      (this_band :: bands, total_signal -~ this_band))
-    ([], x)
-    (geo_from_to n start_f end_f)
-  |> fst
+  let bands =
+    List.fold_left
+      (fun (bands, total_signal) f ->
+        let this_band = lp_filter_fun f q total_signal in
+        (this_band :: bands, total_signal -~ this_band))
+      ([], x)
+      (geo_from_to n start_f end_f)
+  in
+  fst bands @ [snd bands]
 
 let fbank_map filter_fun q n start_f end_f x =
   List.map (fun f -> filter_fun f q x) (geo_from_to n start_f end_f)
 
 (* Analysis  *)
 
-let rms in_proc freq =
+let rms freq in_proc =
   map sqrt (lpf1_static (map (fun x -> x *. x) in_proc) freq)
 
 (* Multichannel  *)

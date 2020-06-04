@@ -27,6 +27,12 @@ let empty_state = [||]
 
 type sample_counter = int
 
+(* closure with a mutable value, tuple empty state header  *)
+
+(* ; func: float array -> int -> float array * 'output
+
+input, counter, output *)
+
 type 'output t =
   { mutable state: float array
   ; func: float array -> int -> float array * 'output

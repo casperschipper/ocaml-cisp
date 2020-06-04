@@ -65,3 +65,11 @@
  (modules fluct)
  (libraries bigarray ctypes jack sndfile yojson))
 
+
+(executable
+  (name cisp)
+  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (ocamlopt_flags -O3)
+  (modules cisp)
+  (libraries bigarray ctypes jack sndfile))
+  

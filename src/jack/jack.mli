@@ -1,5 +1,13 @@
 (** Jack audio backend for [Process]. *)
 
+val open_stream :
+     (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
+  -> (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
+  -> (int -> unit)
+  -> int * int
+  -> (int -> unit)
+  -> unit
+
 val play : int -> float ref -> float Process.t list -> unit
 (** [play n_inputs Process.sample_rate processes] creates a jack audio client
     and plays back the processes. Each process in the process list will be used to 

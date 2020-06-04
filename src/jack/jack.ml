@@ -4,9 +4,13 @@ external open_stream :
      (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
   -> (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
   -> (int -> unit)
-  -> int * int
+  -> (* vector *)
+     int * int (* number of input and out *)
   -> (int -> unit)
-  -> unit = "open_stream"
+  -> (* samplerate *)
+     unit = "open_stream"
+
+(* unit "open_stream" *)
 
 let play in_channels sample_rate proc_lst =
   let streams = Array.of_list proc_lst in
@@ -31,10 +35,33 @@ let play in_channels sample_rate proc_lst =
           (fun c gen ->
             let buf_i = (i * out_channels) + c in
             ar_out.{buf_i} <- Process.generate_next gen)
+          (* that's were I plug in *)
           streams
       done)
     (out_channels, in_channels)
     (fun sr -> sample_rate := float_of_int sr)
+
+(*
+let play_cisp sample_rate cisp_lst =
+  let streams = Array.of_list proc_lst in
+  let out_channels = Array.length streams in
+  let ar_out =
+    Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout
+      (1024 * out_channels)
+  in
+  open_stream ar_out []
+    (fun nframes ->
+      Process.input_channels := in_channels ;
+      for i = 0 to nframes - 1 do
+        Array.iteri
+          (fun c gen ->
+            let buf_i = (i * out_channels) + c in
+            ar_out.{buf_i} <- Process.generate_next gen)
+          (* that's were I plug in *)
+          streams
+      done)
+    (out_channels, in_channels)
+    (fun sr -> sample_rate := float_of_int sr) *)
 
 (* TODO
  * midi in

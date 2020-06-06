@@ -103,6 +103,10 @@ let rec concat str () =
         Cons (h', concat newtail)
     | Nil -> concat ls () )
 
+(*
+let rec append a b () =
+  match a () with Nil -> b | Cons (h, ls) -> Cons (h, append ls b)
+                   *)
 let hd lst =
   match lst () with
   | Nil -> raise (Invalid_argument "empty list has no head")
@@ -147,7 +151,7 @@ let rec iterates start fs =
 
 let rec repeat x n () = if n > 0 then Cons (x, repeat x (n - 1)) else Nil
 
-let hold source repeats () =
+let hold repeats source () =
   let ctrl = zip source repeats in
   map (fun (x, n) -> repeat x n) ctrl |> concat
 
@@ -167,6 +171,8 @@ let hold source reps =
   in
     aux source reps
  *)
+
+let trunc str = map Int.of_float str
 
 let rvfi low high () =
   let range = abs_float (low -. high) in
@@ -193,7 +199,39 @@ let cat = trans |> concat |> take 30 |> to_list
 
 let lift f a b = f (st a) (st b)
 
-let testSah = lift rvf (-0.5) 0.5 ()
+let pair a b = (a, b)
+
+let lineSegment curr target n () =
+  let rate = (target -. curr) /. n in
+  let reachedEnd =
+    if rate > 0.0 then fun x -> x >= target else fun x -> x <= target
+  in
+  let rec segment curr () =
+    if reachedEnd curr then Nil else Cons (curr, segment (curr +. rate))
+  in
+  segment curr
+
+let rec chain start str () =
+  match str () with
+  | Nil -> Nil
+  | Cons (h, ls) -> Cons (pair start h, chain h ls)
+
+let seq lst = lst |> from_list |> cycle
+
+let selfChain str () =
+  match str () with Nil -> Nil | Cons (h, ls) -> chain h ls ()
+
+let mkLine target n () =
+  let control = zip (selfChain target) n in
+  map (fun ((a, b), n') -> lineSegment a b n' ()) control |> concat
+
+let testSah = lift rvf (-0.5) 0.5 () |> hold (trunc (lift rvf 1.0 1000.0 ()))
+
+let a = lift rvf (-1.0) 1.0
+
+let b = lift rvf 1.0 100.0
+
+let myLine = mkLine (a ()) (b ())
 
 let of_seq sq =
   let state = ref sq in
@@ -207,6 +245,5 @@ let of_seq sq =
   Process.mk_no_state f 0.0
 
 let _ =
-  let noise = testSah in
-  let proc = of_seq noise in
+  let proc = of_seq (myLine ()) in
   Jack.play 0 Process.sample_rate [proc]

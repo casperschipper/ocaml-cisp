@@ -102,6 +102,23 @@ let rec toSeq g () =
   let open Seq in
   Cons (generate_next g, toSeq g)
 
+(* takes a Seq t and makes it into process.t, ignores input.
+     the lazy tail of the Seq, is being stored in a mutable variable within a closure 
+     so the function that is returned behaving as a 'consumable'.
+   *)
+
+let ofSeq sq =
+  let open Seq in
+  let state = ref sq in
+  let f _ _ =
+    match !state () with
+    | Cons (s, tl) ->
+        state := tl ;
+        (empty_state, s)
+    | Nil -> (empty_state, 0.0)
+  in
+  mk_no_state f 0.0
+
 let const v = mk empty_state (fun _ _ -> (empty_state, v)) v
 
 let ( ~. ) = const

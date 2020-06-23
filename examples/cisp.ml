@@ -15,9 +15,15 @@ let ( |> ) x f = f x
 
 let ( <| ) f x = f x
 
+let ( >> ) f g x = g (f x)
+
+let ( << ) f g x = f (g x)
+
 let fst (x, _) = x
 
 let snd (_, x) = x
+
+let flt i = Float.of_int i
 
 let rec append a b () =
   match a () with Nil -> b | Cons (h, ls) -> Cons (h, append ls b)
@@ -117,10 +123,47 @@ let tl lst =
   | Nil -> raise (Invalid_argument "empty list has no tail")
   | Cons (_, tl) -> tl
 
+let for_all f sq =
+  let rec aux sq start =
+    match sq () with
+    | Nil -> true
+    | Cons (h, tl) -> if f h then aux tl start else false
+  in
+  aux sq true
+
+let is_empty sq = match sq () with Nil -> true | _ -> false
+
+let has_more = is_empty >> not
+
+let list_is_empty lst = match lst with [] -> true | _ -> false
+
+let list_has_more = list_is_empty >> not
+
 let rec transpose lst () =
-  let heads = map hd lst in
-  let tails = map tl lst |> transpose in
+  let heads =
+    map (fun str -> match str with Nil -> Nil | Cons (h, _) -> h) lst
+  in
+  let tails =
+    map (fun str -> match str with Nil -> Nil | Cons (_, tl) -> tl ()) lst
+    |> transpose
+  in
   Cons (heads, tails)
+
+(* 
+
+List.map (fun ls -> match ls with [] -> [] | h :: _ -> h) [[1;2;3];[1;4;5];[454;4555;22]];; 
+
+*)
+
+let rec transpose_list lst =
+  let foldHeads x acc = match x with [] -> acc | h :: _ -> h :: acc in
+  let foldTails x acc = match x with [] -> acc | _ :: ts -> ts :: acc in
+  match lst with
+  | [] -> []
+  | [] :: xss -> transpose_list xss
+  | (x :: xs) :: xss ->
+      (x :: List.fold_right foldHeads xss [])
+      :: transpose_list (xs :: List.fold_right foldTails xss [[]])
 
 let rec st a () =
   (* static *)
@@ -332,20 +375,42 @@ let lineSegment curr target n () =
   in
   segment curr
 
+(* [0,1];[1,2];[2,3] etc...  *)
 let rec chain start str () =
   match str () with
   | Nil -> Nil
   | Cons (h, ls) -> Cons (pair start h, chain h ls)
 
-let seq lst = lst |> of_list |> cycle
-
 let selfChain str () =
   (* (a,b) (b,c) (c,d) (d,e) etc... *)
   match str () with Nil -> Nil | Cons (h, ls) -> chain h ls ()
 
+let seq lst = lst |> of_list |> cycle
+
 let mkLine target n () =
   let control = zip (selfChain target) n in
   map (fun ((a, b), n') -> lineSegment a b n' ()) control |> concat
+
+let mkDel max del src () =
+  let delay = Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout max in
+  let index = map (fun x -> x mod max) count in
+  let parameters = zip index src in
+  let wr = map (fun (idx, src) -> delay.{idx} <- src) parameters in
+  let readParameters = zip3 index del wr in
+  map
+    (fun (idx, del, wr) ->
+      let maxf = flt max in
+      let idxf = flt idx in
+      let later = mod_float (maxf +. idxf -. del) maxf in
+      let x0_idx = Int.of_float later in
+      let x0 = delay.{x0_idx} in
+      let x1 = delay.{(x0_idx + 1) mod max} in
+      let xp = later -. Float.of_int x0_idx in
+      let value = linInterp x0 x1 xp in
+      wr ; value)
+    readParameters
+
+(* some tests follow below this point *)
 
 let threeLists = [[11; 12; 13]; [42; 43; 44]; [100; 99]]
 
@@ -394,11 +459,11 @@ let fishFreqs =
   |> map (fun x -> 44100. /. x)
   |> trunc
 
-let fish = fishFreqs |> map sineseg |> concat
+let fish = fishFreqs |> hold (st 32) |> map sineseg |> concat
 
-let fishR =
-  loop (ch [|1025; 1044|]) (ch [|1; 2; 3; 4; 5|]) fishFreqs
-  |> concat |> map sineseg |> concat
+let myLine = mkLine (seq [0.; 44100.]) (seq [44100.]) ()
+
+let fishR = mkDel 44100 myLine fish ()
 
 let _ =
   let proc = Process.ofSeq fish in

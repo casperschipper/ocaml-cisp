@@ -9,6 +9,8 @@ let thunk x = fun () -> x
 
 let thunk x () = x
 
+let emptySt () = Nil
+
 let force l = l ()
 
 let ( |> ) x f = f x
@@ -101,7 +103,7 @@ let rec foldr f z ll =
   match ll () with Nil -> z | Cons (h, tl) -> f h (foldr f z tl)
 
 let rec fold_right f s acc =
-  match s () with Nil -> acc | Cons (e, s) -> f e (fold_right f s acc)
+  match s () with Nil -> acc | Cons (e, s') -> f e (fold_right f s' acc)
 
 let rec concat str () =
   match str () with
@@ -139,21 +141,26 @@ let list_is_empty lst = match lst with [] -> true | _ -> false
 
 let list_has_more = list_is_empty >> not
 
+let foldHeads x acc =
+  match x () with Nil -> acc | Cons (h, _) -> Cons (h, fun () -> acc)
+
+let headsOfStreams sq () = fold_right foldHeads sq Nil
+
+let foldTails x acc =
+  match x () with Nil -> acc | Cons (_, ts) -> Cons (ts, fun () -> acc)
+
+let tailsOfStreams sq () = fold_right foldTails sq Nil
+
 let rec transpose lst () =
-  let heads =
-    map (fun str -> match str with Nil -> Nil | Cons (h, _) -> h) lst
-  in
-  let tails =
-    map (fun str -> match str with Nil -> Nil | Cons (_, tl) -> tl ()) lst
-    |> transpose
-  in
-  Cons (heads, tails)
-
-(* 
-
-List.map (fun ls -> match ls with [] -> [] | h :: _ -> h) [[1;2;3];[1;4;5];[454;4555;22]];; 
-
-*)
+  match lst () with
+  | Nil -> Nil
+  | Cons (xst, xss) -> (
+    match xst () with
+    | Cons (x, xs) ->
+        Cons
+          ( (fun () -> Cons (x, headsOfStreams xss))
+          , transpose <| thunk (Cons (xs, tailsOfStreams xss)) )
+    | Nil -> transpose xss () )
 
 let rec transpose_list lst =
   let foldHeads x acc = match x with [] -> acc | h :: _ -> h :: acc in
@@ -163,7 +170,7 @@ let rec transpose_list lst =
   | [] :: xss -> transpose_list xss
   | (x :: xs) :: xss ->
       (x :: List.fold_right foldHeads xss [])
-      :: transpose_list (xs :: List.fold_right foldTails xss [[]])
+      :: transpose_list (xs :: List.fold_right foldTails xss [])
 
 let rec st a () =
   (* static *)
@@ -435,6 +442,14 @@ let a = lift rvf (-1.0) 1.0
 let b = lift rvf 1.0 10.0
 
 let myLine = mkLine (a ()) (b ())
+
+let abcq =
+  let a = List.to_seq [1; 2; 3] in
+  let b = List.to_seq [20; 21; 22] in
+  let c = List.to_seq [100; 102] in
+  let d = List.to_seq [] in
+  let ef = countFrom 999 |> take 10 in
+  List.to_seq [a; b; c; d; ef]
 
 let myLoopyLines =
   myLine ()

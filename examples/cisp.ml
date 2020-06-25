@@ -7,6 +7,10 @@ this is the same as
 let thunk x = fun () -> x 
  *)
 
+let csr = 44100
+
+let csrf = 44100.
+
 let thunk x () = x
 
 let emptySt () = Nil
@@ -151,16 +155,16 @@ let foldTails x acc =
 
 let tailsOfStreams sq () = fold_right foldTails sq Nil
 
-let rec transpose lst () =
-  match lst () with
+let rec transpose sq () =
+  match sq () with
   | Nil -> Nil
-  | Cons (xst, xss) -> (
-    match xst () with
+  | Cons (sqs, sqss) -> (
+    match sqs () with
     | Cons (x, xs) ->
         Cons
-          ( (fun () -> Cons (x, headsOfStreams xss))
-          , transpose <| thunk (Cons (xs, tailsOfStreams xss)) )
-    | Nil -> transpose xss () )
+          ( (fun () -> Cons (x, headsOfStreams sqss))
+          , transpose <| thunk (Cons (xs, tailsOfStreams sqss)) )
+    | Nil -> transpose sqss () )
 
 let rec transpose_list lst =
   let foldHeads x acc = match x with [] -> acc | h :: _ -> h :: acc in
@@ -399,7 +403,7 @@ let mkLine target n () =
   map (fun ((a, b), n') -> lineSegment a b n' ()) control |> concat
 
 let mkDel max del src () =
-  let delay = Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout max in
+  let delay = Bigarray.Array1.create Bigarray.float64 Bigarray.c_layout max in
   let index = map (fun x -> x mod max) count in
   let parameters = zip index src in
   let wr = map (fun (idx, src) -> delay.{idx} <- src) parameters in
@@ -416,6 +420,21 @@ let mkDel max del src () =
       let value = linInterp x0 x1 xp in
       wr ; value)
     readParameters
+
+(* TODO make sine 
+let genSine size =
+  let gen i = Signedtable 
+let arr = Array.init size  in
+   
+   *)
+
+let waveOsc arr frq () =
+  let incr = frq /. csrf in
+  let arraySize = Array.length arr |> Float.of_int in
+  let tableIdx =
+    map (fun x -> mod_float (x *. arraySize) arraySize) (walk 0.0 (st incr))
+  in
+  map (fun idx -> arr.{Int.of_float idx}) tableIdx
 
 (* some tests follow below this point *)
 
@@ -453,16 +472,14 @@ let abcq =
 
 let myLoopyLines =
   myLine ()
-  |> loop
-       (ch [|2; 4; 17; 23; 1111|])
-       (ch [|2.0; 4.0; 16.0; 32.0; 64.0; 128.0|] |> trunc)
+  |> loop (ch [|2; 4; 17; 23; 1111|]) (ch [|2; 4; 16; 32; 64; 128|])
   |> concat
 
 (* todo *)
 let holder =
   countFrom 1 |> map collatz |> concat
   |> map (fun x -> 44.1 /. Float.of_int x)
-  |> map (clip 1. 44100.)
+  |> map (clip 1. (Float.of_int csr))
   |> trunc
 
 let collatzSynth = seq [-1.0; 0.5; 0.; 0.5; 1.0] |> hold holder
@@ -471,12 +488,12 @@ let fishFreqs =
   countFrom 1 |> map collatz |> concat
   |> map (fun x -> (x mod 64) + 64)
   |> floatify |> map mtof
-  |> map (fun x -> 44100. /. x)
+  |> map (fun x -> Float.of_int csr /. x)
   |> trunc
 
 let fish = fishFreqs |> hold (st 32) |> map sineseg |> concat
 
-let myLine = mkLine (seq [0.; 44100.]) (seq [44100.]) ()
+let myLine = mkLine (seq [0.; Float.of_int csr]) (seq [Float.of_int csr]) ()
 
 let fishR = mkDel 44100 myLine fish ()
 

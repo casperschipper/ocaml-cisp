@@ -29,15 +29,19 @@ let fst (x, _) = x
 
 let snd (_, x) = x
 
-let flt i = Float.of_int i
+let flip f a b = f b a
+
+let ofInt = Float.of_int
+
+let ofFloat = Int.of_float
 
 let rec append a b () =
   match a () with Nil -> b | Cons (h, ls) -> Cons (h, append ls b)
 
-let rec append_seq a b =
+let rec appendSeq a b =
   match a () with
   | Nil -> b
-  | Cons (this_a, rest) -> fun () -> Cons (this_a, append_seq rest b)
+  | Cons (this_a, rest) -> fun () -> Cons (this_a, appendSeq rest b)
 
 let rec cycle a () =
   let rec cycle_append current_a () =
@@ -139,11 +143,11 @@ let for_all f sq =
 
 let is_empty sq = match sq () with Nil -> true | _ -> false
 
-let has_more = is_empty >> not
+let has_more sq = is_empty sq |> not
 
 let list_is_empty lst = match lst with [] -> true | _ -> false
 
-let list_has_more = list_is_empty >> not
+let list_has_more lst = list_is_empty lst |> not
 
 let foldHeads x acc =
   match x () with Nil -> acc | Cons (h, _) -> Cons (h, fun () -> acc)
@@ -167,14 +171,14 @@ let rec transpose sq () =
     | Nil -> transpose sqss () )
 
 let rec transpose_list lst =
-  let foldHeads x acc = match x with [] -> acc | h :: _ -> h :: acc in
-  let foldTails x acc = match x with [] -> acc | _ :: ts -> ts :: acc in
+  let foldHeads acc x = match x with [] -> acc | h :: _ -> h :: acc in
+  let foldTails acc x = match x with [] -> acc | _ :: ts -> ts :: acc in
   match lst with
   | [] -> []
   | [] :: xss -> transpose_list xss
   | (x :: xs) :: xss ->
-      (x :: List.fold_right foldHeads xss [])
-      :: transpose_list (xs :: List.fold_right foldTails xss [])
+      (x :: List.fold_left foldHeads [] xss)
+      :: transpose_list (xs :: List.fold_left foldTails [] xss)
 
 let rec st a () =
   (* static *)
@@ -201,6 +205,24 @@ let rec zip3 a b c () =
       Cons ((ha, hb, hc), zip3 lsa lsb lsc)
   | _ -> Nil
 
+let rec zipWith f a b () =
+  match a () with
+  | Nil -> Nil
+  | Cons (a, atl) -> (
+    match b () with
+    | Nil -> Nil
+    | Cons (b, btl) -> Cons (f a b, zipWith f atl btl) )
+
+let ( +~ ) = zipWith (fun a b -> a +. b)
+
+let ( *~ ) = zipWith (fun a b -> a *. b)
+
+let ( /~ ) = zipWith (fun a b -> a /. b)
+
+let ( -~ ) = zipWith (fun a b -> a -. b)
+
+let mixList lst () = List.fold_left ( +~ ) lst
+
 (* zipped list will be lenght of shortest list *)
 
 let clip low high x = if x < low then low else if x > high then high else x
@@ -220,6 +242,15 @@ let rec walk start steps () =
   | Cons (h, ls) ->
       let next = start +. h in
       Cons (start, walk next ls)
+  | Nil -> Nil
+
+(* operator is a function 
+   to get the next value *)
+let rec boundedFuncWalk start steps operator wrapfunc () =
+  match steps () with
+  | Cons (h, ls) ->
+      let next = operator start h in
+      Cons (wrapfunc start, boundedFuncWalk next ls operator wrapfunc)
   | Nil -> Nil
 
 let boundedWalk start steps wrapfunc () =
@@ -242,11 +273,11 @@ let boundedWalkf start steps wrapfunc () =
   in
   aux start steps
 
-let safeIdx idx len = if idx < 0 then len - (abs idx mod len) else idx mod len
+let safeIdx len idx = if idx < 0 then len - (abs idx mod len) else idx mod len
 
 let indexArr arr idx =
   let len = Array.length arr in
-  arr.(safeIdx idx len)
+  arr.(safeIdx len idx)
 
 let rec index arr indexer () =
   match indexer () with
@@ -262,7 +293,7 @@ type 'a weightList = Weights of (int * 'a) list
 let mkWeights lst = match lst with [] -> None | w -> Some (Weights w)
 
 let weights weightLst () =
-  let sumWeights = List.fold_right (fun (_, w) acc -> w + acc) weightLst 0 in
+  let sumWeights = List.fold_left (fun acc (_, w) -> w + acc) 0 weightLst in
   let rec lookupWeight lst curr pick =
     match lst with
     | [] -> raise <| Invalid_argument "weight not found"
@@ -410,8 +441,8 @@ let mkDel max del src () =
   let readParameters = zip3 index del wr in
   map
     (fun (idx, del, wr) ->
-      let maxf = flt max in
-      let idxf = flt idx in
+      let maxf = ofInt max in
+      let idxf = ofInt idx in
       let later = mod_float (maxf +. idxf -. del) maxf in
       let x0_idx = Int.of_float later in
       let x0 = delay.{x0_idx} in
@@ -421,20 +452,22 @@ let mkDel max del src () =
       wr ; value)
     readParameters
 
-(* TODO make sine 
 let genSine size =
-  let gen i = Signedtable 
-let arr = Array.init size  in
-   
-   *)
+  let twopi = 2.0 *. Float.pi in
+  let gen i = ofInt i /. ofInt size *. twopi |> sin in
+  Array.init size gen
 
-let waveOsc arr frq () =
-  let incr = frq /. csrf in
+let waveOsc arr frq =
   let arraySize = Array.length arr |> Float.of_int in
-  let tableIdx =
-    map (fun x -> mod_float (x *. arraySize) arraySize) (walk 0.0 (st incr))
-  in
-  map (fun idx -> arr.{Int.of_float idx}) tableIdx
+  let incr = frq /. csrf *. arraySize in
+  let phasor = walk 0.0 (st incr) in
+  index arr (trunc <| phasor)
+
+let waveOscL arr frq =
+  let arraySize = Array.length arr |> Float.of_int in
+  let incr = frq /. csrf *. arraySize in
+  let phasor = walk 0.0 (st incr) in
+  indexLin arr phasor
 
 (* some tests follow below this point *)
 
@@ -491,13 +524,10 @@ let fishFreqs =
   |> map (fun x -> Float.of_int csr /. x)
   |> trunc
 
-let fish = fishFreqs |> hold (st 32) |> map sineseg |> concat
+let table = genSine 1024
 
-let myLine = mkLine (seq [0.; Float.of_int csr]) (seq [Float.of_int csr]) ()
-
-let fishR = mkDel 44100 myLine fish ()
+let fish = waveOscL table 100.
 
 let _ =
   let proc = Process.ofSeq fish in
-  let procR = Process.ofSeq fishR in
-  Jack.play 0 Process.sample_rate [proc; procR]
+  Jack.play 0 Process.sample_rate [proc]

@@ -71,13 +71,7 @@
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp)
-  (libraries bigarray ctypes jack sndfile))
-
-(executable
-  (name midi)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
-  (ocamlopt_flags -O3)
-  (modules midi)
   (libraries bigarray ctypes jack jackMidi sndfile))
+
 
   

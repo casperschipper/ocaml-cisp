@@ -528,6 +528,14 @@ let table = genSine 1024
 
 let fish = waveOscL table 100.
 
+(*
 let _ =
   let proc = Process.ofSeq fish in
-  Jack.play 0 Process.sample_rate [proc]
+  Jack.play 0 Process.sample_rate [proc]*)
+
+(* Midi Out *)
+
+let noteSometimes =
+  count |> map (fun x -> if x mod 22050 = 0 then (144, 60, 100) else (0, 0, 0))
+
+let _ = JackMidi.playMidi noteSometimes (ref 0.0)

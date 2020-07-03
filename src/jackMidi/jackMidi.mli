@@ -12,5 +12,5 @@ open Seq
 
 (* returns unit *)
 
-val playMidi : float Seq.t -> float ref -> unit
+val playMidi : (int * int * int) Seq.t -> float ref -> unit
 (** plays midi, right now just a testing function *)

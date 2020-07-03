@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -50,9 +51,13 @@ int process (jack_nframes_t nframes, void *arg)
 {
   //	jack_default_audio_sample_t *out1, *out2;
 	double sample;
+	
 	unsigned int i;
-	value closure;
+	// the closure is the "update" function in ocaml, it will fill output_ports[i] with fresh values.
+	// note that input are 
+	value closure; 
 	value* closurePt = (value*) arg;
+
 	closure = *closurePt;
 	caml_callback(closure, Val_int((int) nframes));
 
@@ -101,7 +106,7 @@ int process (jack_nframes_t nframes, void *arg)
 CAMLprim value open_stream (value output_array, value input_array, value closure, value n_channels, value set_sr_closure)
 {
   CAMLparam4(output_array, input_array, closure, set_sr_closure);
-
+  
 	const char **ports;
 	const char *client_name = "ocaml";
 	const char *server_name = NULL;
@@ -109,12 +114,23 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 	jack_status_t status;
 	jack_nframes_t sample_rate;
 
+	// output_array is the output of process -> JACK
+	// input_array is the input of JACK -> process
+	// closure is the update function
+	// n_channels is number of channels, it is a tuple!!!
+	// sample rate is read JACK -> Process, through calling a callback from here.
+
+	// output_buffer & input buffer is a float pointer
 	output_buffer = Caml_ba_data_val(output_array);
 	input_buffer = Caml_ba_data_val(input_array);
+
+	// register globals so they don't get eaten up by the garbage collector!
 	caml_register_global_root(&output_array);
 	caml_register_global_root(&input_array);
 	//	caml_register_generational_global_root(&output_array);
 	//	caml_register_generational_global_root(&input_array);
+
+	// n_channels is a tuple, so we fetch the ints in this way:
 	n_out_channels = Int_val(Field(n_channels, 0));
 	n_in_channels = Int_val(Field(n_channels, 1));
 
@@ -140,13 +156,16 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 	}
 
 	// set sample rate
+	// sample rate: jack_n_frames_t
 	sample_rate = jack_get_sample_rate(client);
+	// This will make sure that callback gets the sample_rate
 	caml_callback(set_sr_closure, Val_int((int) sample_rate));
 	
 	/* tell the JACK server to call `process()' whenever
 	   there is work to be done.
 	*/
-	
+
+	// pass the closure to the process 
 	jack_set_process_callback (client, process, &closure);
 
 	/* tell the JACK server to call `jack_shutdown()' if
@@ -156,10 +175,11 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 
 	//	jack_on_shutdown (client, jack_shutdown, 0);
 	
-
+        // output_ports allocation, apparently they are big because requires malloc.
 	output_ports = malloc(sizeof(jack_port_t *) * n_out_channels);
 	outputs = malloc(sizeof(jack_default_audio_sample_t *) * n_out_channels);
-	
+
+	// create output names
 	for (int i = 0; i < n_out_channels; i++) {
 
 	  char output_name[10];
@@ -171,6 +191,7 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 	}
 
 
+	// create input names
 	input_ports = malloc(sizeof(jack_port_t *) * n_in_channels);
 	inputs = malloc(sizeof(jack_default_audio_sample_t *) * n_in_channels);
 
@@ -207,8 +228,11 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 	 * orientation of the driver backend ports: playback ports are
 	 * "input" to the backend, and capture ports are "output" from
 	 * it.
+	 *
+	 * So new client is connected so we hear something.
 	 */
- 	
+
+	// The bitmask selects input and physical
 	ports = jack_get_ports (client, NULL, NULL,
 				JackPortIsPhysical|JackPortIsInput);
 	if (ports == NULL) {
@@ -254,3 +278,6 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 	
 	CAMLreturn(Val_unit);
 }
+
+
+

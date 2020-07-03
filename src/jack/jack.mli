@@ -8,6 +8,16 @@ val open_stream :
   -> (int -> unit)
   -> unit
 
+(* 
+ * output
+ * input
+ * process n samples
+ * number of channels (out, in)
+ * samples rate callback
+ *)
+
+(* returns unit *)
+
 val play : int -> float ref -> float Process.t list -> unit
 (** [play n_inputs Process.sample_rate processes] creates a jack audio client
     and plays back the processes. Each process in the process list will be used to 

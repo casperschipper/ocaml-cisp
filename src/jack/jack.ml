@@ -4,11 +4,9 @@ external open_stream :
      (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
   -> (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
   -> (int -> unit)
-  -> (* vector *)
-     int * int (* number of input and out *)
+  -> int * int
   -> (int -> unit)
-  -> (* samplerate *)
-     unit = "open_stream"
+  -> unit = "open_stream"
 
 (* unit "open_stream" *)
 

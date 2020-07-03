@@ -535,7 +535,11 @@ let _ =
 
 (* Midi Out *)
 
-let noteSometimes =
-  count |> map (fun x -> if x mod 22050 = 0 then (144, 60, 100) else (0, 0, 0))
+let noteOnOrOff =
+  count
+  |> map (fun x ->
+         let sampi = x mod 22050 in
+         match sampi with 0 -> 0x90 | 11025 -> 0x80 | _ -> 0)
 
-let _ = JackMidi.playMidi noteSometimes (ref 0.0)
+let _ =
+  JackMidi.playMidi (zip3 noteOnOrOff (seq [60; 64; 67]) (st 100)) (ref 0.0)

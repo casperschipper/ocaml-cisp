@@ -383,27 +383,27 @@ let trunc = map Int.of_float
 
 let floatify = map Float.of_int
 
-let rvfi low high () =
+let rvfi low high =
   let range = abs_float (low -. high) in
   let offset = min low high in
   Random.float range +. offset
 
-let rvi low high () =
+let rvi low high =
   let range = abs (low - high) in
   let offset = min low high in
   Random.int range + offset
 
-let rv low high () =
+let rv low high =
   let control = zip low high in
-  map (fun (l, h) -> rvi l h ()) control
+  map (fun (l, h) -> rvi l h) control
 
-let rvf low high () =
+let rvf low high =
   let control = zip low high in
-  map (fun (l, h) -> rvfi l h ()) control
+  map (fun (l, h) -> rvfi l h) control
 
 (* choice *)
 let ch arr =
-  let picker = rv (st 0) (st (Array.length arr)) () in
+  let picker = rv (st 0) (st (Array.length arr)) in
   index arr picker
 
 let mtof midi = 440.0 *. (2.0 ** ((midi -. 69.0) /. 12.0))
@@ -793,7 +793,7 @@ let _ =
 
 let scale =
   let amp = ch [|100; 80; 40|] in
-  let timing = rv (st 1) (st 100000) () in
+  let timing = lift rv 1 100000 in
   map
     (fun (i, amp, time) ->
       let step = i mod 12 in
@@ -802,7 +802,7 @@ let scale =
 
 let seconds s = 44100.0 *. s |> Int.of_float
 
-let timing = lift rv 1 10000 ()
+let timing = lift rv 1 10000
 
 let testMidi = withInterval scale timing
 

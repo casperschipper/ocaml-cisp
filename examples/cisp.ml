@@ -502,13 +502,13 @@ let cat = trans |> concat |> take 30 |> to_list
 
 let foo = [11.0; 12.0; 13.0; 14.0] |> of_list
 
-let testSah = lift rvf (-0.5) 0.5 () |> hold (trunc (lift rvf 1.0 1000.0 ()))
+let testSah = lift rvf (-0.5) 0.5 |> hold (trunc (lift rvf 1.0 1000.0))
 
 let a = lift rvf (-1.0) 1.0
 
 let b = lift rvf 1.0 10.0
 
-let myLine = mkLine (a ()) (b ())
+let myLine = mkLine a b
 
 let abcq =
   let a = List.to_seq [1; 2; 3] in
@@ -792,17 +792,17 @@ let _ =
 (* Midi Out *)
 
 let scale =
-  let amp = ch [|100; 80; 40|] in
-  let timing = lift rv 1 100000 in
+  let amp = ch [|100; 90; 100|] in
+  let timing = lift rv 100 400 in
   map
     (fun (i, amp, time) ->
       let step = i mod 12 in
-      mkNote 1 (step + 60) amp time)
+      mkNote 1 ((step * 7) + 36) amp time)
     (zip3 count amp timing)
 
 let seconds s = 44100.0 *. s |> Int.of_float
 
-let timing = lift rv 1 10000
+let timing = seconds 0.01 |> st
 
 let testMidi = withInterval scale timing
 

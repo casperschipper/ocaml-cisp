@@ -370,8 +370,8 @@ let oneLoop size n str () =
 
 let loop size n src =
   let control = zip size n in
-  let rec loops crtl src () =
-    match crtl () with
+  let rec loops ctrl src () =
+    match ctrl () with
     | Nil -> Nil
     | Cons ((size, num), nextCtrl) ->
         let currLoop, rest = oneLoop size num src () in
@@ -791,7 +791,20 @@ let _ =
 
 (* Midi Out *)
 
-let testMidi = withInterval (st <| mkNote 1 64 100 1000) (st 44100)
+let scale =
+  let amp = ch [|100; 80; 40|] in
+  let timing = rv (st 1) (st 100000) () in
+  map
+    (fun (i, amp, time) ->
+      let step = i mod 12 in
+      mkNote 1 (step + 60) amp time)
+    (zip3 count amp timing)
+
+let seconds s = 44100.0 *. s |> Int.of_float
+
+let timing = lift rv 1 10000 ()
+
+let testMidi = withInterval scale timing
 
 let fooo = testMidi
 

@@ -35,13 +35,28 @@ let ofInt = Float.of_int
 
 let ofFloat = Int.of_float
 
-let rec append a b () =
-  match a () with Nil -> b | Cons (h, ls) -> Cons (h, append ls b)
+let rec length sq = match sq () with Nil -> 0 | Cons (_, tl) -> 1 + length tl
 
+let fromBinary b =
+  let rec aux b base =
+    if b = 0 then 0 else (b mod 10 * base) + aux (b / 10) (base * 2)
+  in
+  aux b 1
+
+let rec append a b () =
+  match a () with Nil -> b () | Cons (h, ls) -> Cons (h, append ls b)
+
+(*
 let rec appendSeq a b =
   match a () with
   | Nil -> b
   | Cons (this_a, rest) -> fun () -> Cons (this_a, appendSeq rest b)
+
+let rec appendAlt a b () =
+  match a () with
+  | Nil -> b ()
+  | Cons (h, tl) -> fun () -> Cons(h, appendAlt tl b)
+*)
 
 let rec cycle a () =
   let rec cycle_append current_a () =
@@ -528,6 +543,247 @@ let table = genSine 1024
 
 let fish = waveOscL table 100.
 
+type midiValue = MidiVal of int
+
+type velocity = Velo of int
+
+type pitch = Pitch of int
+
+type midiChannel = MidiCh of int
+
+type controller = MidiCtrl of int
+
+type deltaT = Samps of int
+
+let mkMidiValue v =
+  if v < 0 || v > 127 then Error "out of range midi value" else Ok (MidiVal v)
+
+type midiEvent =
+  | NoteEvent of midiChannel * pitch * velocity * deltaT
+  | ControlEvent of midiChannel * controller * midiValue
+  | SilenceEvent
+
+let mkNote c p v d =
+  let ch = clip 0 15 c - 1 in
+  let pi = clip 0 127 p in
+  let ve = clip 0 127 v in
+  NoteEvent (MidiCh ch, Pitch pi, Velo ve, Samps d)
+
+type midiMessage =
+  | NoteOn of midiChannel * pitch * velocity
+  | NoteOff of midiChannel * pitch * velocity
+  | Control of midiChannel * controller * midiValue
+  | ClockTick
+  | ClockStart
+  | ClockStop
+  | MidiSilence
+
+let prepend prefix str = prefix ^ str
+
+let midiToString midiMsg =
+  match midiMsg with
+  | NoteOn (MidiCh ch, Pitch p, Velo v) ->
+      List.map Int.to_string [ch; p; v]
+      |> String.concat "-" |> prepend "NoteOn "
+  | NoteOff (MidiCh ch, Pitch p, Velo v) ->
+      List.map Int.to_string [ch; p; v]
+      |> String.concat "-" |> prepend "NoteOff "
+  | Control (MidiCh ch, MidiCtrl ctrl, MidiVal v) ->
+      List.map Int.to_string [ch; ctrl; v]
+      |> String.concat "-" |> prepend "Control"
+  | ClockTick -> "midi-rt-tick"
+  | ClockStart -> "midi-rt-start"
+  | ClockStop -> "midi-rt-stop"
+  | MidiSilence -> "silence"
+
+let toRaw midiMessage =
+  match midiMessage with
+  | NoteOn (MidiCh ch, Pitch p, Velo v) -> (0x90 lor ch, p, v)
+  | NoteOff (MidiCh ch, Pitch p, Velo v) -> (0x80 lor ch, p, v)
+  | Control (MidiCh ch, MidiCtrl ctrl, MidiVal v) -> (0xb0 lor ch, ctrl, v)
+  | ClockTick -> (0xf8, 0, 0)
+  | ClockStart -> (0xf6, 0, 0)
+  | ClockStop -> (0xfa, 0, 0)
+  | MidiSilence -> (0, 0, 0)
+
+let withInterval sq interval =
+  let ctrl = zip sq interval in
+  map (fun (src, n) () -> Cons (src, repeat n SilenceEvent)) ctrl |> concat
+
+type ordering = Greater | Smaller | Equal
+
+let rec insertBy cmp v sq () =
+  match sq () with
+  | Nil -> Cons (v, fun () -> Nil)
+  | Cons (h, tl) -> (
+    match cmp h v with
+    | Greater -> Cons (h, insertBy cmp v tl)
+    | _ -> Cons (v, sq) )
+
+let insertMidiEvent evt sq =
+  insertBy
+    (fun (t1, _) (t2, _) ->
+      if t1 > t2 then Greater else if t1 < t2 then Smaller else Equal)
+    evt sq
+
+let rec sequenceRelative start sq () =
+  match sq () with
+  | Cons ((d, event), tl) ->
+      Cons ((start, event), sequenceRelative (start + d) tl)
+  | Nil -> Nil
+
+type timedMidiEvent = int * midiMessage
+
+let print_midiMessage msg = midiToString msg |> print_string
+
+let print_timeMidiEvent (t, msg) =
+  let () =
+    print_string "t=" ;
+    print_int t ;
+    print_string "|" ;
+    print_midiMessage msg ;
+    print_newline ()
+  in
+  ()
+
+type midiSerializer =
+  { now: int
+  ; pendingNoteOffs: timedMidiEvent FQueue.t
+  ; deferred: midiMessage FQueue.t }
+
+let initSerializer : midiSerializer =
+  {now= 0; deferred= FQueue.empty; pendingNoteOffs= FQueue.empty}
+
+let peek = FQueue.peek
+
+let dequeue = FQueue.dequeue
+
+let enqueue = FQueue.enqueue
+
+let enqueueOnlyNotes v q =
+  match v with MidiSilence -> q | any -> FQueue.enqueue any q
+
+let print_state m label =
+  let now = m.now in
+  let deferred = FQueue.to_list m.deferred in
+  let pendingNoteOffs = FQueue.to_list m.pendingNoteOffs in
+  print_string label ;
+  print_newline () ;
+  print_string "now: " ;
+  print_int now ;
+  print_string
+    (" pending offs: " ^ Int.to_string (List.length pendingNoteOffs) ^ "-") ;
+  List.iter print_timeMidiEvent pendingNoteOffs ;
+  print_string (" deferred: " ^ Int.to_string (List.length deferred) ^ "-") ;
+  List.iter print_midiMessage deferred ;
+  print_newline ()
+
+let getPending newEvt m =
+  (* let () = print_state m "pending" in *)
+  let pending = peek m.pendingNoteOffs in
+  match pending with
+  | Some (t, evt) ->
+      (* let () =
+        "getPending(t, evt)=" ^ Int.to_string t ^ "," ^ midiToString evt ^ "\n"
+        |> print_string 
+        in *)
+      if t <= m.now then
+        (* let () = print_string "scheduling this note\n" in *)
+        ( evt
+        , { m with
+            pendingNoteOffs= dequeue m.pendingNoteOffs
+          ; deferred= enqueueOnlyNotes newEvt m.deferred } )
+      else (newEvt, m)
+  | None -> (newEvt, m)
+
+let getDeferred newEvt m =
+  (* let () = print_state m "deferred" in *)
+  let d = peek m.deferred in
+  match d with
+  | Some devt ->
+      (devt, {m with deferred= enqueueOnlyNotes newEvt (dequeue m.deferred)})
+  | None -> (newEvt, m)
+
+let handleMidiEvent midiEvt m =
+  (* let () = print_state m "handle midi" in *)
+  match midiEvt with
+  | NoteEvent (ch, p, v, Samps dura) ->
+      (* let () =
+        print_string
+        <| "m.now + dura: " ^ Int.to_string m.now ^ " + " ^ Int.to_string dura
+           ^ " "
+           ^ Int.to_string (m.now + dura)
+           ^ "\n"
+      in*)
+      let noteOff = (m.now + dura, NoteOff (ch, p, v)) in
+      ( NoteOn (ch, p, v)
+      , {m with pendingNoteOffs= enqueue noteOff m.pendingNoteOffs} )
+  | ControlEvent (ch, ctrl, v) -> (Control (ch, ctrl, v), m)
+  | SilenceEvent -> (MidiSilence, m)
+
+let nowPlusOne evt m = ({m with now= m.now + 1}, evt)
+
+let updateMidi midiEvt m =
+  (* waterfall event through a bunch of serializerstate changing functions *)
+  let ( ||> ) (evt, m) f = f evt m in
+  (* now,
+    - first check for pending note offs
+    - then deferred
+    - if all is well a note is played 
+    - time is increased by one
+  *)
+  let state, evt =
+    (midiEvt, m) ||> handleMidiEvent ||> getPending ||> getDeferred
+    ||> nowPlusOne
+  in
+  (evt, state)
+
+let serialize midi =
+  let startM = initSerializer in
+  let rec aux msg_sq model () =
+    match msg_sq () with
+    | Nil -> Nil
+    | Cons (evt, tl) ->
+        let e, state = updateMidi evt model in
+        (* let () = print_string ("current event: " ^ midiToString e ^ "\n") in *)
+        Cons (e, aux tl state)
+  in
+  aux midi startM
+
+(*
+let serialize midi =
+  let rec aux sq now pendingNoteOffs () =
+    let nextT = now + 1 in
+    let scheduleNotes sq' pending' =
+      match sq' () with
+      | Cons ((t, event), tl) -> (
+          let nextEvent = if now >= t then event else MidiSilence in
+          match nextEvent with
+          | Note (ch, p, v, duration) ->
+              let futureNoteOff = (now + duration, NoteOff (ch, p, v)) in
+              Cons (nextEvent, aux tl nextT (futureNoteOff :: pending'))
+          | _ -> Cons (nextEvent, aux tl nextT pending') )
+      | Nil -> Nil
+    in
+    match pendingNoteOffs with
+    | [] -> scheduleNotes sq []
+    | (pendingt, noteOffEvent) :: pendingTail ->
+        if now >= pendingt then Cons (noteOffEvent, aux sq nextT pendingTail)
+        else Cons (MidiSilence, aux sq nextT pendingNoteOffs)
+  in
+  aux midi 0 []*)
+
+let midiPitch pitch =
+  if pitch < 0 then Error ("pitch too low: " ^ Int.to_string pitch ^ "\n")
+  else if pitch > 127 then
+    Error ("pitch too high: " ^ Int.to_string pitch ^ "\n")
+  else Ok pitch
+
+let midiChannel ch =
+  if ch < 0 then Error ("channel cannot be negative " ^ "\n")
+  else if ch > 15 then Error "channel cannot be higher than 16"
+  else Ok (ch - 1)
+
 (*
 let _ =
   let proc = Process.ofSeq fish in
@@ -535,11 +791,26 @@ let _ =
 
 (* Midi Out *)
 
-let noteOnOrOff =
-  count
-  |> map (fun x ->
-         let sampi = x mod 22050 in
-         match sampi with 0 -> 0x90 | 11025 -> 0x80 | _ -> 0)
+let testMidi = withInterval (st <| mkNote 1 64 100 1000) (st 44100)
+
+let fooo = testMidi
+
+let midi = serialize fooo
+
+let raw = map toRaw midi
+
+(*
+let _ =
+  let printTriple (x, y, z) =
+    List.map Int.to_string [x; y; z]
+    |> String.concat "-"
+    |> fun s -> s ^ "\n" |> print_string
+  in
+  List.map printTriple (firstn |> List.of_seq)
 
 let _ =
-  JackMidi.playMidi (zip3 noteOnOrOff (seq [60; 64; 67]) (st 100)) (ref 0.0)
+  List.map
+    (fun m -> midiToString m |> fun str -> str ^ "\n" |> print_string)
+    (midi |> take 100 |> List.of_seq) *)
+
+let _ = JackMidi.playMidi raw (ref 44100.0)

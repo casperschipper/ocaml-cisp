@@ -93,7 +93,7 @@ static int process(jack_nframes_t nframes, void *arg)
       //if (true) {
       if (isMessage(currentMidiMsg)) {
 	// TODO: handle midi realtime messages (248, 252, 250), which are only one byte long
-	fprintf(stderr,"pitch: %i\n", currentMidiMsg[1]);
+	/*fprintf(stderr,"pitch: %i\n", currentMidiMsg[1]);*/
 	if((buffer = jack_midi_event_reserve(port_buf, i, 3))) {
 	  buffer[0] = currentMidiMsg[0];
 	  buffer[1] = currentMidiMsg[1];
@@ -205,19 +205,19 @@ CAMLprim value open_midi_stream (value midi_msg_array, value closure, value set_
 		return 1;
 	}
 
-	//ports = jack_get_ports(client, NULL,NULL, JackPortIsPhysical|JackPortIsInput);
+	ports = jack_get_ports(client, NULL,"midi", JackPortIsPhysical|JackPortIsInput);
 
 	if (ports == NULL) {
 	  fprintf(stderr, "no physical ports\n");
 	  exit(1);
 	}
 
-	/*
+	
 	connect_result = jack_connect(client, jack_port_name(output_port), ports[0]);
 	if (connect_result) {
 	  fprintf (stderr, "cannot connect output ports error: %i\n",connect_result);
 	}
-	*/
+	
 
 	/* run until interrupted */
 	while (1) {

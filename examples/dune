@@ -71,7 +71,7 @@
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp)
-  (libraries bigarray ctypes jack jackMidi sndfile))
+  (libraries bigarray ctypes jack jackMidi sndfile fQueue))
 
 
   

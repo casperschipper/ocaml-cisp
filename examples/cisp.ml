@@ -705,16 +705,8 @@ let getDeferred newEvt m =
   | None -> (newEvt, m)
 
 let handleMidiEvent midiEvt m =
-  (* let () = print_state m "handle midi" in *)
   match midiEvt with
   | NoteEvent (ch, p, v, Samps dura) ->
-      (* let () =
-        print_string
-        <| "m.now + dura: " ^ Int.to_string m.now ^ " + " ^ Int.to_string dura
-           ^ " "
-           ^ Int.to_string (m.now + dura)
-           ^ "\n"
-      in*)
       let noteOff = (m.now + dura, NoteOff (ch, p, v)) in
       ( NoteOn (ch, p, v)
       , {m with pendingNoteOffs= enqueue noteOff m.pendingNoteOffs} )
@@ -726,9 +718,9 @@ let nowPlusOne evt m = ({m with now= m.now + 1}, evt)
 let updateMidi midiEvt m =
   (* waterfall event through a bunch of serializerstate changing functions *)
   let ( ||> ) (evt, m) f = f evt m in
-  (* now,
-    - first check for pending note offs
-    - then deferred
+  (* 
+    - check for pending note offs
+    - then deferred notes 
     - if all is well a note is played 
     - time is increased by one
   *)
@@ -750,29 +742,6 @@ let serialize midi =
   in
   aux midi startM
 
-(*
-let serialize midi =
-  let rec aux sq now pendingNoteOffs () =
-    let nextT = now + 1 in
-    let scheduleNotes sq' pending' =
-      match sq' () with
-      | Cons ((t, event), tl) -> (
-          let nextEvent = if now >= t then event else MidiSilence in
-          match nextEvent with
-          | Note (ch, p, v, duration) ->
-              let futureNoteOff = (now + duration, NoteOff (ch, p, v)) in
-              Cons (nextEvent, aux tl nextT (futureNoteOff :: pending'))
-          | _ -> Cons (nextEvent, aux tl nextT pending') )
-      | Nil -> Nil
-    in
-    match pendingNoteOffs with
-    | [] -> scheduleNotes sq []
-    | (pendingt, noteOffEvent) :: pendingTail ->
-        if now >= pendingt then Cons (noteOffEvent, aux sq nextT pendingTail)
-        else Cons (MidiSilence, aux sq nextT pendingNoteOffs)
-  in
-  aux midi 0 []*)
-
 let midiPitch pitch =
   if pitch < 0 then Error ("pitch too low: " ^ Int.to_string pitch ^ "\n")
   else if pitch > 127 then
@@ -780,8 +749,8 @@ let midiPitch pitch =
   else Ok pitch
 
 let midiChannel ch =
-  if ch < 0 then Error ("channel cannot be negative " ^ "\n")
-  else if ch > 15 then Error "channel cannot be higher than 16"
+  if ch < 1 then Error ("channel cannot be negative " ^ "\n")
+  else if ch > 16 then Error "channel cannot be higher than 16"
   else Ok (ch - 1)
 
 (*

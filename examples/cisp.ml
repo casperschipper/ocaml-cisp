@@ -11,6 +11,8 @@ let csr = 44100
 
 let csrf = 44100.
 
+let input_array = ref (Array.init 1024 (fun _ -> (0, 0, 0)))
+
 let thunk x () = x
 
 let emptySt () = Nil
@@ -500,8 +502,6 @@ let trans = transpose addCount
 
 let cat = trans |> concat |> take 30 |> to_list
 
-let foo = [11.0; 12.0; 13.0; 14.0] |> of_list
-
 let testSah = lift rvf (-0.5) 0.5 |> hold (trunc (lift rvf 1.0 1000.0))
 
 let a = lift rvf (-1.0) 1.0
@@ -563,6 +563,12 @@ type midiEvent =
   | ControlEvent of midiChannel * controller * midiValue
   | SilenceEvent
 
+let mkPitch p =
+  if p < 0 || p > 127 then Error "pitch out of range" else Ok (Pitch p)
+
+let mkVelocity v =
+  if v < 0 || v > 127 then Error "velocity out of range" else Ok (Velo v)
+
 let mkNote c p v d =
   let ch = clip 0 15 c - 1 in
   let pi = clip 0 127 p in
@@ -580,8 +586,7 @@ type midiMessage =
 
 let prepend prefix str = prefix ^ str
 
-let midiToString midiMsg =
-  match midiMsg with
+let midiToString = function
   | NoteOn (MidiCh ch, Pitch p, Velo v) ->
       List.map Int.to_string [ch; p; v]
       |> String.concat "-" |> prepend "NoteOn "
@@ -605,6 +610,25 @@ let toRaw midiMessage =
   | ClockStart -> (0xf6, 0, 0)
   | ClockStop -> (0xfa, 0, 0)
   | MidiSilence -> (0, 0, 0)
+
+let chFromByte byte = MidiCh (byte land 0x0f)
+
+let fromRaw (status, data1, data2) =
+  let statusByte = status land 0xf0 in
+  match statusByte with
+  | 0x90 -> NoteOn (chFromByte status, Pitch data1, Velo data2)
+  | 0x80 -> NoteOff (chFromByte status, Pitch data1, Velo data2)
+  | 0xb0 -> Control (chFromByte status, MidiCtrl data1, MidiVal data2)
+  | 0xf8 -> ClockTick
+  | 0xf6 -> ClockStart
+  | 0xfa -> ClockStop
+  | _ -> MidiSilence
+
+let printRaw (status, data1, data2) =
+  if status != 0 then
+    let () = print_int status ; print_int data1 ; print_int data2 in
+    ()
+  else ()
 
 let withInterval sq interval =
   let ctrl = zip sq interval in
@@ -683,12 +707,7 @@ let getPending newEvt m =
   let pending = peek m.pendingNoteOffs in
   match pending with
   | Some (t, evt) ->
-      (* let () =
-        "getPending(t, evt)=" ^ Int.to_string t ^ "," ^ midiToString evt ^ "\n"
-        |> print_string 
-        in *)
       if t <= m.now then
-        (* let () = print_string "scheduling this note\n" in *)
         ( evt
         , { m with
             pendingNoteOffs= dequeue m.pendingNoteOffs
@@ -769,6 +788,36 @@ let scale =
       mkNote 1 ((step * 7) + 36) amp time)
     (zip3 count amp timing)
 
+let controller midiRef midiCh midiCtrl =
+  let rec aux previous () =
+    let msg = !midiRef |> fromRaw in
+    match msg with
+    | Control (MidiCh ch, MidiCtrl ctrl, MidiVal v)
+      when ch = midiCh && ctrl = midiCtrl ->
+        Cons (v, aux v)
+    | _ -> Cons (previous, aux previous)
+  in
+  aux 0
+
+let pitchVelo midiRef midiCh =
+  let rec aux previous () =
+    let msg = !midiRef |> fromRaw in
+    match msg with
+    | NoteOn (MidiCh ch, Pitch p, Velo v) when ch = midiCh ->
+        Cons ((p, v), aux previous)
+    | _ -> Cons (previous, aux previous)
+  in
+  aux (0, 0)
+
+let rec difference sq start () =
+  match sq () with
+  | Nil -> Nil
+  | Cons (h, tl) -> Cons (h - start, difference tl h)
+
+let onlyPitch sq = map fst sq
+
+let onlyVelo sq = map snd sq
+
 let seconds s = 44100.0 *. s |> Int.of_float
 
 let timing = seconds 0.01 |> st
@@ -780,6 +829,8 @@ let fooo = testMidi
 let midi = serialize fooo
 
 let raw = map toRaw midi
+
+let muteMidi sq = map (fun _ -> MidiSilence) sq
 
 (*
 let _ =
@@ -795,4 +846,47 @@ let _ =
     (fun m -> midiToString m |> fun str -> str ^ "\n" |> print_string)
     (midi |> take 100 |> List.of_seq) *)
 
-let _ = JackMidi.playMidi raw (ref 44100.0)
+let emptyMidi = ref (0, 0, 0)
+
+let rec inIsOut midiRef () =
+  let current = !midiRef |> fromRaw in
+  (*  let () = printRaw !midiRef in*)
+  match current with
+  | NoteOn (MidiCh ch, Pitch p, Velo v) ->
+      let () = print_string "a pitch" in
+      Cons (mkNote ch (p + 7) v 100, inIsOut midiRef)
+  | _ -> Cons (SilenceEvent, inIsOut midiRef)
+
+let foo = inIsOut emptyMidi
+
+let printAndPass sq =
+  let f arg =
+    let () =
+      match arg with
+      | MidiSilence -> ()
+      | aNote -> aNote |> midiToString |> print_string
+    in
+    arg
+  in
+  map f sq
+
+let printArray () =
+  for i = 0 to 1023 do
+    let st, d1, _ = !input_array.(i) in
+    if st = 0x08 then
+      let () = print_string "pitch=" ; print_int d1 ; print_string "\n" in
+      ()
+    else ()
+  done ;
+  ()
+
+let mapSideEffect effect sq =
+  map
+    (fun value ->
+      let () = effect () in
+      value)
+    sq
+
+let rawSideEffect = mapSideEffect printArray raw
+
+let _ = JackMidi.playMidi rawSideEffect input_array (ref 44100.0)

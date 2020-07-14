@@ -175,7 +175,7 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 
 	//	jack_on_shutdown (client, jack_shutdown, 0);
 	
-        // output_ports allocation, apparently they are big because requires malloc.
+        // output_ports allocation
 	output_ports = malloc(sizeof(jack_port_t *) * n_out_channels);
 	outputs = malloc(sizeof(jack_default_audio_sample_t *) * n_out_channels);
 

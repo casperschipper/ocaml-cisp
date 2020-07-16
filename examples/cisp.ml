@@ -11,7 +11,8 @@ let csr = 44100
 
 let csrf = 44100.
 
-let input_array = ref (Array.init 1024 (fun _ -> (0, 0, 0)))
+(* let midi_input = ref (Array.init 1024 (fun _ -> (0, 0, 0)))*)
+let midi_input = ref (0, 0, 0)
 
 let thunk x () = x
 
@@ -822,6 +823,7 @@ let seconds s = 44100.0 *. s |> Int.of_float
 
 let timing = seconds 0.01 |> st
 
+(*           
 let testMidi = withInterval scale timing
 
 let fooo = testMidi
@@ -831,7 +833,7 @@ let midi = serialize fooo
 let raw = map toRaw midi
 
 let muteMidi sq = map (fun _ -> MidiSilence) sq
-
+ *)
 (*
 let _ =
   let printTriple (x, y, z) =
@@ -853,11 +855,8 @@ let rec inIsOut midiRef () =
   (*  let () = printRaw !midiRef in*)
   match current with
   | NoteOn (MidiCh ch, Pitch p, Velo v) ->
-      let () = print_string "a pitch" in
       Cons (mkNote ch (p + 7) v 100, inIsOut midiRef)
   | _ -> Cons (SilenceEvent, inIsOut midiRef)
-
-let foo = inIsOut emptyMidi
 
 let printAndPass sq =
   let f arg =
@@ -870,15 +869,8 @@ let printAndPass sq =
   in
   map f sq
 
-let printArray () =
-  for i = 0 to 1023 do
-    let st, d1, _ = !input_array.(i) in
-    if st = 0x08 then
-      let () = print_string "pitch=" ; print_int d1 ; print_string "\n" in
-      ()
-    else ()
-  done ;
-  ()
+let printVal () =
+  match !midi_input with 0x90, _, _ -> print_string "note on!\n" | _ -> ()
 
 let mapSideEffect effect sq =
   map
@@ -887,6 +879,6 @@ let mapSideEffect effect sq =
       value)
     sq
 
-let rawSideEffect = mapSideEffect printArray raw
+let transpose = inIsOut midi_input |> serialize |> map toRaw
 
-let _ = JackMidi.playMidi rawSideEffect input_array (ref 44100.0)
+let _ = JackMidi.playMidi transpose midi_input (ref 44100.0)

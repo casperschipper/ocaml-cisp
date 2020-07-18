@@ -16,64 +16,30 @@ let printState arrRef nfram =
     | st, _, _ -> if st = 0x90 then print_string "note\n" else ()
   done*)
 let printRaw (st, d1, d2) frame =
-  if st != 0 || d1 != 0 || d2 != 0 then
+  if st != 0 || d1 != 0 || d2 != 0 then (
     let string =
       String.concat " " (List.map Int.to_string [st; d1; d2; frame]) ^ "\n"
     in
-    print_string string
+    print_string string ; print_newline () )
   else ()
 
-let playMidi midiProc midiInputRef sample_rate =
+let playMidi midiProc sample_rate =
   let open Seq in
   let ar_out =
-    Bigarray.Array1.create Bigarray.Int8_unsigned Bigarray.c_layout (3 * 1024)
+    Bigarray.Array1.create Bigarray.Int8_unsigned Bigarray.c_layout 4096
   in
   let ar_in =
-    Bigarray.Array1.create Bigarray.Int8_unsigned Bigarray.c_layout (3 * 1024)
+    Bigarray.Array1.create Bigarray.Int8_unsigned Bigarray.c_layout 4096
   in
   let state = ref midiProc in
   open_midi_stream ar_out ar_in
     (fun nframes ->
-      let () =
-        print_string "ok at least this\n" ;
-        for i = 0 to nframes - 1 do
-          let mess = ar_in.{i * 3} in
-          if mess > 0 then
-            print_string (Int.to_string i ^ "i" ^ Int.to_string mess ^ "\n")
-          else ()
-        done
-      in
       for i = 0 to nframes - 1 do
         let midi_frame = i * 3 in
-        let previous_frame = Random.int (nframes - 1) in
         let midiMessage =
-          ( ar_in.{previous_frame}
-          , ar_in.{previous_frame + 1}
-          , ar_in.{previous_frame + 2} )
+          (ar_in.{midi_frame}, ar_in.{midi_frame + 1}, ar_in.{midi_frame + 2})
         in
-        (*
-        let () =
-          for j = 0 to nframes - 1 do
-            let mi = ar_in.{j * 3} in
-            if mi != 0 then
-              "j,frame:" ^ Int.to_string j ^ " " ^ Int.to_string midi_frame
-              ^ " " ^ "\n"
-              |> print_string
-            else ()
-          done
-        in*)
-        let () =
-          midiInputRef := midiMessage
-          (* ; no printing
-          printRaw midiMessage midi_frame *)
-        in
-        (* let () = 
-         proof! never gets the value :-( 
-         match !midiInputRef with 
-         | st, _, _ when st > 0 -> print_string "note !!! \n" 
-         | _ -> () 
-         in *)
-        match !state () with
+        match !state midiMessage with
         | Cons (midiMsg, tl) -> (
           match midiMsg with
           | stat, dat1, dat2 ->

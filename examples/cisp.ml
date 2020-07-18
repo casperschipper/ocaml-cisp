@@ -564,6 +564,11 @@ type midiEvent =
   | ControlEvent of midiChannel * controller * midiValue
   | SilenceEvent
 
+
+let transpose offset (Pitch p) =
+  Pitch (p + offset)
+  
+           
 let mkPitch p =
   if p < 0 || p > 127 then Error "pitch out of range" else Ok (Pitch p)
 
@@ -879,6 +884,8 @@ let mapSideEffect effect sq =
       value)
     sq
 
-let transpose = inIsOut midi_input |> serialize |> map toRaw
 
-let _ = JackMidi.playMidi transpose midi_input (ref 44100.0)
+
+let transpose =
+
+let _ = JackMidi.playMidi (fun midi -> midi) (ref 44100.0)

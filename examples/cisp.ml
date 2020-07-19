@@ -556,30 +556,46 @@ type controller = MidiCtrl of int
 
 type deltaT = Samps of int
 
-let mkMidiValue v =
-  if v < 0 || v > 127 then Error "out of range midi value" else Ok (MidiVal v)
-
 type midiEvent =
   | NoteEvent of midiChannel * pitch * velocity * deltaT
   | ControlEvent of midiChannel * controller * midiValue
   | SilenceEvent
 
+let mkMidiValue v =
+  if v < 0 || v > 127 then Error "out of range midi value" else Ok (MidiVal v)
 
-let transpose offset (Pitch p) =
-  Pitch (p + offset)
-  
-           
+let mkChannel ch =
+  if ch < 1 || ch > 16 then Error "channel should be between 1 and 16"
+  else Ok (MidiCh (ch - 1))
+
 let mkPitch p =
   if p < 0 || p > 127 then Error "pitch out of range" else Ok (Pitch p)
 
 let mkVelocity v =
   if v < 0 || v > 127 then Error "velocity out of range" else Ok (Velo v)
 
+let mkSamps s =
+  if s < 0 then Error "deltaT cannot be negative" else Ok (Samps s)
+
+let mapResult4 f a b c d =
+  match (a, b, c, d) with
+  | Ok a', Ok b', Ok c', Ok d' -> Ok (f a' b' c' d')
+  | Error a', _, _, _ -> Error a'
+  | _, Error b', _, _ -> Error b'
+  | _, _, Error c', _ -> Error c'
+  | _, _, _, Error d' -> Error d'
+
 let mkNote c p v d =
-  let ch = clip 0 15 c - 1 in
-  let pi = clip 0 127 p in
-  let ve = clip 0 127 v in
-  NoteEvent (MidiCh ch, Pitch pi, Velo ve, Samps d)
+  mapResult4
+    (fun ch pi ve dt -> NoteEvent (ch, pi, ve, dt))
+    (mkChannel c) (mkPitch p) (mkVelocity v) (mkSamps d)
+
+let mapOverPitch f evt =
+  (* output of f is clipped to garentee valid pitch *)
+  match evt with
+  | NoteEvent (c, Pitch p, v, d) ->
+      NoteEvent (c, Pitch (f p |> clip 0 127), v, d)
+  | other -> other
 
 type midiMessage =
   | NoteOn of midiChannel * pitch * velocity
@@ -589,6 +605,12 @@ type midiMessage =
   | ClockStart
   | ClockStop
   | MidiSilence
+
+let mapOverMidiPitch f msg =
+  match msg with
+  | NoteOn (ch, Pitch p, v) -> NoteOn (ch, Pitch (f p |> clip 0 127), v)
+  | NoteOff (ch, Pitch p, v) -> NoteOff (ch, Pitch (f p |> clip 0 127), v)
+  | other -> other
 
 let prepend prefix str = prefix ^ str
 
@@ -630,12 +652,20 @@ let fromRaw (status, data1, data2) =
   | 0xfa -> ClockStop
   | _ -> MidiSilence
 
+let fromMidiMsgWithDur defaultDuration msg =
+  match msg with
+  | NoteOn (ch, p, v) -> NoteEvent (ch, p, v, defaultDuration)
+  | _ -> SilenceEvent
+
 let printRaw (status, data1, data2) =
   if status != 0 then
     let () = print_int status ; print_int data1 ; print_int data2 in
     ()
   else ()
 
+(* intersperce a Seq of midi-events with silence 
+ * M...M...M...M...  
+ * *)
 let withInterval sq interval =
   let ctrl = zip sq interval in
   map (fun (src, n) () -> Cons (src, repeat n SilenceEvent)) ctrl |> concat
@@ -741,12 +771,12 @@ let handleMidiEvent midiEvt m =
 let nowPlusOne evt m = ({m with now= m.now + 1}, evt)
 
 let updateMidi midiEvt m =
-  (* waterfall event through a bunch of serializerstate changing functions *)
+  (* waterfall event through a bunch of state changing functions *)
   let ( ||> ) (evt, m) f = f evt m in
   (* 
-    - check for pending note offs
-    - then deferred notes 
-    - if all is well a note is played 
+    - check for pending note offs, if so, pass it on, store new event in deferred queue
+    - then deferred notes , if present, pass on and store current event in queue
+    - if there are no pending note-offs or deferred, note is played immediately
     - time is increased by one
   *)
   let state, evt =
@@ -855,24 +885,24 @@ let _ =
 
 let emptyMidi = ref (0, 0, 0)
 
-let rec inIsOut midiRef () =
-  let current = !midiRef |> fromRaw in
-  (*  let () = printRaw !midiRef in*)
-  match current with
-  | NoteOn (MidiCh ch, Pitch p, Velo v) ->
-      Cons (mkNote ch (p + 7) v 100, inIsOut midiRef)
-  | _ -> Cons (SilenceEvent, inIsOut midiRef)
+(* let rec inIsOut midiRef () =
+ *   let current = !midiRef |> fromRaw in
+ *   (\*  let () = printRaw !midiRef in*\)
+ *   match current with
+ *   | NoteOn (MidiCh ch, Pitch p, Velo v) ->
+ *       Cons (mkNote ch (p + 7) v 100, inIsOut midiRef)
+ *   | _ -> Cons (Ok SilenceEvent, inIsOut midiRef) *)
 
-let printAndPass sq =
-  let f arg =
-    let () =
-      match arg with
-      | MidiSilence -> ()
-      | aNote -> aNote |> midiToString |> print_string
-    in
-    arg
-  in
-  map f sq
+(* let printAndPass sq =
+ *   let f arg =
+ *     let () =
+ *       match arg with
+ *       | MidiSilence -> ()
+ *       | aNote -> aNote |> midiToString |> print_string
+ *     in
+ *     arg
+ *   in
+ *   map f sq *)
 
 let printVal () =
   match !midi_input with 0x90, _, _ -> print_string "note on!\n" | _ -> ()
@@ -884,8 +914,22 @@ let mapSideEffect effect sq =
       value)
     sq
 
+let mktransWithCount =
+  let state = ref 0 in
+  fun p ->
+    let curr = !state in
+    let () = state := (!state + 1) mod 12 in
+    curr + p
 
-
-let transpose =
-
-let _ = JackMidi.playMidi (fun midi -> midi) (ref 44100.0)
+let () =
+  let inSeq = ref (fun () -> Nil) in
+  let testTranspose =
+    map
+      (fun m ->
+        fromRaw m
+        |> fromMidiMsgWithDur (Samps 100)
+        |> mapOverPitch mktransWithCount)
+      (!inSeq |> drop 10)
+    |> serialize |> map toRaw
+  in
+  JackMidi.playMidi testTranspose inSeq (ref 44100.0)

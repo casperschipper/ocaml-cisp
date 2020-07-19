@@ -260,16 +260,18 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
 	}
 
 	
-	/*
-	in_ports = jack_get_ports(client, NULL, "capture_2", JackPortIsOutput);
+	
+	in_ports = jack_get_ports(client, "system_midi:capture_2", "midi" , JackNullOption);
 	if (in_ports[0] == NULL) {
 	  fprintf(stderr, "no output found to use as input");
 	  fprintf(stderr, "name %s\n", in_ports[0]);
 	}
-	connect_result = jack_connect(client, jack_port_name(input_port), in_ports[0]);
+	connect_result = jack_connect(client, in_ports[0], jack_port_name(input_port));
 	if (connect_result) {
 	  fprintf(stderr, "sorry, cannot connect an output to your ocaml input: %i \n",connect_result);
-        }*/
+        } else {
+	  fprintf(stderr, "connected to system_midi:capture_2");
+	}
 
 	/* run until interrupted */
 	while (1) {

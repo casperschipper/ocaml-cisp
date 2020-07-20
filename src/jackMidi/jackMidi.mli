@@ -12,8 +12,7 @@ open Seq
 
 (* returns unit *)
 
-val playMidi :
-  (int * int * int) Seq.t -> (int * int * int) Seq.t ref -> float ref -> unit
+val playMidi : (int * int * int -> int * int * int) -> float ref -> unit
 
 (* Midi output based on input. You provide a seq of functions to generate output based * on input. Second arg can be used to receive samplerate.
  *)

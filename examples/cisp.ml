@@ -81,23 +81,23 @@ let rec nth ll n =
   else if n = 0 then head ll
   else Option.bind (tail ll) (fun staart -> nth staart (n - 1))
 
-(* this is not the same as of_list, but should be! 
+(* this is not the same as ofList, but should be! 
 let from_list list () =
   List.fold_right (fun x acc -> Cons (x, acc |> thunk)) list Nil
   *)
 
-let of_list l =
+let ofList l =
   let rec aux l () = match l with [] -> Nil | x :: l' -> Cons (x, aux l') in
   aux l
 
-let rec to_list ls =
-  match ls () with Nil -> [] | Cons (h, ts) -> h :: to_list ts
+let rec toList ls =
+  match ls () with Nil -> [] | Cons (h, ts) -> h :: toList ts
 
 let rec take n lst () =
   if n <= 0 then Nil
   else match lst () with Nil -> Nil | Cons (h, ts) -> Cons (h, take (n - 1) ts)
 
-let for_example lst = lst |> take 40 |> to_list
+let for_example lst = lst |> take 40 |> toList
 
 let rec drop n lst () =
   if n <= 0 then lst ()
@@ -445,7 +445,7 @@ let selfChain str () =
   (* (a,b) (b,c) (c,d) (d,e) etc... *)
   match str () with Nil -> Nil | Cons (h, ls) -> chain h ls ()
 
-let seq lst = lst |> of_list |> cycle
+let seq lst = lst |> ofList |> cycle
 
 let mkLine target n () =
   let control = zip (selfChain target) n in
@@ -491,9 +491,9 @@ let waveOscL arr frq =
 
 let threeLists = [[11; 12; 13]; [42; 43; 44]; [100; 99]]
 
-let seqs = List.map (fun lst -> of_list lst |> cycle) threeLists
+let seqs = List.map (fun lst -> ofList lst |> cycle) threeLists
 
-let l_seqs = of_list seqs (* make this list also a lazy stream *)
+let l_seqs = ofList seqs (* make this list also a lazy stream *)
 
 let addCount () = Cons (count, l_seqs)
 
@@ -501,7 +501,7 @@ let addCount () = Cons (count, l_seqs)
 
 let trans = transpose addCount
 
-let cat = trans |> concat |> take 30 |> to_list
+let cat = trans |> concat |> take 30 |> toList
 
 let testSah = lift rvf (-0.5) 0.5 |> hold (trunc (lift rvf 1.0 1000.0))
 
@@ -568,6 +568,20 @@ let mkChannel ch =
   if ch < 1 || ch > 16 then Error "channel should be between 1 and 16"
   else Ok (MidiCh (ch - 1))
 
+let mkChannelClip ch =
+  let clipped = clip 0 15 (ch - 1) in
+  MidiCh clipped
+
+let mkPitchClip p =
+  let clipped = clip 0 127 p in
+  Pitch clipped
+
+let mkVelocityClip v =
+  let clipped = clip 0 127 v in
+  Velo clipped
+
+let mkSampsClip s = if s < 0 then Samps 0 else Samps s
+
 let mkPitch p =
   if p < 0 || p > 127 then Error "pitch out of range" else Ok (Pitch p)
 
@@ -590,12 +604,30 @@ let mkNote c p v d =
     (fun ch pi ve dt -> NoteEvent (ch, pi, ve, dt))
     (mkChannel c) (mkPitch p) (mkVelocity v) (mkSamps d)
 
+let mkNoteClip c p v d =
+  let ch = mkChannelClip c in
+  let pi = mkPitchClip p in
+  let ve = mkVelocityClip v in
+  let dt = mkSampsClip d in
+  NoteEvent (ch, pi, ve, dt)
+
 let mapOverPitch f evt =
   (* output of f is clipped to garentee valid pitch *)
   match evt with
   | NoteEvent (c, Pitch p, v, d) ->
       NoteEvent (c, Pitch (f p |> clip 0 127), v, d)
   | other -> other
+
+let rec overwritePitch pitchSq sq () =
+  match sq () with
+  | Cons (NoteEvent (c, _, v, d), tl) -> (
+    match pitchSq () with
+    | Cons (pitch, ptl) ->
+        let p = mkPitchClip pitch in
+        Cons (NoteEvent (c, p, v, d), overwritePitch ptl tl)
+    | Nil -> Nil )
+  | Cons (event, tl) -> Cons (event, overwritePitch pitchSq tl)
+  | Nil -> Nil
 
 type midiMessage =
   | NoteOn of midiChannel * pitch * velocity
@@ -644,7 +676,10 @@ let chFromByte byte = MidiCh (byte land 0x0f)
 let fromRaw (status, data1, data2) =
   let statusByte = status land 0xf0 in
   match statusByte with
-  | 0x90 -> NoteOn (chFromByte status, Pitch data1, Velo data2)
+  | 0x90 ->
+      if data2 > 0 (* Zero velocity note on, lets not *) then
+        NoteOn (chFromByte status, Pitch data1, Velo data2)
+      else NoteOff (chFromByte status, Pitch data1, Velo data2)
   | 0x80 -> NoteOff (chFromByte status, Pitch data1, Velo data2)
   | 0xb0 -> Control (chFromByte status, MidiCtrl data1, MidiVal data2)
   | 0xf8 -> ClockTick
@@ -918,18 +953,32 @@ let mktransWithCount =
   let state = ref 0 in
   fun p ->
     let curr = !state in
-    let () = state := (!state + 1) mod 12 in
+    let () = state := (!state + 7) mod 36 in
     curr + p
 
+let rec ofRef rf () = Cons (!rf, ofRef rf)
+
 let () =
-  let inSeq = ref (fun () -> Nil) in
-  let testTranspose =
-    map
-      (fun m ->
-        fromRaw m
-        |> fromMidiMsgWithDur (Samps 100)
-        |> mapOverPitch mktransWithCount)
-      (!inSeq |> drop 10)
-    |> serialize |> map toRaw
+  let state = ref (st (toRaw MidiSilence)) in
+  (* the sq state var *)
+  let inputRef = ref MidiSilence in
+  let () =
+    state :=
+      ofRef inputRef
+      |> map (fromMidiMsgWithDur (Samps 1000))
+      |> overwritePitch (seq [60; 64; 67; 72])
+      |> serialize |> map toRaw
   in
-  JackMidi.playMidi testTranspose inSeq (ref 44100.0)
+  let callback input =
+    (* weird callback, looks like (in -> out) but reads and writes to references *)
+    let out =
+      match !state () with
+      | Cons (curr, tl) ->
+          let () = state := tl in
+          curr
+      | Nil -> (0, 0, 0)
+    in
+    let () = inputRef := fromRaw input in
+    out
+  in
+  JackMidi.playMidi callback (ref 44100.0)

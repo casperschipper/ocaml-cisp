@@ -56,7 +56,7 @@ let inArrayToSeq arr writeFrame =
   in
   aux 0
 
-let playMidi midiOutSq midiInRef sample_rate =
+let playMidi midiInToOutFunction sample_rate =
   let open Seq in
   let ar_out =
     Bigarray.Array1.create Bigarray.Int8_unsigned Bigarray.c_layout 4096
@@ -64,20 +64,16 @@ let playMidi midiOutSq midiInRef sample_rate =
   let ar_in =
     Bigarray.Array1.create Bigarray.Int8_unsigned Bigarray.c_layout 4096
   in
-  let state = ref midiOutSq in
   open_midi_stream ar_out ar_in
     (fun nframes ->
       for i = 0 to nframes - 1 do
         let midi_frame = i * 3 in
-        midiInRef := inArrayToSeq ar_in midi_frame ;
-        match !state () with
-        | Cons ((status, d1, d2), tl) ->
-            ar_out.{midi_frame} <- status ;
-            ar_out.{midi_frame} <- d1 ;
-            ar_out.{midi_frame} <- d2
-        | Nil ->
-            ar_out.{midi_frame} <- 0 ;
-            ar_out.{midi_frame} <- 0 ;
-            ar_out.{midi_frame} <- 0
+        let status, d1, d2 =
+          midiInToOutFunction
+            (ar_in.{midi_frame}, ar_in.{midi_frame + 1}, ar_in.{midi_frame + 2})
+        in
+        ar_out.{midi_frame} <- status ;
+        ar_out.{midi_frame + 1} <- d1 ;
+        ar_out.{midi_frame + 2} <- d2
       done)
     (fun sr -> sample_rate := float_of_int sr)

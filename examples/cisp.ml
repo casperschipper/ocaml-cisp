@@ -893,82 +893,19 @@ let seconds s = 44100.0 *. s |> Int.of_float
 
 let timing = seconds 0.01 |> st
 
-(*           
-let testMidi = withInterval scale timing
-
-let fooo = testMidi
-
-let midi = serialize fooo
-
-let raw = map toRaw midi
-
-let muteMidi sq = map (fun _ -> MidiSilence) sq
- *)
-(*
-let _ =
-  let printTriple (x, y, z) =
-    List.map Int.to_string [x; y; z]
-    |> String.concat "-"
-    |> fun s -> s ^ "\n" |> print_string
-  in
-  List.map printTriple (firstn |> List.of_seq)
-
-let _ =
-  List.map
-    (fun m -> midiToString m |> fun str -> str ^ "\n" |> print_string)
-    (midi |> take 100 |> List.of_seq) *)
-
-let emptyMidi = ref (0, 0, 0)
-
-(* let rec inIsOut midiRef () =
- *   let current = !midiRef |> fromRaw in
- *   (\*  let () = printRaw !midiRef in*\)
- *   match current with
- *   | NoteOn (MidiCh ch, Pitch p, Velo v) ->
- *       Cons (mkNote ch (p + 7) v 100, inIsOut midiRef)
- *   | _ -> Cons (Ok SilenceEvent, inIsOut midiRef) *)
-
-(* let printAndPass sq =
- *   let f arg =
- *     let () =
- *       match arg with
- *       | MidiSilence -> ()
- *       | aNote -> aNote |> midiToString |> print_string
- *     in
- *     arg
- *   in
- *   map f sq *)
-
-let printVal () =
-  match !midi_input with 0x90, _, _ -> print_string "note on!\n" | _ -> ()
-
-let mapSideEffect effect sq =
-  map
-    (fun value ->
-      let () = effect () in
-      value)
-    sq
-
-let mktransWithCount =
-  let state = ref 0 in
-  fun p ->
-    let curr = !state in
-    let () = state := (!state + 7) mod 36 in
-    curr + p
-
 let rec ofRef rf () = Cons (!rf, ofRef rf)
+
+let midiInputTestFun input =
+  input
+  |> map (fromMidiMsgWithDur (Samps 1000))
+  |> overwritePitch (seq [60; 64; 67; 72])
+  |> serialize |> map toRaw
 
 let () =
   let state = ref (st (toRaw MidiSilence)) in
   (* the sq state var *)
   let inputRef = ref MidiSilence in
-  let () =
-    state :=
-      ofRef inputRef
-      |> map (fromMidiMsgWithDur (Samps 1000))
-      |> overwritePitch (seq [60; 64; 67; 72])
-      |> serialize |> map toRaw
-  in
+  let () = state := ofRef inputRef |> midiInputTestFun in
   let callback input =
     (* weird callback, looks like (in -> out) but reads and writes to references *)
     let out =

@@ -120,10 +120,11 @@ let rec split n lst =
         let f, l = split (n - 1) xs in
         (thunk (Cons (x, f)), l)
 
-let rec filter f lst =
+let rec filter f lst () =
   match lst () with
   | Nil -> Nil
-  | Cons (h, tl) -> if f h then Cons (h, fun () -> filter f tl) else filter f tl
+  | Cons (h, tl) ->
+      if f h then Cons (h, fun () -> filter f tl ()) else filter f tl ()
 
 let rec foldr f z ll =
   match ll () with Nil -> z | Cons (h, tl) -> f h (foldr f z tl)
@@ -614,8 +615,19 @@ let mkNoteClip c p v d =
 let mapOverPitch f evt =
   (* output of f is clipped to garentee valid pitch *)
   match evt with
-  | NoteEvent (c, Pitch p, v, d) ->
-      NoteEvent (c, Pitch (f p |> clip 0 127), v, d)
+  | NoteEvent (c, Pitch p, v, d) -> NoteEvent (c, mkPitchClip (f p), v, d)
+  | other -> other
+
+let mapOverCh f evt =
+  (* output of f is clipped to garentee valid pitch *)
+  match evt with
+  | NoteEvent (MidiCh c, p, v, d) -> NoteEvent (mkChannelClip (f c), p, v, d)
+  | other -> other
+
+let mapOverVelo f evt =
+  (* output of f is clipped to garentee valid pitch *)
+  match evt with
+  | NoteEvent (c, p, Velo v, d) -> NoteEvent (c, p, mkVelocityClip (f v), d)
   | other -> other
 
 let rec overwritePitch pitchSq sq () =
@@ -627,6 +639,39 @@ let rec overwritePitch pitchSq sq () =
         Cons (NoteEvent (c, p, v, d), overwritePitch ptl tl)
     | Nil -> Nil )
   | Cons (event, tl) -> Cons (event, overwritePitch pitchSq tl)
+  | Nil -> Nil
+
+let rec overwriteDur durSq sq () =
+  match sq () with
+  | Cons (NoteEvent (c, p, v, _), tl) -> (
+    match durSq () with
+    | Cons (dur, dtl) ->
+        let d = mkSampsClip dur in
+        Cons (NoteEvent (c, p, v, d), overwriteDur dtl tl)
+    | Nil -> Nil )
+  | Cons (event, tl) -> Cons (event, overwriteDur durSq tl)
+  | Nil -> Nil
+
+let rec overwriteChan chanSq sq () =
+  match sq () with
+  | Cons (NoteEvent (_, p, v, d), tl) -> (
+    match chanSq () with
+    | Cons (chan, chtl) ->
+        let c = mkChannelClip chan in
+        Cons (NoteEvent (c, p, v, d), overwriteChan chtl tl)
+    | Nil -> Nil )
+  | Cons (event, tl) -> Cons (event, overwriteChan chanSq tl)
+  | Nil -> Nil
+
+let rec overwriteVelo veloSq sq () =
+  match sq () with
+  | Cons (NoteEvent (c, p, _, d), tl) -> (
+    match veloSq () with
+    | Cons (velo, vtl) ->
+        let v = mkVelocityClip velo in
+        Cons (NoteEvent (c, p, v, d), overwriteVelo vtl tl)
+    | Nil -> Nil )
+  | Cons (event, tl) -> Cons (event, overwriteVelo veloSq tl)
   | Nil -> Nil
 
 type midiMessage =
@@ -701,9 +746,28 @@ let printRaw (status, data1, data2) =
 (* intersperce a Seq of midi-events with silence 
  * M...M...M...M...  
  * *)
-let withInterval sq interval =
+let withInterval interval sq =
   let ctrl = zip sq interval in
   map (fun (src, n) () -> Cons (src, repeat n SilenceEvent)) ctrl |> concat
+
+let intervalNotesOnly interval sq =
+  let rec aux interval sq curr () =
+    if curr < 1 then
+      match interval () with
+      | Nil -> Nil
+      | Cons (newinterval, itl) -> (
+        match sq () with
+        | Cons (NoteEvent (c, p, v, d), tail) ->
+            Cons (NoteEvent (c, p, v, d), aux itl tail newinterval)
+        | any -> any )
+    else
+      match sq () with
+      | Cons (NoteEvent (_, _, _, _), _) ->
+          Cons (SilenceEvent, aux interval sq (curr - 1))
+      | Cons (evt, tail) -> Cons (evt, aux interval tail curr)
+      | Nil -> Nil
+  in
+  aux interval sq 0
 
 type ordering = Greater | Smaller | Equal
 
@@ -896,9 +960,30 @@ let timing = seconds 0.01 |> st
 let rec ofRef rf () = Cons (!rf, ofRef rf)
 
 let midiInputTestFun input =
+  (*let durPattern =
+    transpose
+      (ofList
+         [ seq [10000; 1000; 1000]
+         ; seq [4000; 5000; 60000; 3000]
+         ; seq [1000; 10000; 500; 2000; 12000] ])
+  in*)
+  let pitchPattern =
+    transpose
+      (ofList
+         [ seq [60; 64; 67; 72; 76; 79; 84]
+         ; seq [53; 60; 67; 74; 81]
+         ; seq (List.rev [60; 62; 64; 67; 69; 71; 72; 74; 76]) ])
+    |> concat
+  in
   input
-  |> map (fromMidiMsgWithDur (Samps 1000))
-  |> overwritePitch (seq [60; 64; 67; 72])
+  |> map (fromMidiMsgWithDur (Samps 12000))
+  |> overwritePitch
+       ( loop (seq [3; 2; 3; 1]) (seq [2; 2; 3]) pitchPattern
+       |> concat
+       |> hold (st 1) )
+  |> overwriteDur (ch [|44100; 88200; 5000; 10000; 500|])
+  |> overwriteChan (st 3)
+  |> overwriteVelo (seq [100; 0] |> loop (st 1) (seq [4; 6; 5; 7]) |> concat)
   |> serialize |> map toRaw
 
 let () =

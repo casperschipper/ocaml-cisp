@@ -1,0 +1,4 @@
+(library
+ (name            cisp)
+ (ocamlopt_flags -O3)	
+)

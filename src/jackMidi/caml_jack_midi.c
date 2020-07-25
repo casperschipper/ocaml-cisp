@@ -127,7 +127,7 @@ static int process(jack_nframes_t nframes, void *arg)
       
 	
     //output
-    midi_frame = i*3;
+    
     currentMidiMsg = &midi_output_buffer[midi_frame];
       
     if (isMessage(currentMidiMsg)) {

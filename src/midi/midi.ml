@@ -188,6 +188,11 @@ let fromRaw (status, data1, data2) =
   | 0xfa -> ClockStop
   | _ -> MidiSilence
 
+let fromMidiMsgWithDur defaultDuration msg =
+  match msg with
+  | NoteOn (ch, p, v) -> NoteEvent (ch, p, v, defaultDuration)
+  | _ -> SilenceEvent
+
 (*
 let defaultTranslator  = {
     onNoteOn = fun NoteOn (_,_,_) -> SilenceEvent  *)
@@ -403,6 +408,50 @@ let pitchVelo midiRef midiCh =
   in
   aux (0, 0)
 
+let rec overwritePitch pitchSq sq () =
+  match sq () with
+  | Cons (NoteEvent (c, _, v, d), tl) -> (
+    match pitchSq () with
+    | Cons (pitch, ptl) ->
+        let p = mkPitchClip pitch in
+        Cons (NoteEvent (c, p, v, d), overwritePitch ptl tl)
+    | Nil -> Nil )
+  | Cons (event, tl) -> Cons (event, overwritePitch pitchSq tl)
+  | Nil -> Nil
+
+let rec overwriteDur durSq sq () =
+  match sq () with
+  | Cons (NoteEvent (c, p, v, _), tl) -> (
+    match durSq () with
+    | Cons (dur, dtl) ->
+        let d = mkSampsClip dur in
+        Cons (NoteEvent (c, p, v, d), overwriteDur dtl tl)
+    | Nil -> Nil )
+  | Cons (event, tl) -> Cons (event, overwriteDur durSq tl)
+  | Nil -> Nil
+
+let rec overwriteChan chanSq sq () =
+  match sq () with
+  | Cons (NoteEvent (_, p, v, d), tl) -> (
+    match chanSq () with
+    | Cons (chan, chtl) ->
+        let c = mkChannelClip chan in
+        Cons (NoteEvent (c, p, v, d), overwriteChan chtl tl)
+    | Nil -> Nil )
+  | Cons (event, tl) -> Cons (event, overwriteChan chanSq tl)
+  | Nil -> Nil
+
+let rec overwriteVelo veloSq sq () =
+  match sq () with
+  | Cons (NoteEvent (c, p, _, d), tl) -> (
+    match veloSq () with
+    | Cons (velo, vtl) ->
+        let v = mkVelocityClip velo in
+        Cons (NoteEvent (c, p, v, d), overwriteVelo vtl tl)
+    | Nil -> Nil )
+  | Cons (event, tl) -> Cons (event, overwriteVelo veloSq tl)
+  | Nil -> Nil
+
 let rec difference sq start () =
   match sq () with
   | Nil -> Nil
@@ -453,6 +502,7 @@ let rec weavePattern pattern xs ys () =
     | Cons (false, ptl) -> Cons (y, weavePattern ptl xs ytl)
     | Nil -> Nil )
 
+(*
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
   (* this translates input into boolean trigger *)
@@ -491,12 +541,14 @@ let midiInputTestFun input =
   |> withChan (st 1)
   |> withVelo (st 100)
   |> serialize |> map toRaw
+ *)
 
-let run () =
+(* midi sq is a function that takes an input seq as argument and retuns a raw midi seuence. You also pass in a samplerateRef, which can be used for   *)
+let playMidi midiSq samplerateRef =
   let state = justSilence in
   (* the sq state var *)
   let inputRef = ref MidiSilence in
-  let () = state := ofRef inputRef |> midiInputTestFun in
+  let () = state := ofRef inputRef |> midiSq in
   let callback input =
     (* Slightly troublesome, this looks like a pure function (a -> b) but reads and writes to references *)
     let out =
@@ -509,4 +561,4 @@ let run () =
     let () = inputRef := fromRaw input in
     out
   in
-  JackMidi.playMidi callback samplerate
+  JackMidi.playMidi callback samplerateRef

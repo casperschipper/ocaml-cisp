@@ -67,11 +67,36 @@
 
 
 (executable
-  (name cisp)
+  (name cispTest)
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
-  (modules cisp)
+  (modules cispTest)
   (libraries midi cisp bigarray ctypes jack jackMidi sndfile fQueue))
 
+(executable
+  (name cisp1)
+  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (ocamlopt_flags -O3)
+  (modules cisp1)
+  (libraries midi cisp bigarray ctypes jack jackMidi sndfile fQueue))
 
-  
+(executable
+  (name cisp2)
+  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (ocamlopt_flags -O3)
+  (modules cisp2)
+  (libraries midi cisp bigarray ctypes jack jackMidi sndfile fQueue))
+
+(executable
+  (name cisp3)
+  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (ocamlopt_flags -O3)
+  (modules cisp3)
+  (libraries midi cisp bigarray ctypes jack jackMidi sndfile fQueue))
+
+(executable
+  (name cisp4)
+  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (ocamlopt_flags -O3)
+  (modules cisp4)
+  (libraries midi cisp bigarray ctypes jack jackMidi sndfile fQueue))

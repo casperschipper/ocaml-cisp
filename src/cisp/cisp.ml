@@ -262,17 +262,17 @@ let rec boundedFuncWalk start steps operator wrapfunc () =
       Cons (wrapfunc start, boundedFuncWalk next ls operator wrapfunc)
   | Nil -> Nil
 
-let boundedWalk start steps wrapfunc () =
+let boundedWalk start steps wrapfunc =
   let rec aux start steps () =
     match steps () with
     | Nil -> Nil
     | Cons (h, ls) ->
-        let next = start + h in
-        Cons (wrapfunc start, aux next ls)
+        let next = wrapfunc (start + h) in
+        Cons (start, aux next ls)
   in
   aux start steps
 
-let boundedWalkf start steps wrapfunc () =
+let boundedWalkf start steps wrapfunc =
   let rec aux start steps () =
     match steps () with
     | Nil -> Nil
@@ -295,7 +295,7 @@ let rec index arr indexer () =
 
 let listWalk arr step () =
   let wrapFunc = wrap 0 (Array.length arr) in
-  index arr (boundedWalk 0 step wrapFunc ())
+  index arr (boundedWalk 0 step wrapFunc)
 
 type 'a weightList = Weights of (int * 'a) list
 
@@ -438,7 +438,7 @@ let selfChain str () =
 
 let seq lst = lst |> ofList |> cycle
 
-let line target n () =
+let line target n =
   let control = zip (selfChain target) n in
   map (fun ((a, b), n') -> lineSegment a b n' ()) control |> concat
 

@@ -1,6 +1,14 @@
 open Stdlib
 open Printf
 
+(* 
+
+snapshot -save name 
+snapshot -save name -load newName 
+snapshot -overwrite name
+
+*)
+
 let cispCopyCmd number targetFolder =
   let cispName = "cisp" ^ Int.to_string number ^ ".ml" in
   "cp " ^ cispName ^ " cisp_backup/" ^ targetFolder ^ "/" ^ cispName

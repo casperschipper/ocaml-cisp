@@ -56,7 +56,8 @@ let mk_no_state func init_out =
  *   | counter, idx ->
  *       g.last_output_idx <- (counter + 1, (idx + 1) mod output_buffer_size) *)
 
-let last_value g = g.outputs.(g.last_output_idx land (output_buffer_size - 1))
+let last_value g =
+  g.outputs.(g.last_output_idx land (output_buffer_size - 1))
 
 let idx i =
   if i < 0 then output_buffer_size - 1 + i else i land (output_buffer_size - 1)

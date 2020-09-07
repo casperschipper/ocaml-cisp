@@ -28,3 +28,4 @@ let playMidi midiInToOutFunction sample_rate =
         ar_out.{midi_frame + 2} <- d2
       done)
     (fun sr -> sample_rate := float_of_int sr)
+

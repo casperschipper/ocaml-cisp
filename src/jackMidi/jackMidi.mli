@@ -14,5 +14,5 @@ open Seq
 
 val playMidi : (int * int * int -> int * int * int) -> float ref -> unit
 
-(* Midi output based on input. You provide a seq of functions to generate output based * on input. Second arg can be used to receive samplerate.
+(* Midi output based on input. You take in input and return output. Second arg can be used to receive samplerate.
  *)

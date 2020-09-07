@@ -214,6 +214,12 @@ let rec zip3 a b c () =
       Cons ((ha, hb, hc), zip3 lsa lsb lsc)
   | _ -> Nil
 
+let rec zip4 a b c d () =
+  match (a (), b (), c (),d ()) with
+  | Cons (ha, lsa), Cons (hb, lsb), Cons (hc, lsc), Cons(hd, lsd) ->
+     Cons((ha,hb,hc,hd), zip4 lsa lsb lsc lsd)
+  | _ -> Nil
+
 let rec zipWith f a b () =
   match a () with
   | Nil -> Nil
@@ -478,3 +484,40 @@ let waveOscL arr frq =
   let incr = frq /. !samplerate *. arraySize in
   let phasor = walk 0.0 (st incr) in
   indexLin arr phasor
+
+
+(* combine two Seq's: a, b, a, b, a, b etc.. *)
+let rec interleave xs ys () =
+  match (xs (), ys ()) with
+  | Nil, Nil -> Nil
+  | xs', Nil -> xs'
+  | Nil, ys' -> ys'
+  | Cons (x, xtl), Cons (y, ytl) ->
+      Cons (x, fun () -> Cons (y, interleave xtl ytl))
+
+(*
+Similar to interleave, but now you can provide in which pattern the seqs needs to be combined.
+For example if the pattern is true;false;fase;true;false 
+and a = 1,2,3,4
+and b = 11,12,13,14
+then you will get
+1, 11, 12, 2, 13, 14
+This is different from zipWith3, since there are no values thrown away
+ *)
+let rec weavePattern pattern xs ys () =
+  match (xs (), ys ()) with
+  | Nil, Nil -> Nil
+  | xs, Nil -> xs
+  | Nil, ys -> ys
+  | Cons (x, xtl), Cons (y, ytl) -> (
+    match pattern () with
+    | Cons (true, ptl) -> Cons (x, weavePattern ptl xtl ys)
+    | Cons (false, ptl) -> Cons (y, weavePattern ptl xs ytl)
+    | Nil -> Nil )
+
+let interval reps =
+  reps |> map (fun n () -> Cons (true, repeat n false)) |> concat
+
+let impulse n sq filler =
+  let p = interval n in
+  weavePattern p sq filler

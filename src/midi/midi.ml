@@ -61,6 +61,7 @@ let mkNote c p v d =
     (fun ch pi ve dt -> NoteEvent (ch, pi, ve, dt))
     (mkChannel c) (mkPitch p) (mkVelocity v) (mkSamps d)
 
+(* always returns a note, even if your parameters are out of range *)
 let mkNoteClip c p v d =
   let ch = mkChannelClip c in
   let pi = mkPitchClip p in
@@ -69,13 +70,13 @@ let mkNoteClip c p v d =
   NoteEvent (ch, pi, ve, dt)
 
 let mapOverPitch f evt =
-  (* output of f is clipped to garentee valid pitch *)
+  (* transform pitch: output of f is clipped to garentee valid pitch *)
   match evt with
   | NoteEvent (c, Pitch p, v, d) -> NoteEvent (c, mkPitchClip (f p), v, d)
   | other -> other
 
 let mapOverCh f evt =
-  (* output of f is clipped to garentee valid pitch *)
+  (* transform channel. Output of f is clipped  *)
   match evt with
   | NoteEvent (MidiCh c, p, v, d) -> NoteEvent (mkChannelClip (f c), p, v, d)
   | other -> other
@@ -210,6 +211,10 @@ let withInterval interval fillerEvent sq =
   let ctrl = zip sq interval in
   concatMap (fun (src, Samps n) () -> Cons (src, repeat n fillerEvent)) ctrl
 
+let withInt interval fillerEvent sq =
+  let ctrl = zip sq interval in
+  concatMap (fun (src, n) () -> Cons(src,repeat n fillerEvent)) ctrl
+
 (* does not work: *
 let intervalNotesOnly interval sq =
   let rec aux interval sq curr () =
@@ -269,6 +274,7 @@ let print_timed_midi_event (t, msg) =
   in
   ()
 
+(* this takes a stream of midi events with a start and duration, and renders it as a flat stream of midi. It tries to handle intellegentily when events happen at the same moment. See updatemidi for the details *)
 type midiSerializer =
   { now: int
   ; pendingNoteOffs: timedMidiEvent FQueue.t
@@ -336,11 +342,11 @@ let nowPlusOne evt m = ({m with now= m.now + 1}, evt)
 let updateMidi midiEvt m =
   (* waterfall event through a bunch of state changing functions *)
   let ( ||> ) (evt, m) f = f evt m in
-  (* 
-    - check for pending note offs, if so, pass it on, store new event in deferred queue
-    - then deferred notes , if present, pass on and store current event in queue
-    - if there are no pending note-offs or deferred, note is played immediately
-    - time is increased by one
+  (*
+     - check for pending note offs, if so, pass it on, store new event in deferred queue
+     - then deferred notes , if present, pass on and store current event in queue
+     - if there are no pending note-offs or deferred, note is played immediately
+     - time is increased by one
   *)
   let state, evt =
     (midiEvt, m) ||> handleMidiEvent ||> getPending ||> getDeferred
@@ -484,7 +490,7 @@ let rec interleave xs ys () =
 
 (*
 Similar to interleave, but now you can provide in which pattern the seqs needs to be combined.
-For example if the pattern is 1 0 0 1 0 0
+For example if the pattern is true;false;fase;true;false 
 and a = 1,2,3,4
 and b = 11,12,13,14
 then you will get
@@ -501,6 +507,15 @@ let rec weavePattern pattern xs ys () =
     | Cons (true, ptl) -> Cons (x, weavePattern ptl xtl ys)
     | Cons (false, ptl) -> Cons (y, weavePattern ptl xs ytl)
     | Nil -> Nil )
+
+let makeNote pitch velo dur channel =
+  (pitch,velo,dur,channel)
+
+let c3 =
+  NoteEvent (MidiCh 1, Pitch 60, Velo 100, seconds 0.2)
+
+(* TODO make function that weaves any number of streams together using an index *)
+(* Ideally the thing is a list *)
 
 (*
 (* this maps midi input msg to an output msg (raw midi) *)
@@ -542,6 +557,11 @@ let midiInputTestFun input =
   |> withVelo (st 100)
   |> serialize |> map toRaw
  *)
+
+let isNoteOn midiMsg =
+  match midiMsg with
+  | NoteOn (_,_,_) -> true
+  | _ -> false
 
 (* midi sq is a function that takes an input seq as argument and retuns a raw midi seuence. You also pass in a samplerateRef, which can be used for   *)
 let playMidi midiSq samplerateRef =

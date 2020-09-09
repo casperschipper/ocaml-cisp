@@ -12,12 +12,13 @@ let midiInputTestFun input =
   (* a metre boolean mask that triggers notes or rests in the pattern *)
   (* dummy event *)
   (* apply metre to default event, use Silence as filler *)
-  input 
-  |> map (fromMidiMsgWithDur (Samps 4200))
+  input
+  |> trigger (mkRhythm (st c3) (st 4) (st 3)) 
+  |> withPitch (seq [60;64;76])
   |> withDur (ch [|4250|])
   |> withChan (st 1)
   |> withVelo (st 100)
   |> serialize |> map toRaw
 
-
 let () = Midi.playMidi midiInputTestFun sr
+ 

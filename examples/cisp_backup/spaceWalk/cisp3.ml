@@ -21,6 +21,7 @@ let midiInputTestFun input =
   (* dummy event *)
   let defaultEvts =
     st (NoteEvent (MidiCh 1, Pitch 60, Velo 100, seconds 0.2))
+
   in
   (* apply metre to default event, use Silence as filler *)
   let maskedEvts = weavePattern metre defaultEvts (st SilenceEvent) in

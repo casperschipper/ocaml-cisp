@@ -21,6 +21,7 @@ let midiInputTestFun input =
       (fun x -> if x < 40 then 50 else if x > 120 then 70 else x)
   in
   (* dummy event *)
+  
   let defaultEvts =
     st (NoteEvent (MidiCh 1, Pitch 60, Velo 100, seconds 0.2))
   in

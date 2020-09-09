@@ -479,40 +479,16 @@ let testSequence =
 
 let justSilence = ref (st (toRaw MidiSilence))
 
-(* combine two Seq's: a, b, a, b, a, b etc.. *)
-let rec interleave xs ys () =
-  match (xs (), ys ()) with
-  | Nil, Nil -> Nil
-  | xs', Nil -> xs'
-  | Nil, ys' -> ys'
-  | Cons (x, xtl), Cons (y, ytl) ->
-      Cons (x, fun () -> Cons (y, interleave xtl ytl))
-
-(*
-Similar to interleave, but now you can provide in which pattern the seqs needs to be combined.
-For example if the pattern is true;false;fase;true;false 
-and a = 1,2,3,4
-and b = 11,12,13,14
-then you will get
-1, 11, 12, 2, 13, 14
-This is different from zipWith3, since there are no values thrown away
- *)
-let rec weavePattern pattern xs ys () =
-  match (xs (), ys ()) with
-  | Nil, Nil -> Nil
-  | xs, Nil -> xs
-  | Nil, ys -> ys
-  | Cons (x, xtl), Cons (y, ytl) -> (
-    match pattern () with
-    | Cons (true, ptl) -> Cons (x, weavePattern ptl xtl ys)
-    | Cons (false, ptl) -> Cons (y, weavePattern ptl xs ytl)
-    | Nil -> Nil )
-
 let makeNote pitch velo dur channel =
   (pitch,velo,dur,channel)
 
-let c3 =
-  NoteEvent (MidiCh 1, Pitch 60, Velo 100, seconds 0.2)
+
+
+let mkRhythm sq note rest =
+  let filler =
+    (st SilenceEvent)
+  in
+  [ hold note sq ; hold rest filler ] |> ofList |> transcat
 
 (* TODO make function that weaves any number of streams together using an index *)
 (* Ideally the thing is a list *)
@@ -557,13 +533,22 @@ let midiInputTestFun input =
   |> withVelo (st 100)
   |> serialize |> map toRaw
  *)
+let c3 =
+  mkNoteClip 1 60 100 3000
 
 let isNoteOn midiMsg =
   match midiMsg with
   | NoteOn (_,_,_) -> true
   | _ -> false
 
-(* midi sq is a function that takes an input seq as argument and retuns a raw midi seuence. You also pass in a samplerateRef, which can be used for   *)
+let trigger event midiIn =
+  let t = map isNoteOn midiIn in
+  weave t event (st SilenceEvent)
+
+
+(* midiSq is a function that takes an input seq as argument and retuns a raw midi seuence. 
+ * You also pass in a samplerateRef, which can be used for samplerate dependent calculations.
+ *)
 let playMidi midiSq samplerateRef =
   let state = justSilence in
   (* the sq state var *)

@@ -179,6 +179,9 @@ let rec transpose sq () =
           , transpose <| thunk (Cons (xs, tailsOfStreams sqss)) )
     | Nil -> transpose sqss () )
 
+let transcat sq =
+  sq |> transpose |> concat
+
 let rec transpose_list lst =
   let foldHeads acc x = match x with [] -> acc | h :: _ -> h :: acc in
   let foldTails acc x = match x with [] -> acc | _ :: ts -> ts :: acc in
@@ -377,7 +380,7 @@ let loop size n src =
         let currLoop, rest = oneLoop size num src () in
         Cons (currLoop, loops nextCtrl rest)
   in
-  loops control src
+  loops control src |> concat
 
 let trunc = map Int.of_float
 
@@ -515,9 +518,11 @@ let rec weavePattern pattern xs ys () =
     | Cons (false, ptl) -> Cons (y, weavePattern ptl xs ytl)
     | Nil -> Nil )
 
+let weave = weavePattern
+
 let interval reps =
   reps |> map (fun n () -> Cons (true, repeat n false)) |> concat
 
-let impulse n sq filler =
+let pulse n sq filler =
   let p = interval n in
   weavePattern p sq filler

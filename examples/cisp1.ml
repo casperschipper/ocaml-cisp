@@ -13,12 +13,11 @@ let midiInputTestFun input =
   (* dummy event *)
   (* apply metre to default event, use Silence as filler *)
   input
-  |> trigger (mkRhythm (st c3) (st 4) (st 3)) 
+  |> trigger (mkRhythm (st c3) (seq [1;1;3;5]) (seq [2;3])) 
   |> withPitch (seq [60;64;76])
-  |> withDur (ch [|4250|])
+  |> withDur (ch [|425|])
   |> withChan (st 1)
   |> withVelo (st 100)
   |> serialize |> map toRaw
-
-let () = Midi.playMidi midiInputTestFun sr
- 
+                         
+let () = Midi.playMidi midiInputTestFun sr 

@@ -200,7 +200,12 @@ let defaultTranslator  = {
 
 let printRaw (status, data1, data2) =
   if status != 0 then
-    let () = print_int status ; print_int data1 ; print_int data2 in
+    let () = print_char '\n'
+           ; print_int status
+           ; print_char '-'
+           ; print_int data1
+           ; print_char '-'
+           ; print_int data2 in
     ()
   else ()
 
@@ -485,10 +490,15 @@ let makeNote pitch velo dur channel =
 
 
 let mkRhythm sq note rest =
+  (* note and rest should be of type int Seq.t 
+   * this function will return note x sqs then rest x silenceevents and repeat 
+   * mkRhythm (seq [1;2;3] (st 3) (st 2)
+   * note 1 2 _ _ 3 1 2 _ _ *)
+  
   let filler =
     (st SilenceEvent)
   in
-  [ hold note sq ; hold rest filler ] |> ofList |> transcat
+  [ group note sq ; group rest filler ] |> ofList |> transcat |> concat
 
 (* TODO make function that weaves any number of streams together using an index *)
 (* Ideally the thing is a list *)
@@ -545,7 +555,9 @@ let trigger event midiIn =
   let t = map isNoteOn midiIn in
   weave t event (st SilenceEvent)
 
-
+let testmidi midi =
+  midi |> take 80 |> serialize |> iter (toRaw >> printRaw)
+  
 (* midiSq is a function that takes an input seq as argument and retuns a raw midi seuence. 
  * You also pass in a samplerateRef, which can be used for samplerate dependent calculations.
  *)

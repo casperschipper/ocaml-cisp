@@ -87,11 +87,22 @@ let rec take n lst () =
   if n <= 0 then Nil
   else match lst () with Nil -> Nil | Cons (h, ts) -> Cons (h, take (n - 1) ts)
 
+
+
+
 let for_example lst = lst |> take 40 |> toList
 
 let rec drop n lst () =
   if n <= 0 then lst ()
   else match lst () with Nil -> Nil | Cons (_, tail) -> drop (n - 1) tail ()
+
+let rec group chunkSize sq () =
+  match chunkSize () with
+  | Nil -> Nil
+  | Cons(n,ntl) ->
+     let chunk = take n sq in
+     let sqTail = drop n sq in
+     Cons(chunk, group ntl sqTail)
 
 let rec nth n sq = if n = 0 then head sq else nth (n - 1) sq
 
@@ -501,7 +512,7 @@ let rec interleave xs ys () =
 (*
 Similar to interleave, but now you can provide in which pattern the seqs needs to be combined.
 For example if the pattern is true;false;fase;true;false 
-and a = 1,2,3,4
+mkand a = 1,2,3,4
 and b = 11,12,13,14
 then you will get
 1, 11, 12, 2, 13, 14

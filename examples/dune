@@ -78,7 +78,7 @@
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp1)
-  (libraries midi cisp bigarray ctypes jack jackMidi sndfile fQueue))
+  (libraries lwt.unix oscStream midi cisp bigarray ctypes jack jackMidi sndfile fQueue))
 
 (executable
   (name cisp2)

@@ -87,6 +87,10 @@ let mapOverVelo f evt =
   | NoteEvent (c, p, Velo v, d) -> NoteEvent (c, p, mkVelocityClip (f v), d)
   | other -> other
 
+let mapSeqOverPitch f control evtSq =
+  let c = zip control evtSq in
+  map (fun (ctrl,evt) -> mapOverPitch (f ctrl) evt) c
+           
 let rec withPitch pitchSq sq () =
   match sq () with
   | Cons (NoteEvent (c, _, v, d), tl) -> (
@@ -487,22 +491,36 @@ let justSilence = ref (st (toRaw MidiSilence))
 let makeNote pitch velo dur channel =
   (pitch,velo,dur,channel)
 
+let filterEvents f sq =
+  map (fun midiEvent -> if f midiEvent then midiEvent else SilenceEvent) sq
 
+let hasChannel ch event =
+  match event with
+  | NoteEvent (MidiCh c, _,_,_) -> ch == c
+  | ControlEvent (MidiCh c,_,_) -> ch == c
+  | SilenceEvent -> false
 
+let fiterCh ch sq = filterEvents (hasChannel ch) sq
+  
+  
 let mkRhythm sq note rest =
   (* note and rest should be of type int Seq.t 
    * this function will return note x sqs then rest x silenceevents and repeat 
    * mkRhythm (seq [1;2;3] (st 3) (st 2)
    * note 1 2 _ _ 3 1 2 _ _ *)
-  
+  seq [sq;SilenceEvent] |> hold (interleave note rest)
+  (* previous implementatino that caused CPU creep!!! 
   let filler =
     (st SilenceEvent)
   in
   [ group note sq ; group rest filler ] |> ofList |> transcat |> concat
+   *)
+
+  
 
 (* TODO make function that weaves any number of streams together using an index *)
 (* Ideally the thing is a list *)
-
+                             
 (*
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =

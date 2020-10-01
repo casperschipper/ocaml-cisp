@@ -1,4 +1,12 @@
 (executable
+ (name collatz)
+ (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules collatz)
+ (libraries cisp bigarray ctypes jack sndfile))
+
+
+(executable
  (name multisine)
  (link_flags (-cclib -ljack -cclib  -lsndfile))
  (ocamlopt_flags -O3)

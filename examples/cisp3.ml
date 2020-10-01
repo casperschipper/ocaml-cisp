@@ -4,29 +4,18 @@ open Seq
 
 let sr = ref 44100.0
 
+let channel = 1 
+
+
+(* TODO recursive clock mapping *)            
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
-  (* this translates input into boolean trigger *)
-  (* a metre boolean mask that triggers notes or rests in the pattern *)
-  (* dummy event *)
-  (* apply metre to default event, use Silence as filler *)
-  let pitchPattern =
-   Cisp.ofList
-         [ ch [|60;72|]
-         ; ch [|60;67|]
-         ; ch [|74;76;78|]
-         ; ch [|60;60;80;70|]
-         ] |> 
-     transpose
-       |> concat |> loop (st 3) (st 4) |> concat
-  in
-  input 
-  |> map (fromMidiMsgWithDur (Samps 4200))
-  |> overwritePitch pitchPattern
-  |> withDur (ch [|4250|])
-  |> withChan (st 3)
-  |> withVelo (st 100)
+  input
+  |> map (fromMidiMsgWithDur (Samps 1000))
+  |> map (mapOverPitch (fun p -> p + 0)) (* applicative ! *)
+  |> withDur (ch [|42500|])
+  |> withChan (st 4)
+  |> withVelo (seq [100;0] |> hold ([st 1;seq [|2;3;1;1|]] |> ofList |> transcat))
   |> serialize |> map toRaw
-
-
-let () = Midi.playMidi midiInputTestFun sr
+                         
+let () = Midi.playMidi midiInputTestFun sr 

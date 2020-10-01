@@ -4,33 +4,18 @@ open Seq
 
 let sr = ref 44100.0
 
+let second x = x *. 44100.
+
+
+            
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
-  (* this translates input into boolean trigger *)
-  (* a metre boolean mask that triggers notes or rests in the pattern *)
-  (* dummy event *)
-  (* apply metre to default event, use Silence as filler *)
-
-  let trigger =
-    map isNoteOn input (* this checks if it is a note pulse *) 
-  in
-  let mask =
-    seq [3;3;3;3;3;3;3;3;6] |> map (fun n () -> Cons (true, repeat n false)) |> concat
-  in
-  let defaultEvents = (* this is the prototype *) 
-    st (NoteEvent (MidiCh 1, Pitch 60, Velo 100, seconds 0.2))
-  in
-  let pitchPattern =
-    boundedWalk 48 ( [ch [|7;7;7;7;7;7;7;7;7;7;7;7;7;7;7;7;7;7;7;7;7;7;4|]] |> Cisp.ofList |> transpose |> concat ) (fun x -> if x < 40 then 48 else if x > 80 then 48 else x)
-  in
-  trigger
-  |> (fun pattern -> weavePattern pattern defaultEvents (st SilenceEvent))
-  |> (fun p -> weavePattern mask p (st SilenceEvent))
-  |> overwritePitch pitchPattern
-  |> withDur (trunc <| line (seq [1000.0;100000.0]) (st 30.0))
+  input
+  |> trigger (mkRhythm c3 (seq [2;3;3]) (seq [1;3;1]))
+  |> withPitch ([seq [63;64;67;59];st 62;st 60] |> ofList |> transcat |> hold (seq [1;1;1;1;1;1;1;2;1;1;1;1;1;1;2;2;1;1;1;1;1;1;1;2;1;1;1;1;1;2]))
+  |> withDur (ch [|second 0.1|] |> trunc)
   |> withChan (st 7)
-  |> withVelo (st 110)
+  |> withVelo (st 100)
   |> serialize |> map toRaw
-
-
-let () = Midi.playMidi midiInputTestFun sr
+                         
+let () = Midi.playMidi midiInputTestFun sr 

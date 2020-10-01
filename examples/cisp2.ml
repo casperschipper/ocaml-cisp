@@ -1,32 +1,39 @@
 open Cisp
-open Midi
-open Seq
+   
 
 let sr = ref 44100.0
 
-let channel = 1 
+let sec s = !sr *. s
 
-(* this maps midi input msg to an output msg (raw midi) *)
-let midiInputTestFun input =
-  (* this translates input into boolean trigger *)
-  (* a metre boolean mask that triggers notes or rests in the pattern *)
-  (* dummy event *)
-  (* apply metre to default event, use Silence as filler *)
-  let pitchPattern =
-    transpose
-      (Cisp.ofList
-         [ seq [60; 72]
-         ; rv (st 60) (st 63)
-         ; line (seq [60;72] |> floatify) (seq [60;64;72;58] |> floatify) |> trunc
-         ]) |> concat
-  in
-  input 
-  |> map (fromMidiMsgWithDur (Samps 4200))
-  |> overwritePitch pitchPattern
-  |> withDur (ch [|4250|])
-  |> withChan (st 2)
-  |> withVelo (st 100)
-  |> serialize |> map toRaw
+(* (float -> float) ->  seq.t float -> seq.t float *)
+
+(* frequency is the thing *)
+
+let phase_inc = (1.0 /. !sr) *. Float.pi *. 2.0
+
+(** recursive
+ @control : the control stream, that allows us to customize the update
+ @init : the initial state (can be anything!)
+ @update : takes a state and one value of control then produces a new state
+ @evaluate : takes current state and produces the next output value **)
 
 
-let () = Midi.playMidi midiInputTestFun sr
+                   
+(* 
+pattern:
+main : controlSq, state  4
+deconstruct control signal in x :: xs
+f : state -> value
+g : x -> state -> state
+in
+cons (f state, self xs (
+ *)
+   
+let () =
+  let freq = timed (seq [440.0;220.0;110.0]) (st 0.1) in
+  let out = osc freq in
+  Jack.play 0 Process.sample_rate [ out |> Process.ofSeq ]
+
+    
+
+    

@@ -4,33 +4,28 @@ open Seq
 
 let sr = ref 44100.0
 
+let channel = 1
+
+let maskEvt mask evtSq =
+  let c = zip evtSq mask in
+  map (fun (e,mask) -> if mask then e else SilenceEvent) c
+
+let mkPattern sqA sqB nA nB =
+  seq [sqA;sqB] |> hold (interleave nA nB)
+
+let mask =
+  mkPattern true false (seq [1;3;1;2]) (seq [2;3;1])
+  
+(* TODO recursive clock mapping *)            
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
-  (* this translates input into boolean trigger *)
-  (* a metre boolean mask that triggers notes or rests in the pattern *)
-  (* dummy event *)
-  (* apply metre to default event, use Silence as filler *)
-
-  let trigger =
-    map isNoteOn input (* this checks if it is a note pulse *) 
-  in
-  let mask =
-    st true
-  in
-  let defaultEvents = (* this is the prototype *) 
-    st (NoteEvent (MidiCh 1, Pitch 60, Velo 100, seconds 0.2))
-  in
-  let pitchPattern =
-   seq [72;67;60;67] |> hold  (ch ([|1;1;1;1;1;3|] ) |> loop (st 2) (st 3) |> concat)
-  in
-  trigger
-  |> (fun pattern -> weavePattern pattern defaultEvents (st SilenceEvent))
-  |> (fun p -> weavePattern mask p (st SilenceEvent))
-  |> overwritePitch pitchPattern
-  |> withDur (ch [|4205;8000;8000;8000|])
+  input
+  |> map (fromMidiMsgWithDur (Samps 1000))
+  |> maskEvt mask
+  |> mapSeqOverPitch (fun x _ -> x + 60) (seq [12;0] |> hold (seq [5;2;3;1;1;1;3]))
+  |> withDur (ch [|4250|])
   |> withChan (st 6)
-  |> withVelo ([ line (seq [100.0;128.0]) (st 7.); line (seq [100.0;128.0]) (st 5.) ] |> ofList |> transpose |> concat |> trunc)
+  |> withVelo (st 100)
   |> serialize |> map toRaw
-
-
-let () = Midi.playMidi midiInputTestFun sr
+                         
+let () = Midi.playMidi midiInputTestFun sr 

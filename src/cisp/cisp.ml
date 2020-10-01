@@ -1,5 +1,6 @@
 open Seq
 
+
 (* Seq is a thunk that when forced returns a value and a thunk to get the tail *)
 
 (* 
@@ -242,13 +243,21 @@ let rec zipWith f a b () =
     | Nil -> Nil
     | Cons (b, btl) -> Cons (f a b, zipWith f atl btl) )
 
-let ( +~ ) = zipWith (fun a b -> a +. b)
+let ( +.~ ) = zipWith (fun a b -> a +. b)
 
-let ( *~ ) = zipWith (fun a b -> a *. b)
+let ( *.~ ) = zipWith (fun a b -> a *. b)
 
-let ( /~ ) = zipWith (fun a b -> a /. b)
+let ( /.~ ) = zipWith (fun a b -> a /. b)
 
-let ( -~ ) = zipWith (fun a b -> a -. b)
+let ( -.~ ) = zipWith (fun a b -> a -. b)
+
+let ( +~ ) = zipWith (fun a b -> a + b)
+
+let ( *~ ) = zipWith (fun a b -> a * b)
+
+let ( /~ ) = zipWith (fun a b -> a / b)
+
+let ( -~ ) = zipWith (fun a b -> a - b)
 
 let mixList lst () = List.fold_left ( +~ ) lst
 
@@ -271,6 +280,13 @@ let rec walk start steps () =
   | Cons (h, ls) ->
       let next = start +. h in
       Cons (start, walk next ls)
+  | Nil -> Nil
+
+let rec iterwalk start f steps () =
+  match steps () with
+  | Cons (h, ls) ->
+      let next = f start h in
+      Cons (start, iterwalk next f ls)
   | Nil -> Nil
 
 (* operator is a function 
@@ -424,6 +440,12 @@ let mtof midi = 440.0 *. (2.0 ** ((midi -. 69.0) /. 12.0))
 
 let ftom freq = (12.0 *. log (freq /. 440.0)) +. 69.0
 
+(* input -> state -> (state, value) *)
+
+                                                                   
+              
+
+
 let rec collatz n () =
   if n = 1 then Nil (* lets end it here, normally loops 1 4 2 1 4 2.. *)
   else
@@ -446,21 +468,22 @@ let lineSegment curr target n () =
   in
   segment curr
 
-(* [0,1];[1,2];[2,3] etc...  *)
-let rec chain start str () =
-  match str () with
+   
+let rec selfChain sq () =
+  match sq () with
   | Nil -> Nil
-  | Cons (h, ls) -> Cons (pair start h, chain h ls)
-
-let selfChain str () =
-  (* (a,b) (b,c) (c,d) (d,e) etc... *)
-  match str () with Nil -> Nil | Cons (h, ls) -> chain h ls ()
+  | Cons (h, tail) ->
+     match tail () with
+     | Nil -> Nil 
+     | Cons(h2, _) ->
+        Cons((h,h2),  selfChain tail)
 
 let seq lst = lst |> ofList |> cycle
 
-let line target n =
-  let control = zip (selfChain target) n in
-  map (fun ((a, b), n') -> lineSegment a b n' ()) control |> concat
+let line targets ns =
+  let targs = selfChain targets in
+  let control = zip targs ns in
+  map (fun ((a, b), n) -> lineSegment a b n ()) control |> concat
 
 (* audio only, linear interpolation *)
 let mkDel max del src () =
@@ -531,9 +554,87 @@ let rec weavePattern pattern xs ys () =
 
 let weave = weavePattern
 
+let mkPattern sqA sqB nA nB =
+  seq [sqA;sqB] |> hold (interleave nA nB)
+
 let interval reps =
   reps |> map (fun n () -> Cons (true, repeat n false)) |> concat
 
 let pulse n sq filler =
   let p = interval n in
   weavePattern p sq filler
+
+(* f(a -> b) -> fa -> fb *)
+(* (a -> b) -> fa -> fb *)
+let applicative sqF sq =
+  map sqF sq |> concat
+
+let rec recursive control init update evaluate () =
+  match control () with
+  | Nil -> Nil
+  | Cons (x,xs) ->
+     let nextState = update x init in
+     Cons ( evaluate init, recursive xs nextState update evaluate )
+
+let timed sq timer =
+  let rec aux valueTime startValue later () =
+    let now = Unix.gettimeofday () in
+    if
+      later < now
+    then
+      match valueTime () with
+          | Nil -> Nil
+          | Cons((v,t),xs) ->
+             let newLater = abs_float t +. now in (* abs -> make sure we don't go back in time! *)
+             Cons(v,aux xs v newLater)
+    else
+      Cons( startValue, aux valueTime startValue later )
+      
+  in
+  let startTime = Unix.gettimeofday () in
+  let control = zip sq timer in
+  match control () with
+  | Nil -> fun () -> Nil
+  | Cons((firstV,firstT), rest) ->
+     aux rest firstV (abs_float firstT +. startTime) 
+     
+let tmd = timed
+
+let phase_inc = 1.0 /. 44100.0
+     
+let oscPhase freq startPhase =
+  recursive
+    freq
+    startPhase
+    (fun freq phase -> phase +. (freq *. phase_inc) |> (fun x -> mod_float x (Float.pi *. 2.0)))
+    sin
+     
+let osc freq =
+  oscPhase freq 0.0
+  (*let f = makeFastOsc () in
+  f freq 0.0*)
+
+let fm_osc freq ratio index =
+  let modFreq = freq *.~ ratio in
+  let modAmp = modFreq *.~ index in
+  let modSig = osc modFreq *.~ modAmp in
+  osc (freq +.~ modSig)
+
+let rec funWalk start f () =
+  Cons( start, funWalk (f start) f )
+
+let id x = x
+  
+let mupWalk start ratioSq =
+  recursive
+    ratioSq
+    start
+    ( ( *. ) ) 
+    id
+
+let boundedMupWalk start ratioSq 
+  
+let grow start ratio n =
+  mupWalk start (st ratio) |> take n |> toList
+
+  

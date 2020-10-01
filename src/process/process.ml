@@ -30,9 +30,10 @@ type sample_counter = int
 (* closure with a mutable value, tuple empty state header  *)
 
 (* ; func: float array -> int -> float array * 'output
+   state counter output
+*)
 
-input, counter, output *)
-
+                    
 type 'output t =
   { mutable state: float array
   ; func: float array -> int -> float array * 'output
@@ -121,6 +122,12 @@ let ofSeq sq =
   mk_no_state f 0.0
 
 let const v = mk empty_state (fun _ _ -> (empty_state, v)) v
+
+(* inputSeq: make a seq.t of an input *)
+let rec inputSeq channel_number () =
+  let open Seq in
+  Cons( input_array.(channel_number), inputSeq channel_number )
+    
 
 let ( ~. ) = const
 
@@ -223,6 +230,7 @@ let rnd =
 
 (* Oscillators *)
 
+  
 let sinosc freq =
   let phinc = calc_ph_inc !sample_rate in
   map sin (integrate (map (fun f -> f *. phinc) freq))
@@ -365,7 +373,7 @@ let fbank_subtract lp_filter_fun q n start_f end_f x =
 let fbank_map filter_fun q n start_f end_f x =
   List.map (fun f -> filter_fun f q x) (geo_from_to n start_f end_f)
 
-(* Analysis  *)
+           
 
 let rms freq in_proc =
   map sqrt (lpf1_static (map (fun x -> x *. x) in_proc) freq)

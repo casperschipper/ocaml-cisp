@@ -30,6 +30,16 @@ let snd (_, x) = x
 
 let flip f a b = f b a
 
+let optionLiftA2 f a b =
+  match (a,b) with
+  | (Some a, Some b) -> Some (f a b)
+  | (_,_) -> None
+
+let optionAndMap a f =
+  match (f,a) with
+  | (Some f,Some a) -> Some (f a)
+  | (_,_) -> None
+
 let ofInt = Float.of_int
 
 let ofFloat = Int.of_float
@@ -136,6 +146,8 @@ let rec foldr f z ll =
 let rec fold_right f s acc =
   match s () with Nil -> acc | Cons (e, s') -> f e (fold_right f s' acc)
 
+                                       
+
 let rec concat str () =
   match str () with
   | Nil -> Nil
@@ -194,6 +206,9 @@ let rec transpose sq () =
 let transcat sq =
   sq |> transpose |> concat
 
+let transList lst =
+  lst |> ofList |> transcat
+
 let rec transpose_list lst =
   let foldHeads acc x = match x with [] -> acc | h :: _ -> h :: acc in
   let foldTails acc x = match x with [] -> acc | _ :: ts -> ts :: acc in
@@ -212,6 +227,15 @@ let rec countFrom n () = Cons (n, countFrom (n + 1))
 
 let count = countFrom 0
 
+let countTill n =
+  let rec aux current n () = (* 0 10 *) 
+    if current < n then
+      Cons (current, aux (current + 1) n)
+    else
+      Cons (0, aux 1 n)
+  in
+  aux 0 n
+          
 let rec zip a b () =
   match a () with
   | Nil -> Nil
@@ -222,6 +246,10 @@ let rec zipList a b =
   match a with
   | [] -> []
   | x :: xs -> ( match b with [] -> [] | y :: ys -> (x, y) :: zipList xs ys )
+
+let unzip sq =
+  let (seqA, seqB) = (map fst sq , map snd sq)in
+  (seqA,seqB)
 
 let rec zip3 a b c () =
   match (a (), b (), c ()) with
@@ -317,6 +345,9 @@ let boundedWalkf start steps wrapfunc =
         Cons (wrapfunc start, aux next ls)
   in
   aux start steps
+
+let cap arr =
+  Array.length arr
 
 let safeIdx len idx = if idx < 0 then len - (abs idx mod len) else idx mod len
 
@@ -576,6 +607,9 @@ let rec recursive control init update evaluate () =
      let nextState = update x init in
      Cons ( evaluate init, recursive xs nextState update evaluate )
 
+
+
+
 let timed sq timer =
   let rec aux valueTime startValue later () =
     let now = Unix.gettimeofday () in
@@ -632,9 +666,64 @@ let mupWalk start ratioSq =
     ( ( *. ) ) 
     id
 
+let bouncyWalk start lower higher stepSq =
+  recursive
+    stepSq
+    start
+    (fun previous control ->
+      if (previous > higher) then
+        previous -. abs_float control
+      else
+        (if (previous < lower) then
+              previous +. abs_float control
+     else
+       (previous +. control)))
+    id
+
+let rec until condition sq () =
+  match sq () with
+  | Nil -> Nil
+  | Cons(x,xs) -> if condition x then
+                    Cons(x, until condition xs)
+                  else
+                    Nil
+  
+let resetWalk walk stepSq resetN source =
+  let control = zip resetN source in
+  let rec controlWithSteps ctrl stepSeq () =
+    match ctrl () with
+    | Nil -> Nil
+    | Cons((n,src), ctrlTail) ->
+       let stepTail = drop n stepSeq in
+       Cons ((src,take n stepSeq), controlWithSteps ctrlTail stepTail )
+  in
+  let allWalks = 
+    map
+      (fun (start, stepper) -> walk start stepper )
+      (controlWithSteps control stepSq)
+  in concat allWalks
+       
+      
+let rec fromRef reference () =
+  Cons (!reference, fromRef reference)
+
 (* let boundedMupWalk start ratioSq *)
   
 let grow start ratio n =
   mupWalk start (st ratio) |> take n |> toList
+
+let write arr index value =
+  let control = zip index value in
+  map (fun (idx, value) -> arr.(idx) <- value) control
+
+let syncEffect sq effectSq =
+  (* just update an effect stream in sync with sq, but don't use its return value *) 
+  let both = zip sq effectSq in
+  map (fun (signal, _) -> signal) both
+
+let fractRandTimer sq =
+  tmd sq
+    (tmd sq
+       (tmd sq sq))
 
   

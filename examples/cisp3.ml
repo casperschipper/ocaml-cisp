@@ -1,21 +1,40 @@
 open Cisp
 open Midi
 open Seq
+open Reader.Ops
+
+(* simple mod of controller 1 onto pitch *)
 
 let sr = ref 44100.0
 
-let channel = 1 
+let pitchControl =
+  MidiState.getControlR (MidiCh 0) (MidiCtrl 1) 
+  >>= (fun (MidiVal ctrl1) ->
+    MidiState.triggerR 3000 >>= (fun evt ->
+         (ctrl1, evt) |> Reader.return))
 
+let offsetPitch offset evt =
+  mapOverPitch ((+) offset) evt
 
-(* TODO recursive clock mapping *)            
+let overwritePitch newPitch evt =
+  withPitch newPitch evt
+
+(* zipWith is awesome! it allows to combine two seqs into one! *)
+
+let ofTuple tup =
+  let (ctrl, evt) = unzip tup in (* a seq of (x,y) make it (seq x, seq y) *)
+  let myseq = seq [0;7;12;14;15;14] in (* myseq *)
+  let offset = myseq +~ ctrl in (* adding myseq to ctrl1 *)
+  zipWith offsetPitch offset evt (* add the summed seqs to evt.pitch *)
+  
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
-  input
-  |> map (fromMidiMsgWithDur (Samps 1000))
-  |> map (mapOverPitch (fun p -> p + 0)) (* applicative ! *)
-  |> withDur (ch [|42500|])
-  |> withChan (st 4)
-  |> withVelo (seq [100;0] |> hold ([st 1;seq [|2;3;1;1|]] |> ofList |> transcat))
-  |> serialize |> map toRaw
-                         
+  input 
+  |> MidiState.makeSeq (* take msg, make it a state *)
+  |> map (Reader.run pitchControl) (* run a bunch of readers to extract properties *)
+  |> ofTuple (* the result is then used to contruct streams *)
+  |> serialize |> map toRaw (* turn back into raw midi *)
+
+  
 let () = Midi.playMidi midiInputTestFun sr 
+           

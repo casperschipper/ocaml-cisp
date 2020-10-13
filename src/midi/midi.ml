@@ -1,6 +1,31 @@
 open Cisp
 open Seq
 
+module Reader = struct
+  type ('e, 'a) t = Reader of ('e -> 'a)
+
+  let run = function
+    | Reader r -> r
+
+  let map f m = Reader (fun env -> f (run m env))
+
+  let bind f m = Reader (fun env -> run (f (run m env)) env)
+               
+  let ( >>= ) m f = bind f m
+
+  let return x = Reader (fun _ -> x)
+
+  let ask () = Reader (fun env -> env)
+
+  let asks f () = map f (ask ())
+
+  let local f m = Reader (fun env -> run m (f env))
+
+  module Ops = struct
+    let ( >>= ) m f = bind f m
+  end
+end
+   
 type midiValue = MidiVal of int
 
 type velocity = Velo of int
@@ -87,9 +112,21 @@ let mapOverVelo f evt =
   | NoteEvent (c, p, Velo v, d) -> NoteEvent (c, p, mkVelocityClip (f v), d)
   | other -> other
 
-let mapSeqOverPitch f control evtSq =
-  let c = zip control evtSq in
-  map (fun (ctrl,evt) -> mapOverPitch (f ctrl) evt) c
+let mapOverDuration f evt =
+  match evt with
+  | NoteEvent (c,p,v,Samps d) -> NoteEvent (c,p,v, Samps (f d))
+  | other -> other
+(* applicative 
+(a -> b -> c) -> Seq.t a -> Seq.t b -> Seq.t c  
+ *)                                     
+
+                     
+         
+  
+                 
+        
+
+  
            
 let rec withPitch pitchSq sq () =
   match sq () with
@@ -144,12 +181,190 @@ type midiMessage =
   | ClockStop
   | MidiSilence
 
+(* open questino: should midiMessage be used with midiMessage option, so to avoid MidiSilence ? *)
+
 let mapOverMidiPitch f msg =
   match msg with
   | NoteOn (ch, Pitch p, v) -> NoteOn (ch, Pitch (f p |> clip 0 127), v)
   | NoteOff (ch, Pitch p, v) -> NoteOff (ch, Pitch (f p |> clip 0 127), v)
   | other -> other
 
+let mapPitch f msg  =
+  (* function that maps over the pitch of an event *)
+  match msg with
+  | NoteOn (_,Pitch p,_) -> Some (f p)
+  | NoteOff (_,Pitch p,_) -> Some (f p)
+  | _ -> None
+
+let getPitch msg =
+  match msg with
+  | NoteOn (_,Pitch p,_) -> Some p
+  | NoteOff (_,Pitch p,_) -> Some p
+  | _ -> None
+
+let mapOverNotes f midiMsgs ctrlSq =
+  recursive
+    midiMsgs
+    (MidiSilence,ctrlSq)
+    (fun input state ->
+      match (input, (snd state) ()) with
+        | (NoteOn (_,_,_), Cons(ctrl,ctrlTail)) -> (f input ctrl, ctrlTail)
+        | (otherMsg,state) -> (otherMsg,fun () ->  state))
+    (fun state -> fst state)
+
+let mapOverEvents f midiEvts ctrlSq =
+  recursive
+    midiEvts
+    (SilenceEvent,ctrlSq)
+    (fun input state ->
+      match (input, (snd state) ()) with
+        | (NoteEvent _, Cons(ctrl,ctrlTail)) -> (f input ctrl, ctrlTail)
+        | (otherEvent,state) -> (otherEvent,fun () ->  state))
+    (fun state -> fst state)
+
+let mapSeqOverPitch f inputMidiMsg pitchSq =
+  let overPitch msg ctrl =
+    match msg with
+    | NoteOn (MidiCh ch, Pitch p, Velo v) -> NoteOn (MidiCh ch, mkPitchClip(f p ctrl), Velo v)
+    | otherMsg -> otherMsg
+  in
+  mapOverNotes overPitch inputMidiMsg pitchSq
+  
+let hasHigherPitch msga msgb =
+  getPitch msga |> Option.map (>) |> optionAndMap (getPitch msgb)
+   
+  
+module ControllerMap = Map.Make(Int)
+
+module KeyPitchMap = Map.Make(Int)
+  
+module MidiState =
+  struct
+    type t =
+      { depressedNotes : velocity KeyPitchMap.t 
+      ; controlValues : midiValue ControllerMap.t
+      ; currentNote : (midiChannel * pitch * velocity) option  } (* this is the note that was played just now, for triggering, default is none *)
+     
+    let chanPitchToKey (MidiCh ch) p = p + (ch * 128)
+
+    let keyToChanPitch key = (MidiCh (key / 128),(key mod 128))
+
+    let chanCtrlToKey (MidiCh ch) (MidiCtrl c) = c + (ch * 128)
+
+    let keyToChanCtrl key = ((key / 128),(key mod 128))
+                       
+    let empty =
+      { depressedNotes = KeyPitchMap.empty
+      ; controlValues = ControllerMap.empty
+      ; currentNote = None }                 
+                    
+    let update midiMsg state =
+      (* map.add = x y m = item key map *)
+      match midiMsg with
+      | NoteOn (midiCh, Pitch p, v) ->
+         { state with
+           depressedNotes = KeyPitchMap.add (chanPitchToKey midiCh p) v state.depressedNotes
+          ; currentNote = Some (midiCh, Pitch p, v) }
+      | NoteOff (midiCh, Pitch p, Velo _) ->
+         { state with
+           depressedNotes = KeyPitchMap.remove (chanPitchToKey midiCh p) state.depressedNotes
+         ; currentNote = None }
+      | Control (midiCh,ctrl,value) ->
+         { state with
+           controlValues = ControllerMap.add (chanCtrlToKey midiCh ctrl) value state.controlValues
+           ; currentNote = None }
+          | _ -> { state with currentNote = None }
+
+    let makeSeq midiMsgSq =
+      recursive
+        midiMsgSq
+        empty
+        update
+        id
+
+    let makeTrigger stateSq =
+      Seq.map (fun state -> state.currentNote) stateSq
+      
+      
+    let getVeloOfKey key keyPitchMap =
+      let mvalue =
+        KeyPitchMap.find_opt key keyPitchMap
+      in
+      match mvalue with
+      | None -> 0
+      | Some v -> v
+      
+    let keyIsOfChannel channel key _ =
+      match channel with
+      | MidiCh ch -> (key / 128) == ch
+      
+      
+    let filterChannel channel keyPitchMap =
+      let p = keyIsOfChannel channel in
+      KeyPitchMap.filter p keyPitchMap
+
+    let getDepressedKeysAnyChannel state =
+      KeyPitchMap.bindings state.depressedNotes
+
+    let getDepressedKeysChannel channel state =
+      state.depressedNotes |> filterChannel channel |> KeyPitchMap.bindings
+
+    let getFirstNote channel state =
+      let lst =
+        getDepressedKeysChannel channel state
+      in
+      match lst with
+        [] -> (Pitch 0,Velo 0)
+       | (p,v)::_ -> (Pitch p,v)
+                      
+
+    let getControllerValue channel ctrlNumber state =
+      let key =
+        chanCtrlToKey channel ctrlNumber
+      in
+      state.controlValues
+      |> ControllerMap.find_opt key
+      |> Option.value ~default:(MidiVal 0)
+      
+
+    let getControlR midiCh ctrlNumber =
+      let open Reader.Ops in
+      Reader.ask () >>= (fun env -> getControllerValue midiCh ctrlNumber env |> Reader.return)
+      
+    let triggerFromCurrent duration state =
+      let current =
+        state.currentNote
+      in
+       (fun pv ->
+          match pv with
+          | Some (MidiCh ch,Pitch p, Velo v) -> mkNoteClip ch p v duration
+          | None -> SilenceEvent)
+         current
+
+    let triggerR duration =
+      let open Reader.Ops in
+      Reader.ask () >>= (fun env -> triggerFromCurrent duration env |> Reader.return )
+
+    let getCurrentOfChannel channel state =
+      let curr = state.currentNote in
+      match curr with
+        Some (ch,_,_) ->  if ch == channel then
+                            curr
+                          else
+                            None
+       | None -> None
+
+      
+  end
+
+  
+  
+
+    
+    
+     
+    
+  
 let prepend prefix str = prefix ^ str
 
 let midiToString = function

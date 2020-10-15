@@ -10,6 +10,8 @@ let thunk x = fun () -> x
 
 let samplerate = ref 44100.0
 
+let id x = x
+               
 let thunk x () = x
 
 let emptySt () = Nil
@@ -248,8 +250,15 @@ let rec zipList a b =
   | x :: xs -> ( match b with [] -> [] | y :: ys -> (x, y) :: zipList xs ys )
 
 let unzip sq =
-  let (seqA, seqB) = (map fst sq , map snd sq)in
-  (seqA,seqB)
+  (map fst sq , map snd sq)
+ 
+  
+let unzip3 sq =
+  let first (x,_,_) = x in
+  let second (_,x,_) = x in
+  let third (_,_,x) = x in
+  (map first sq, map second sq, map third sq) 
+  
 
 let rec zip3 a b c () =
   match (a (), b (), c ()) with
@@ -287,6 +296,13 @@ let ( /~ ) = zipWith (fun a b -> a / b)
 
 let ( -~ ) = zipWith (fun a b -> a - b)
 
+let rec mkLots n thing =
+  if n > 1 then
+    thing () +.~ (mkLots (n-1) thing)
+  else
+    thing ()
+
+
 let mixList lst () = List.fold_left ( +~ ) lst
 
 (* zipped list will be lenght of shortest list *)
@@ -303,6 +319,22 @@ let wrap low high x =
   let modded = (x - low) mod range in
   if modded < 0 then high + x else low + x
 
+let rec recursive control init update evaluate () =
+  match control () with
+  | Nil -> Nil
+  | Cons (x,xs) ->
+     let nextState = update x init in
+     Cons ( evaluate init, recursive xs nextState update evaluate ) 
+  
+let walki start steps =
+  recursive
+    steps
+    start
+    (fun x start -> x + start)
+    id
+    
+ 
+  
 let rec walk start steps () =
   match steps () with
   | Cons (h, ls) ->
@@ -600,17 +632,12 @@ let pulse n sq filler =
 let applicative sqF sq =
   map sqF sq |> concat
 
-let rec recursive control init update evaluate () =
-  match control () with
-  | Nil -> Nil
-  | Cons (x,xs) ->
-     let nextState = update x init in
-     Cons ( evaluate init, recursive xs nextState update evaluate )
 
 
 
 
-let timed sq timer =
+
+let timed intervalSeconds sq =
   let rec aux valueTime startValue later () =
     let now = Unix.gettimeofday () in
     if
@@ -626,7 +653,7 @@ let timed sq timer =
       
   in
   let startTime = Unix.gettimeofday () in
-  let control = zip sq timer in
+  let control = zip sq intervalSeconds in
   match control () with
   | Nil -> fun () -> Nil
   | Cons((firstV,firstT), rest) ->
@@ -657,7 +684,7 @@ let fm_osc freq ratio index =
 let rec funWalk start f () =
   Cons( start, funWalk (f start) f )
 
-let id x = x
+
   
 let mupWalk start ratioSq =
   recursive
@@ -721,9 +748,16 @@ let syncEffect sq effectSq =
   let both = zip sq effectSq in
   map (fun (signal, _) -> signal) both
 
-let fractRandTimer sq =
-  tmd sq
-    (tmd sq
-       (tmd sq sq))
+let fractRandTimer timerSeq =
+  tmd timerSeq
+    (tmd timerSeq
+       (tmd timerSeq timerSeq))
 
-  
+let rec fractRandTimerN n timerSeq =
+  if n < 1 then
+    tmd timerSeq timerSeq
+  else
+    tmd timerSeq (fractRandTimerN (n - 1) timerSeq)
+
+
+

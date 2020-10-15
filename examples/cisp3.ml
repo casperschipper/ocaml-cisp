@@ -8,7 +8,7 @@ open Reader.Ops
 let sr = ref 44100.0
 
 let pitchControl =
-  MidiState.getControlR (MidiCh 0) (MidiCtrl 1) 
+  MidiState.getControlR (MidiCh 0) (MidiCtrl 0) 
   >>= (fun (MidiVal ctrl1) ->
     MidiState.triggerR 3000 >>= (fun evt ->
          (ctrl1, evt) |> Reader.return))
@@ -21,11 +21,13 @@ let overwritePitch newPitch evt =
 
 (* zipWith is awesome! it allows to combine two seqs into one! *)
 
+
 let ofTuple tup =
   let (ctrl, evt) = unzip tup in (* a seq of (x,y) make it (seq x, seq y) *)
-  let myseq = seq [0;7;12;14;15;14] in (* myseq *)
-  let offset = myseq +~ ctrl in (* adding myseq to ctrl1 *)
-  zipWith offsetPitch offset evt (* add the summed seqs to evt.pitch *)
+  let arr = [|0;7;12;14;15;14|] in (* myseq *)
+  let mywalk = walki 0 ctrl in 
+  let indexed = index arr mywalk in
+  zipWith offsetPitch indexed evt (* add the summed seqs to evt.pitch *)
   
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =

@@ -1,31 +1,33 @@
 open Cisp
-open Midi
 open Seq
+   
+let sec s = !Process.sample_rate *. s
 
-let sr = ref 44100.0
+          
+let kees =
+  ch [|0.99;1.01;1.5;2.0;3.0;4.0;5.0|] |> map (( *. ) 5.0) |> map sec
 
-let channel = 1
-
-let maskEvt mask evtSq =
-  let c = zip evtSq mask in
-  map (fun (e,mask) -> if mask then e else SilenceEvent) c
-
-let mkPattern sqA sqB nA nB =
-  seq [sqA;sqB] |> hold (interleave nA nB)
-
-let mask =
-  mkPattern true false (seq [1;3;1;2]) (seq [2;3;1])
+let theTimed =
+  fractRandTimer kees
   
-(* TODO recursive clock mapping *)            
-(* this maps midi input msg to an output msg (raw midi) *)
-let midiInputTestFun input =
-  input
-  |> map (fromMidiMsgWithDur (Samps 1000))
-  |> maskEvt mask
-  |> mapSeqOverPitch (fun x _ -> x + 60) (seq [12;0] |> hold (seq [5;2;3;1;1;1;3]))
-  |> withDur (ch [|4250|])
-  |> withChan (st 6)
-  |> withVelo (st 100)
-  |> serialize |> map toRaw
-                         
-let () = Midi.playMidi midiInputTestFun sr 
+(*let noisy = rvf (st 0.0) <| line (seq [0.0;2.0;2.0;0.0]) (st <| sec 5.0)*)
+
+let top = (line (seq [10.0; sec 10.0]) (ch [|13.0;17.0|]))
+
+let target = (seq [0.0;10.0]) |> map sec
+
+let myindex = (line target kees)  (* +.~ noisy*)
+           
+              
+let () =
+  let buffer = Array.make (sec 10.0 |> Int.of_float) 0.0 in
+  let writer = write buffer (countTill <| cap buffer) (Process.inputSeq 0) in
+
+  let mkOut () = indexLin buffer myindex in
+  let joined = syncEffect (mkOut ()) writer in
+  Jack.playSeqs 1 Process.sample_rate [ joined +.~ mkLots 15 mkOut ; mkLots 15 mkOut]
+
+     
+
+    
+    

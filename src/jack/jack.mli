@@ -24,3 +24,7 @@ val play : int -> float ref -> float Process.t list -> unit
     generate the signal for one output channel. The number of inputs has to set and 
     the sample rate should be the global variable [sample_rate] 
     from the [Process] module. *)
+
+(* this is for float Seq.t *)
+val playSeqs : int -> float ref -> float Seq.t list -> unit
+                                                        

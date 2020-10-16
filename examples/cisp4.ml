@@ -1,53 +1,59 @@
 open Cisp
-open Midi
 open Seq
+   
+let sec s = !Process.sample_rate *. s
 
-(* simple mod of controller 1 onto pitch *)
+(* (float -> float) ->  seq.t float -> seq.t float *)
 
-let sr = ref 44100.0
+(* frequency is the thing *)
 
-let channel = 1 
+let phase_inc = (1.0 /. !Process.sample_rate) *. Float.pi *. 2.0
 
-let latchControl midiInputSq =
-  let update currentMidiMsg (_,myControl) =
-    match currentMidiMsg with
-    | Control (MidiCh 0,MidiCtrl _,MidiVal value) ->
-       let () =
-         print_string "hallo"; print_int value 
-       in
-      (MidiSilence, value)
-    | anything ->
-      (anything, myControl)
-  in
-  let evaluate =
-    id
-  in
-  recursive 
-    midiInputSq
-    (MidiSilence,0)
-    update
-    evaluate
+(** recursive
+ @control : the control stream, that allows us to customize the update
+ @init : the initial state (can be anything!)
+ @update : takes a state and one value of control then produces a new state
+ @evaluate : takes current state and produces the next output value **)
+
+
+                   
+(* 
+pattern:
+main : controlSq, state  4
+deconstruct control signal in x :: xs
+f : state -> value
+g : x -> state -> state
+in
+cons (f state, self xs (
+ *)
+
+let rec mkLots n thing =
+  if n != 0 then
+    thing () +.~ (mkLots (n-1) thing)
+  else
+    (st 0.0)
+
+
+let timerSeq =
+  ch [|0.1;0.2;0.4|] |> loop (st 3) (st 32) |> map sec
+
+let fractalTime =
+  fractRandTimerN 3 timerSeq
+  
+let noisy = rvf (st 0.0) <| line (seq [0.0;20.0;20.0;0.0]) (st <| sec 5.0) |> loop (st 24) (st 48)
+
+let myindex = (line (seq [0.0;sec 5.0]) (fractalTime))  +.~ noisy
+  
+
+              
+let () =
+  let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in
+  let writer = write buffer (countTill <| cap buffer) (Process.inputSeq 0) in
+
+  let mkOut () =indexLin buffer myindex in
+  let joined = syncEffect (mkOut ()) writer in
+  Jack.playSeqs 1 Process.sample_rate [ joined +.~ mkLots 4 mkOut ; mkLots 5 mkOut ]
+
+     
 
     
-     
-let fromControl ((event, control),extraPar) =
-  match event with
-  | NoteOn (_,_,_)->
-     mkNoteClip 1 (0+control - ((control mod 12) + extraPar)) 100 3000
-  | _ ->
-     SilenceEvent
-
-let fromControlSq sq =
-  map fromControl sq
-
-
-  
-            
-(* TODO recursive clock mapping *)            
-(* this maps midi input msg to an output msg (raw midi) *)
-let midiInputTestFun input =
-  input
-  |> trigger (st c3)
-  |> serialize |> map toRaw
-                         
-let () = Midi.playMidi midiInputTestFun sr 

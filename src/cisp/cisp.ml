@@ -32,6 +32,8 @@ let snd (_, x) = x
 
 let flip f a b = f b a
 
+
+               
 let optionLiftA2 f a b =
   match (a,b) with
   | (Some a, Some b) -> Some (f a b)
@@ -233,7 +235,7 @@ let countTill n =
   let rec aux current n () = (* 0 10 *) 
     if current < n then
       Cons (current, aux (current + 1) n)
-    else
+    else 
       Cons (0, aux 1 n)
   in
   aux 0 n
@@ -381,16 +383,61 @@ let boundedWalkf start steps wrapfunc =
 let cap arr =
   Array.length arr
 
+
+  
 let safeIdx len idx = if idx < 0 then len - (abs idx mod len) else idx mod len
 
-let indexArr arr idx =
-  let len = Array.length arr in
+(* guarentee that we are using a power of two *)
+type powerOfTwo = PowerOfTwo of int
+
+let isPowerOfTwo = function
+  | 0 -> false
+  | x -> (x land (x - 1) = 0)
+    
+let rec pow a = function
+  | 0 -> 1
+  | 1 -> a
+  | n -> 
+    let b = pow a (n / 2) in
+    b * b * (if n mod 2 = 0 then 1 else a)
+                              
+let mkPowerOfTwo n =
+  PowerOfTwo (pow 2 n)
+                    
+let fastSafeIdx (PowerOfTwo len) idx =
+  idx land (len - 1)
+                    
+let indexArr len arr idx =
   arr.(safeIdx len idx)
 
-let rec index arr indexer () =
-  match indexer () with
-  | Nil -> Nil
-  | Cons (idx, idxs) -> Cons (indexArr arr idx, index arr idxs)
+let fastIndexArr len arr idx =
+  arr.(fastSafeIdx len idx) 
+
+let getSafeIndexFun arr =
+  let size = Array.length arr in
+  if isPowerOfTwo size then
+    fastIndexArr (PowerOfTwo size) arr
+  else
+    indexArr size arr
+
+let getSafeWriteFun arr =
+  let writeArr len arr idx value =
+    arr.(safeIdx len idx) <- value
+  in
+  let writeArrFast len arr idx value =
+    arr.(fastSafeIdx len idx) <- value
+  in
+  let size = Array.length arr in
+  if isPowerOfTwo size then
+    writeArrFast (PowerOfTwo size) arr
+  else 
+    writeArr size arr
+    
+let index arr indexer =
+  let arrIndexFun =
+    getSafeIndexFun arr
+  in
+  map (fun idx -> arrIndexFun idx) indexer
 
 let listWalk arr step () =
   let wrapFunc = wrap 0 (Array.length arr) in
@@ -423,17 +470,82 @@ let rec sometimes x y p () =
   Cons (head (), sometimes x y p)
 
 let linInterp xa xb px = ((xb -. xa) *. px) +. xa
+(*
+https://www.musicdsp.org/en/latest/Other/93-hermite-interpollation.html
+James Mcarty
+inline float hermite2(float x, float y0, float y1, float y2, float y3)
+{
+    // 4-point, 3rd-order Hermite (x-form)
+    float c0 = y1;
+    float c1 = 0.5f * (y2 - y0);
+    float c3 = 1.5f * (y1 - y2) + 0.5f * (y3 - y0);
+    float c2 = y0 - y1 + c1 - c3;
 
-let rec indexLin arr indexer () =
+    return ((c3 * x + c2) * x + c1) * x + c0;
+}*)
+
+let getBiggerPowerOfTwo x =
+  let rec aux x count =
+    if x = 0 then
+      count
+    else aux (x asr 1) (count + 1)
+  in
+  aux x 0 |> pow 2 
+
+let mkBuffer minimumSizeInSeconds =
+  let size = (!samplerate |> Int.of_float) * minimumSizeInSeconds in
+  let optimumSize = getBiggerPowerOfTwo size in
+  Array.make optimumSize 0.0
+  
+                       
+let hermit x y0 y1 y2 y3 =
+  let c0 = y1 in
+  let c1 = 0.5 *. (y2 -. y0) in
+  let c3 = 1.5 *. (y1 -. y2) +. 0.5 *. (y3 -. y0) in
+  let c2 = y0 -. y1 +. c1 -. c3 in
+  ((c3 *. x +. c2) *. x +. c1) *. x +. c0
+  
+let indexLin arr indexer =
   let len = Array.length arr in
-  match indexer () with
-  | Nil -> Nil
-  | Cons (idx, idxs) ->
+  let arrIndexFun =
+    getSafeIndexFun arr
+  in
+  let f idx =
+      begin
       let xa = idx |> Float.floor |> Int.of_float in
       let xb = (xa + 1) mod len in
       let xp = idx -. Float.of_int xa in
-      let y = linInterp (indexArr arr xa) (indexArr arr xb) xp in
-      Cons (y, indexLin arr idxs)
+      linInterp (arrIndexFun xa) (arrIndexFun xb) xp
+      end
+  in
+  map f indexer
+ 
+      
+      
+
+let indexCub arr indexer =
+  let len = Array.length arr in
+  let ifun =
+    getSafeIndexFun arr
+  in
+  (* a____b__x__c___d *)
+  let f idx =
+    let b = idx |> Int.of_float in
+    let a = match b - 1 with
+      | -1 -> len
+      | other -> other
+    in
+    let c = b + 1 in
+    let d = b + 2 in
+    let (y0,y1,y2,y3) = (ifun a,ifun b, ifun c, ifun d) in
+    hermit (idx -. (Float.of_int b)) y0 y1 y2 y3
+  in
+  map f indexer
+    
+                      
+    
+      
+ 
 
 let sineseg wavesamps =
   let incr = 1.0 /. Float.of_int wavesamps in
@@ -504,10 +616,6 @@ let mtof midi = 440.0 *. (2.0 ** ((midi -. 69.0) /. 12.0))
 let ftom freq = (12.0 *. log (freq /. 440.0)) +. 69.0
 
 (* input -> state -> (state, value) *)
-
-                                                                   
-              
-
 
 let rec collatz n () =
   if n = 1 then Nil (* lets end it here, normally loops 1 4 2 1 4 2.. *)
@@ -616,6 +724,19 @@ let rec weavePattern pattern xs ys () =
     | Nil -> Nil )
 
 let weave = weavePattern
+
+let weaveArray arr indexer =
+  let fIdx = getSafeIndexFun arr in
+  let fWr = getSafeWriteFun arr in
+    map (fun idx ->
+      let sq = fIdx idx in
+      match sq () with
+      | Cons (h,tail) -> fWr idx tail; h 
+      | Nil -> 0.0
+    ) indexer
+   
+    
+  
 
 let mkPattern sqA sqB nA nB =
   seq [sqA;sqB] |> hold (interleave nA nB)

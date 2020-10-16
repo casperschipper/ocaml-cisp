@@ -1,47 +1,56 @@
 open Cisp
-open Midi
 open Seq
-open Reader.Ops
-
-(* simple mod of controller 1 onto pitch *)
 
 let sr = ref 44100.0
 
-let pitchControl =
-  MidiState.getControlR (MidiCh 0) (MidiCtrl 0) 
-  >>= (fun (MidiVal ctrl1) ->
-    MidiState.getControlR (MidiCh 0) (MidiCtrl 1) >>=
-      (fun (MidiVal ctrl2) ->
-        MidiState.triggerR 3000 >>= (fun evt ->
-         (ctrl1,ctrl2, evt) |> Reader.return)))
-       
-let offsetPitch offset evt =
-  mapOverPitch ((+) offset) evt
+let sec s = !sr *. s
 
-let overwritePitch newPitch evt =
-  withPitch newPitch evt
+(* (float -> float) ->  seq.t float -> seq.t float *)
 
-(* zipWith is awesome! it allows to combine two seqs into one! *)
+(* frequency is the thing *)
+
+let phase_inc = (1.0 /. !sr) *. Float.pi *. 2.0
+
+(** recursive
+ @control : the control stream, that allows us to customize the update
+ @init : the initial state (can be anything!)
+ @update : takes a state and one value of control then produces a new state
+ @evaluate : takes current state and produces the next output value **)
 
 
-let ofTuple tup =
-  let (c1,c2,evt) = unzip3 tup in (* a seq of (x,y) make it (seq x, seq y) *)
-  let arr = [|0;7;12;14;15;14|] in (* myseq *)
-  let arr2 = [|0;7;4;4;0;12;-12|] in
-  let mywalk = walki 0 c1 in
-  let mywalk2 = walki 0 c2 in
-  let indexed = index arr mywalk in
-  let indexed2 = index arr2 mywalk2 in
-  zipWith offsetPitch (indexed +~ indexed2) evt (* add the summed seqs to evt.pitch *)
-  
-(* this maps midi input msg to an output msg (raw midi) *)
-let midiInputTestFun input =
-  input 
-  |> MidiState.makeSeq (* take msg, make it a state *)
-  |> map (Reader.run pitchControl) (* run a bunch of readers to extract properties *)
-  |> ofTuple (* the result is then used to contruct streams *)
-  |> serialize |> map toRaw (* turn back into raw midi *)
+                   
+(* 
+pattern:
+main : controlSq, state  4
+deconstruct control signal in x :: xs
+f : state -> value
+g : x -> state -> state
+in
+cons (f state, self xs (
+ *)
+
 
   
-let () = Midi.playMidi midiInputTestFun sr 
-           
+  
+   
+   
+let () =
+  let times = grow 0.01 2.0 26 |> Array.of_list in
+  (*let audioIn = Process.inputSeq 0 in*)
+  let ratio = (line (ch [|0.001; 0.1;0.3;1.0;2.0;4.0;80.0|]) (map sec <| ch times)) in
+  let depth = (line (seq [0.001; 0.2; 1.0;2.0;4.0;80.0]) (map sec <| ch times)) in
+  let sinewave f = fm_osc (st f) ratio depth in
+  let rec lots n =
+    if n != 0 then
+      (st 0.1 *.~ sinewave (Random.float (40.0) |> mtof)) +.~ (lots (n-1))
+    else
+      (st 0.0)
+  in
+    
+  
+  (*let proc =
+    zipWith (fun x y -> x *. y) sinewave audioIn |> map (fun x -> x *. 1.) |> Process.ofSeq
+  in *)
+  Jack.playSeqs 1 Process.sample_rate [lots 12 ; lots 12 ] 
+
+    

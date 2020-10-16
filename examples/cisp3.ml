@@ -1,42 +1,54 @@
 open Cisp
-open Midi
 open Seq
-open Reader.Ops
+   
+let sec s = !Process.sample_rate *. s
 
-(* simple mod of controller 1 onto pitch *)
+(* (float -> float) ->  seq.t float -> seq.t float *)
 
-let sr = ref 44100.0
+(* frequency is the thing *)
 
-let pitchControl =
-  MidiState.getControlR (MidiCh 0) (MidiCtrl 0) 
-  >>= (fun (MidiVal ctrl1) ->
-    MidiState.triggerR 3000 >>= (fun evt ->
-         (ctrl1, evt) |> Reader.return))
+let phase_inc = (1.0 /. !Process.sample_rate) *. Float.pi *. 2.0
 
-let offsetPitch offset evt =
-  mapOverPitch ((+) offset) evt
-
-let overwritePitch newPitch evt =
-  withPitch newPitch evt
-
-(* zipWith is awesome! it allows to combine two seqs into one! *)
+(** recursive
+ @control : the control stream, that allows us to customize the update
+ @init : the initial state (can be anything!)
+ @update : takes a state and one value of control then produces a new state
+ @evaluate : takes current state and produces the next output value **)
 
 
-let ofTuple tup =
-  let (ctrl, evt) = unzip tup in (* a seq of (x,y) make it (seq x, seq y) *)
-  let arr = [|0;7;12;14;15;14|] in (* myseq *)
-  let mywalk = walki 0 ctrl in 
-  let indexed = index arr mywalk in
-  zipWith offsetPitch indexed evt (* add the summed seqs to evt.pitch *)
+                   
+(* 
+pattern:
+main : controlSq, state  4
+deconstruct control signal in x :: xs
+f : state -> value
+g : x -> state -> state
+in
+cons (f state, self xs (
+ *)
+
+let rec mkLots n thing =
+  if n != 0 then
+    thing () +.~ (mkLots (n-1) thing)
+  else
+    (st 0.0)
+
+let timer = lift rvf 0.0 5.03 |> loop (st 4) (st 5) |> map sec 
   
-(* this maps midi input msg to an output msg (raw midi) *)
-let midiInputTestFun input =
-  input 
-  |> MidiState.makeSeq (* take msg, make it a state *)
-  |> map (Reader.run pitchControl) (* run a bunch of readers to extract properties *)
-  |> ofTuple (* the result is then used to contruct streams *)
-  |> serialize |> map toRaw (* turn back into raw midi *)
+let noisy = rvf (st 0.0) <| line (seq [0.0;20.0;20.0;0.0]) (st <| sec 5.0) |> loop (st 24) (st 48)
 
+let myindex = (line (seq [0.0;sec 5.0]) (timer))  +.~ noisy
   
-let () = Midi.playMidi midiInputTestFun sr 
-           
+
+              
+let () =
+  let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in
+  let writer = write buffer (countTill <| cap buffer) (Process.inputSeq 0) in
+
+  let mkOut () =indexLin buffer myindex in
+  let joined = syncEffect (mkOut ()) writer in
+  Jack.play 1 Process.sample_rate [ joined +.~ mkLots 4 mkOut |> Process.ofSeq ; mkLots 5 mkOut |> Process.ofSeq ]
+
+     
+
+    

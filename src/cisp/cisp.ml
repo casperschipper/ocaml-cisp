@@ -32,8 +32,63 @@ let snd (_, x) = x
 
 let flip f a b = f b a
 
+let minimum a b =
+  if a > b then b else a
 
-               
+let maximum a b =
+  if a > b then a else b
+
+
+
+(* List a -> (List a -> b) -> List b *)
+
+let rec zip a b () =
+  match a () with
+  | Nil -> Nil
+  | Cons (a, atl) -> (
+    match b () with Nil -> Nil | Cons (b, btl) -> Cons ((a, b), zip atl btl) )
+
+let syncEffect sq effectSq =
+  (* just update an effect stream in sync with sq, but don't use its return value *) 
+  let both = zip sq effectSq in
+  map (fun (signal, effect) -> effect; signal) both
+
+let effectSync effectSq sq =
+  (* just update an effect stream in sync with sq, but don't use its return value *) 
+  let both = zip effectSq sq in
+  map (fun (effect, signal) -> effect; signal) both
+
+let currentSampleCounter = ref 0
+
+let updateCurrentSample () =
+  currentSampleCounter := !currentSampleCounter + 1
+
+let rec masterClock () =
+  Cons ( updateCurrentSample () , masterClock )
+
+let inTime lst =
+  match lst with
+   | h :: ts -> (syncEffect h masterClock) :: ts
+   | [] -> []
+
+let withEffect effect lst = 
+  match lst with
+  | h :: ts -> syncEffect h effect :: ts
+  | [] -> []
+
+let test sq =
+  map print_float sq
+
+(* applicative functor for seq.t 
+   can be used to map functions with more than two arguments to take seqs as arguments
+   for example:
+   
+    map (fun a b c = a * b * c) seq1 |> andMap seq2 |> andMap seq3 
+ *)
+let andMap seq seqOfFuns =
+  let zipped = zip seq seqOfFuns in
+  map (fun (x, f) -> f x) zipped
+                 
 let optionLiftA2 f a b =
   match (a,b) with
   | (Some a, Some b) -> Some (f a b)
@@ -240,11 +295,7 @@ let countTill n =
   in
   aux 0 n
           
-let rec zip a b () =
-  match a () with
-  | Nil -> Nil
-  | Cons (a, atl) -> (
-    match b () with Nil -> Nil | Cons (b, btl) -> Cons ((a, b), zip atl btl) )
+
 
 let rec zipList a b =
   match a with
@@ -298,6 +349,18 @@ let ( /~ ) = zipWith (fun a b -> a / b)
 
 let ( -~ ) = zipWith (fun a b -> a - b)
 
+let linlin inA inB outA outB input =
+  let a = minimum inA inB in
+  let b = maximum inA inB in
+  let c = minimum outA outB in
+  let d = maximum inA inB in
+  (((input -. a) /. (b -. a)) *. (d -. c)) +. c
+
+let mapLinlin inA inB outA outB input =
+  map linlin inA |> andMap inB |> andMap outA |> andMap outB |> andMap input
+
+    
+
 let rec mkLots n thing =
   if n > 1 then
     thing () +.~ (mkLots (n-1) thing)
@@ -326,7 +389,12 @@ let rec recursive control init update evaluate () =
   | Nil -> Nil
   | Cons (x,xs) ->
      let nextState = update x init in
-     Cons ( evaluate init, recursive xs nextState update evaluate ) 
+     Cons ( evaluate init, recursive xs nextState update evaluate )
+
+(* recursive no control seq. Allows for non-trivial control update *)
+let rec simpleRecursive init update evaluate () =
+  let nextState = update init in
+  Cons ( evaluate init, simpleRecursive nextState update evaluate )
   
 let walki start steps =
   recursive
@@ -753,14 +821,81 @@ let pulse n sq filler =
 let applicative sqF sq =
   map sqF sq |> concat
 
+let getPreciseTime () =
+  (!currentSampleCounter |> Float.of_int) /. 44100.0
+(*Mtime_clock.elapsed () |> Mtime.Span.to_uint64_ns |> Int64.to_float |> ( *. ) Mtime.ns_to_s*)
+    
 
 
+  
+type tLineState =
+  { oldT : float
+  ; oldX : float
+  ; targetT : float
+  ; targetX : float
+  ; control : (float * float) Seq.t 
+  }
+  
+let tline timeToNext sq =
+  let valueNow oldT oldX targetT targetX () =
+    let now = getPreciseTime () in
+      let segmentDur = targetT -. oldT in
+      let diffT = now -. oldT in
+      ( oldX +. (( diffT /. segmentDur ) *. (targetX -. oldX)))
+  in
+  let ctrl = zip timeToNext sq in
+  let updateControl c =
+    match c () with
+        | Nil -> ((0.0,10.0),fun () -> Nil)
+        | Cons ((tt,tx),tl) -> ((tt,tx), tl)
+  in
+    
+  let initial =
+    let now = getPreciseTime () in
+    let ((targetX,targetT), ctrlTail) =
+      updateControl ctrl
+    in           
+    { oldT = now
+    ; oldX = 0.0
+    ; targetT = targetT
+    ; targetX = targetX
+    ; control = ctrlTail
+    }
+  in
+  let update state =
+    let now = getPreciseTime () in
+    if state.targetT > now then
+      state (* no changes *)
+    else
+      let ((tarT,tarX),tail) =
+        updateControl state.control
+      in
+      { oldT = state.targetT
+      ; oldX = state.targetX
+      ; targetT = tarT +. now
+      ; targetX = tarX
+      ; control = tail
+      }
+  in
+  let evaluate state =
+    (*state.targetX*)
+    valueNow state.oldT state.oldX state.targetT state.targetX ()
+  in                
+  simpleRecursive initial update evaluate
+  
+
+  
+
+  
+      
+    
+  
 
 
 
 let timed intervalSeconds sq =
   let rec aux valueTime startValue later () =
-    let now = Unix.gettimeofday () in
+    let now = getPreciseTime () in
     if
       later < now
     then
@@ -773,7 +908,7 @@ let timed intervalSeconds sq =
       Cons( startValue, aux valueTime startValue later )
       
   in
-  let startTime = Unix.gettimeofday () in
+  let startTime = getPreciseTime () in
   let control = zip sq intervalSeconds in
   match control () with
   | Nil -> fun () -> Nil
@@ -792,7 +927,7 @@ let oscPhase freq startPhase =
     sin
      
 let osc freq =
-  oscPhase freq 0.0
+  oscPhase freq 0.0 
   (*let f = makeFastOsc () in
   f freq 0.0*)
 
@@ -864,11 +999,6 @@ let write arr index value =
   let control = zip index value in
   map (fun (idx, value) -> arr.(idx) <- value) control
 
-let syncEffect sq effectSq =
-  (* just update an effect stream in sync with sq, but don't use its return value *) 
-  let both = zip sq effectSq in
-  map (fun (signal, _) -> signal) both
-
 let fractRandTimer timerSeq =
   tmd timerSeq
     (tmd timerSeq
@@ -880,5 +1010,9 @@ let rec fractRandTimerN n timerSeq =
   else
     tmd timerSeq (fractRandTimerN (n - 1) timerSeq)
 
+let slowNoise speed = 
+  let arr = rvf (st 0.0) (st 1.0) |> take (1024 * 512) |> Array.of_seq in
+  let index = walk 0.0 speed in
+  indexCub arr index
 
 

@@ -1,56 +1,50 @@
 open Cisp
 open Seq
-
-let sr = ref 44100.0
-
-let sec s = !sr *. s
-
-(* (float -> float) ->  seq.t float -> seq.t float *)
-
-(* frequency is the thing *)
-
-let phase_inc = (1.0 /. !sr) *. Float.pi *. 2.0
-
-(** recursive
- @control : the control stream, that allows us to customize the update
- @init : the initial state (can be anything!)
- @update : takes a state and one value of control then produces a new state
- @evaluate : takes current state and produces the next output value **)
-
-
-                   
-(* 
-pattern:
-main : controlSq, state  4
-deconstruct control signal in x :: xs
-f : state -> value
-g : x -> state -> state
-in
-cons (f state, self xs (
- *)
-
-
-  
-  
    
-   
-let () =
-  let times = grow 0.01 2.0 26 |> Array.of_list in
-  (*let audioIn = Process.inputSeq 0 in*)
-  let ratio = (line (ch [|0.001; 0.1;0.3;1.0;2.0;4.0;80.0|]) (map sec <| ch times)) in
-  let depth = (line (seq [0.001; 0.2; 1.0;2.0;4.0;80.0]) (map sec <| ch times)) in
-  let sinewave f = fm_osc (st f) ratio depth in
-  let rec lots n =
-    if n != 0 then
-      (st 0.1 *.~ sinewave (Random.float (40.0) |> mtof)) +.~ (lots (n-1))
-    else
-      (st 0.0)
-  in
+let sec s = !Process.sample_rate *. s
+
+let msec = map sec 
+
+let maskBound () = line (seq [0.0;sec 10.0]) (ch [|17.;13.5|])
+
+(* let skip n =*)
+  
+
+(* this takes three types of readers and combines them into one index *)
+
+
     
-  
-  (*let proc =
-    zipWith (fun x y -> x *. y) sinewave audioIn |> map (fun x -> x *. 1.) |> Process.ofSeq
-  in *)
-  Jack.playSeqs 1 Process.sample_rate [lots 12 ; lots 12 ] 
+    
+(* let read1 () = line (seq [0.0; sec 10.0]) (seq [3.0;5.0;7.0;14.0] |> msec)
+let read2 () = line (seq [0.0; 10.0]) (ch [|10.0;9.99;5.0;15.0;1.02;10.1|] |> msec)
+let read3 () = line ([maskBound ();maskBound ()] |> ofList |> transcat) (st (sec 2.0)) *)
 
+(* weave arrays, timed is used as an index into the three different types.
+   note that this is kind of similar to transCat, since they are concatinated in order *)
+let speed =
+  ch ([|0.1;0.5;1.0;2.0;0.01;10.0;20.0|]) |> tmd (st 1.0) |> map (fun x -> 1.0 /. (sec x))
+  
+let slow =
+  map (( *. ) (sec 10.0)) (slowNoise speed)
+
+  (*
+let testLin =
+  line (seq [0.0;(10.0 |> sec)]) (st (sec 1.0)) *)
+           
+              
+let () =
+  let buffer = Array.make (sec 10.0 |> Int.of_float) 0.0 in
+  let input = Process.inputSeq 0  in
+  let writer = write buffer (countTill <| cap buffer) input in
+
+  let mkOut () = indexCub buffer slow in
+  let joined = syncEffect (mkOut ()) writer in
+  Jack.playSeqs 1 Process.sample_rate [ joined +.~ mkLots 5 mkOut ; mkLots 5 mkOut ]
+
+     
+
+    
+    
+ 
+    
     

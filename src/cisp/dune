@@ -1,4 +1,5 @@
 (library
  (name            cisp)
+ (libraries mtime mtime.clock.os)
  (ocamlopt_flags -O3)	
 )

@@ -638,16 +638,32 @@ let pitchVelo midiRef midiCh =
   in
   aux (0, 0)
 
-let rec overwritePitch pitchSq sq () =
-  match sq () with
-  | Cons (NoteEvent (c, _, v, d), tl) -> (
+  
+let rec  overwritePitch pitchSq evtSeq () =
+  match evtSeq () with
+  | Cons (NoteEvent (c,_,v,d), tl) ->
+     begin
+     match pitchSq () with
+     | Cons (p, ptail) ->
+        let pitch = mkPitchClip p in
+        Cons (NoteEvent (c,pitch,v,d), overwritePitch ptail tl)
+     | Nil -> Nil
+     end
+  | Cons (otherEvent,tl) ->
+     Cons( otherEvent, overwritePitch pitchSq tl )
+  | Nil ->
+     Nil 
+       
+  
+  (*| Cons (NoteEvent (c, _, v, d), tl) -> (
     match pitchSq () with
-    | Cons (pitch, ptl) ->
-        let p = mkPitchClip pitch in
-        Cons (NoteEvent (c, p, v, d), overwritePitch ptl tl)
+    | Cons (_, ptl) ->
+       let p = mkPitchClip 60 in
+       Cons (NoteEvent (c, p, v, d), overwritePitch ptl tl)
     | Nil -> Nil )
-  | Cons (event, tl) -> Cons (event, overwritePitch pitchSq tl)
-  | Nil -> Nil
+  | Cons (SilenceEvent, tl) -> Cons (SilenceEvent, tl)
+  | _ -> Nil*)
+
 
 let rec overwriteDur durSq sq () =
   match sq () with
@@ -695,8 +711,8 @@ let seconds s = Samps (44100.0 *. s |> Int.of_float)
 
 let timing = seconds 0.01 |> st
 
-let rec ofRef rf () = Cons (!rf, ofRef rf)
 
+                    
 let testSequence =
   withInterval (st (Samps 4)) MidiSilence
     (map (fun i -> NoteOn (MidiCh 1, Pitch (60 + (i mod 12)), Velo 100)) count)

@@ -8,7 +8,7 @@ this is the same as
 let thunk x = fun () -> x 
  *)
 
-let samplerate = ref 44100.0
+let samplerate = ref (!Process.sample_rate)
 
 let id x = x
                
@@ -30,6 +30,10 @@ let fst (x, _) = x
 
 let snd (_, x) = x
 
+let mapFst f (a,b) =
+  (f a,b)
+                   
+
 let flip f a b = f b a
 
 let minimum a b =
@@ -38,8 +42,38 @@ let minimum a b =
 let maximum a b =
   if a > b then a else b
 
+let sec s = !Process.sample_rate *. s
 
+let two_pi = Float.pi *. 2.0
 
+let rec ofRef rf () = Cons (!rf, ofRef rf)
+
+let rdRef rf () = Cons(!rf,ofRef rf)
+
+let wrRef rf valueSq = map (fun x -> rf := x) valueSq
+                     
+           
+let singleton a =
+  [a]
+
+let rec takeLst n lst =
+  match n with
+  | 0 -> []
+  | n ->
+     match lst with
+     | h::tl -> h::takeLst (n-1) tl
+     | [] -> []
+  
+let rec listRepeat n x =
+  if n < 0 then
+    []
+  else 
+  match n with
+  | 0 -> []
+  | n -> x::listRepeat (n-1) x
+  
+
+  
 (* List a -> (List a -> b) -> List b *)
 
 let rec zip a b () =
@@ -57,7 +91,9 @@ let effectSync effectSq sq =
   (* just update an effect stream in sync with sq, but don't use its return value *) 
   let both = zip effectSq sq in
   map (fun (effect, signal) -> effect; signal) both
-
+  
+let effect = effectSync
+  
 let currentSampleCounter = ref 0
 
 let updateCurrentSample () =
@@ -159,7 +195,6 @@ let rec take n lst () =
 
 
 
-
 let for_example lst = lst |> take 40 |> toList
 
 let rec drop n lst () =
@@ -199,6 +234,11 @@ let rec filter f lst () =
   | Cons (h, tl) ->
       if f h then Cons (h, fun () -> filter f tl ()) else filter f tl ()
 
+let list_fold_left1 f lst =
+  match lst with
+  | x::xs -> Some (List.fold_left f x xs)
+  | [] -> None
+    
 let rec foldr f z ll =
   match ll () with Nil -> z | Cons (h, tl) -> f h (foldr f z tl)
 
@@ -219,6 +259,26 @@ let rec concat str () =
 
 let concatMap f sq () = map f sq |> concat
 
+let mozes f lst =
+  let rec aux lsta lstb lst =
+    match lst with
+     | (h::ts) ->
+        if f h then aux (h::lsta) lstb ts else aux lsta (h::lstb) ts 
+     | [] ->
+        (lsta,lstb)
+  in
+  aux [] [] lst
+
+let mozesSorted f lst =
+  let rec aux lsta lst =
+    match lst with
+    | (h::ts) ->
+       if f h then aux (h::lsta) ts  else (lsta,ts)
+    | [] ->
+       (lsta, [])
+  in
+  aux [] lst
+                      
 let hd lst =
   match lst () with
   | Nil -> raise (Invalid_argument "empty list has no head")
@@ -281,6 +341,23 @@ let rec transpose_list lst =
 let rec st a () =
   (* static *)
   Cons (a, st a)
+
+let normalizeNumberOfChannels channelsA channelsB = 
+  let na,nb = List.length channelsA, List.length channelsB in
+  if na = nb then (channelsA,channelsB) else
+    let fillMissing n channels =
+      let nCh = List.length channels in
+      let diff = n - nCh in
+      if diff <= 0 then
+        takeLst n channels
+      else
+        channels @ listRepeat diff (st 0.0)  
+    in
+    let n = maximum (List.length channelsA) (List.length channelsB) in
+    (fillMissing n channelsA, fillMissing n channelsB)
+  
+  
+
 
 let rec countFrom n () = Cons (n, countFrom (n + 1))
 
@@ -349,6 +426,11 @@ let ( /~ ) = zipWith (fun a b -> a / b)
 
 let ( -~ ) = zipWith (fun a b -> a - b)
 
+let addChannelLsts channelAList channelBList =
+  let (aChs,bChs) = normalizeNumberOfChannels channelAList channelBList in
+  List.map2 (+.~) aChs bChs
+
+
 let linlin inA inB outA outB input =
   let a = minimum inA inB in
   let b = maximum inA inB in
@@ -373,6 +455,8 @@ let mixList lst () = List.fold_left ( +~ ) lst
 (* zipped list will be lenght of shortest list *)
 
 let clip low high x = if x < low then low else if x > high then high else x
+
+                    
 
 let wrapf low high x =
   let range = low -. high |> abs_float in
@@ -1014,5 +1098,61 @@ let slowNoise speed =
   let arr = rvf (st 0.0) (st 1.0) |> take (1024 * 512) |> Array.of_seq in
   let index = walk 0.0 speed in
   indexCub arr index
+ 
+(* https://www.w3.org/2011/audio/audio-eq-cookbook.html *)
+let biquad_static a0 a1 a2 b0 b1 b2 x =
+  let b0a0 = b0 /. a0 in
+  let b1a0 = b1 /. a0 in
+  let b2a0 = b2 /. a0 in
+  let a1a0 = a1 /. a0 in
+  let a2a0 = a2 /. a0 in
+  recursive
+    x
+    [|0.;0.;0.;0.;0.|]
+    (fun i state ->
+        let x1 = state.(0) in
+        let x2 = state.(1) in
+        let y1 = state.(2) in
+        let y2 = state.(3) in
+        let new_y =
+          (i *. b0a0) +. (b1a0 *. x1) +. (b2a0 *. x2) -. (a1a0 *. y1)
+          -. (a2a0 *. y2)
+        in
+        ([|i; x1; new_y; y1; new_y|]))
+    (fun s -> s.(4))
 
+let blpf_static f q x =
+  let w = two_pi *. (f /. !samplerate) in
+  let a = sin w /. (q *. 2.) in
+  let cosw = cos w in
+  let b1 = 1. -. cosw in
+  let b0 = b1 /. 2. in
+  let b2 = b0 in
+  let a0 = 1. +. a in
+  let a1 = -2. *. cosw in
+  let a2 = 1. -. a in
+  biquad_static a0 a1 a2 b0 b1 b2 x
 
+let bhpf_static f q x =
+  let w = two_pi *. (f /. !samplerate) in
+  let a = sin w /. (q *. 2.) in
+  let cosw = cos w in
+  let b0 = (1. +. cosw) /. 2. in
+  let b1 = (1. +. cosw) *. -1. in
+  let b2 = b0 in
+  let a0 = 1. +. a in
+  let a1 = -2. *. cosw in
+  let a2 = 1. -. a in
+  biquad_static a0 a1 a2 b0 b1 b2 x
+
+let bbpf_static f q x =
+  let w = two_pi *. (f /. !samplerate) in
+  let a = sin w /. (q *. 2.) in
+  let cosw = cos w in
+  let b0 = a in
+  let b1 = 0. in
+  let b2 = a *. -1. in
+  let a0 = 1. +. a in
+  let a1 = -2. *. cosw in
+  let a2 = 1. -. a in
+  biquad_static a0 a1 a2 b0 b1 b2 x

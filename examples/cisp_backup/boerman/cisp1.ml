@@ -13,10 +13,13 @@ let dura =
    (ch [|0.1;0.5;1.0;2.0;1.5;0.75;4.0;8.0|])
          
 let myLineTest () =
-  tline dura place
+  tline dura place +.~ (rvf (st 0.0) (st 2.0))
 
 let sum lst =
   List.fold_right (fun x acc -> x +.~ acc) lst (st 0.0)
+
+let feedbackAmp () =
+  tline (ch [|4.0;5.0;7.0;3.33333|]) (seq [0.0;1.0])
 
 let singleton a =
   [a]
@@ -25,7 +28,7 @@ let () =
   let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in 
   let input = Process.inputSeq 0 in
   let input_2 = Process.inputSeq 1 *.~ (st 0.5) |> map (clip (-1.0) 1.0) in
-  let input_osc = input +.~ input_2 in
+  let input_osc = input +.~ (input_2 *.~ feedbackAmp ()) in
   let hpf = bhpf_static 100.0 0.9 input_osc in
   let writer = write buffer (countTill <| cap buffer) hpf in
   let myReader () = indexCub buffer (myLineTest ()) in

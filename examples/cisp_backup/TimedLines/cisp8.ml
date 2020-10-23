@@ -7,20 +7,19 @@ let sec s = !Process.sample_rate *. s
 let msec = map sec 
 
 let place =
-  (seq [0.0;4.0 |> sec]) +.~ (rvf (st 0.0) (st 3.0))
-
-let dura =
-   (ch [|0.1;0.5;1.0;2.0;1.5;0.75;4.0;8.0|])
+  (seq [0.0;4.0 |> sec]) +.~ (rvf (st 0.0) (st 100.0))
          
 let myLineTest () =
-  tline dura place
+  tline (ch [|0.1;0.5;1.0;2.0;1.5;0.75;4.0;8.0|]) place
 
 let sum lst =
   List.fold_right (fun x acc -> x +.~ acc) lst (st 0.0)
 
 let singleton a =
   [a]
-              
+
+(* this is excellent *)
+  
 let () =
   let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in 
   let input = Process.inputSeq 0 in

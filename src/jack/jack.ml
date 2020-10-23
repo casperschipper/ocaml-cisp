@@ -55,7 +55,7 @@ let playSeqs in_channels sample_rate seq_lst =
       Process.input_channels := in_channels ; (* just the number of channels *)
       for i = 0 to nframes - 1 do
         for k = 0 to in_channels - 1 do
-          Process.input_array.(k) <- float_of_int i /. float_of_int nframes ; (* input values are written to 'global' array in Process, so not local to Process.t *)
+          (*Process.input_array.(k) <- float_of_int i /. float_of_int nframes ;*)
           Process.input_array.(k) <- ar_in.{(i * in_channels) + k}
         done;
         Array.iteri

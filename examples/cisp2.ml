@@ -1,63 +1,45 @@
 open Cisp
 open Seq
+(* open Format   *)
    
 let sec s = !Process.sample_rate *. s
 
 let msec = map sec 
 
-let maskBound () = line (seq [0.0;sec 10.0]) (ch [|17.;13.5|])
+let samplesize = 0.25
 
-(* let skip n =*)
-  
+let pitch = tmd (st samplesize) (ch [|0.5;1.0;1.25;0.75;0.99;1.1|] |> hold (seq [2;3;2;1;4]))   
+let baseline = walk 0.0 pitch |> map (wrapf 0.0 (sec samplesize))
+let entrydelay = (st samplesize)
+let offset = (rv (st 0) (st 50) |> hold (seq [3;2;2;3;5]) |> floatify) *.~ (st <| sec samplesize) 
+let randomSteppy = tmd entrydelay offset
+let jumpyLine = baseline +.~ randomSteppy
 
-(* this takes three types of readers and combines them into one index *)
+let decay fb inSq =
+  let rec aux prev inSq () = 
+  match inSq () with
+  | Cons(hd, tail) -> Cons (hd +. prev, aux (hd *. fb) tail)
+  | Nil -> Nil
+  in
+  aux 0.0 inSq 
 
-let slowNoise speed = 
-  let arr = rvf (st 0.0) (st 1.0) |> take (1024 * 512) |> Array.of_seq in
-  let index = walk 0.0 speed in
-  indexCub arr index
-    
-    
-(* let read1 () = line (seq [0.0; sec 10.0]) (seq [3.0;5.0;7.0;14.0] |> msec)
-let read2 () = line (seq [0.0; 10.0]) (ch [|10.0;9.99;5.0;15.0;1.02;10.1|] |> msec)
-let read3 () = line ([maskBound ();maskBound ()] |> ofList |> transcat) (st (sec 2.0)) *)
+let env =
+  let n = sec 0.1 |> Int.of_float |> ((-) 1) in
+  let trigg = pulse (st n) (st 1.0) (st 0.0) in
+  decay 0.5 trigg
 
-(* weave arrays, timed is used as an index into the three different types.
-   note that this is kind of similar to transCat, since they are concatinated in order *)
-let speed =
-  ch ([|10.0;20.0;30.0;1.0;5.0|]) |> tmd (st 1.0) |> map (fun x -> 1.0 /. (sec x))
-  
-let slow =
-  map (( *. ) (sec 10.0)) (slowNoise speed)
 
-let offset =
-  (tline (st 30.0)  (seq [0.0;sec 10.0]))
-
-let loopSize =
-  (1.0 |> sec |> st)
-  
-
-let mylines =
-  tline (st 0.01)  ([|offset;offset +.~ loopSize|] |> fun arr ->  weaveArray arr (seq [0;1]) )
-
-let combi =
-  mylines
-  
-           
+let singleton a =
+  [a]
               
 let () =
-  let buffer = Array.make (sec 10.0 |> Int.of_float) 0.0 in
-  let input = Process.inputSeq 0  in
-  let writer = write buffer (countTill <| cap buffer) input in
+  let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in 
+  let input = Process.inputSeq 0 in
+  let input2 = Process.inputSeq 1 in
+  let hpf = input2 |> bhpf_static 100.0 0.9 in
+  let myReader () = indexCub buffer (jumpyLine) *.~ env in
+  let timefied = effect masterClock (myReader ()) in
+  let writer = write buffer (countTill (cap buffer)) (input +.~ ( hpf *.~ st 0.1 |> map (clip (-0.1) (1.0)))) in
+  let joined = effect writer timefied in
+  Jack.playSeqs 3 Process.sample_rate [joined +.~ mkLots 6 myReader |> map (clip (-1.0) 1.0);mkLots 6 myReader |> map (clip (-1.0) 1.0)]
 
-  let mkOut () = indexLin buffer combi in
-  let joined = syncEffect (mkOut ()) writer in
-  Jack.playSeqs 1 Process.sample_rate [ joined ; mkOut ()]
-
-     
-
-    
-    
- 
-    
-    

@@ -1001,7 +1001,7 @@ let timed intervalSeconds sq =
      
 let tmd = timed
 
-let phase_inc = 1.0 /. 44100.0
+let phase_inc = 1.0 /. !Process.sample_rate
      
 let oscPhase freq startPhase =
   recursive

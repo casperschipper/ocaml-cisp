@@ -21,8 +21,19 @@ let sum lst =
 let feedbackAmp () =
   tline (ch [|4.0;5.0;7.0;3.33333|]) (seq [0.0;1.0])
 
-let singleton a =
-  [a]
+let rec sumInputs startN endN =
+  if startN > endN then
+    st (0.0)
+  else
+    begin
+    let gain = 0.8 /. Float.of_int (endN - startN) in
+    let attenuate signal = map (fun x -> x *. gain) signal in
+    if startN = endN then 
+      Process.inputSeq startN |> attenuate
+    else
+      ((Process.inputSeq startN |> attenuate) +.~ (sumInputs (startN+1) endN))
+    end
+  
               
 let () =
   let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in 
@@ -34,5 +45,5 @@ let () =
   let myReader () = indexCub buffer (myLineTest ()) in
   let timefied = effectSync masterClock (myReader ()) in
   let joined = effectSync writer timefied in
-  Jack.playSeqs 2 Process.sample_rate [joined +.~ mkLots 4 myReader;mkLots 5 myReader]
+  Jack.playSeqs 8 Process.sample_rate [joined +.~ mkLots 4 myReader;mkLots 5 myReader; myReader ()]
 

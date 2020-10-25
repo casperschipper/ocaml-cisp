@@ -269,15 +269,23 @@ let mozes f lst =
   in
   aux [] [] lst
 
-let mozesSorted f lst =
-  let rec aux lsta lst =
+type 'a sorted = Sorted of 'a list
+
+let sortedAsList (Sorted lst) = lst
+
+let mkSorted f lst =
+  Sorted (List.sort f lst)
+  
+let mozesSorted f sortedLst =
+  let rec aux lsta (Sorted lst) =
     match lst with
-    | (h::ts) ->
-       if f h then aux (h::lsta) ts  else (lsta,ts)
-    | [] ->
-       (lsta, [])
-  in
-  aux [] lst
+      (h::tail) ->
+       if f h then
+         aux (h::lsta) (Sorted tail)
+       else (Sorted (List.rev lsta),Sorted (h::tail))
+    | [] -> (Sorted lsta,Sorted [])
+  in aux [] sortedLst
+  
                       
 let hd lst =
   match lst () with

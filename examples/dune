@@ -5,6 +5,13 @@
  (modules collatz)
  (libraries cisp bigarray ctypes jack sndfile))
 
+(executable
+ (name scheduler)
+ (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules scheduler)
+ (libraries cisp bigarray ctypes jack sndfile))
+
 
 (executable
  (name multisine)

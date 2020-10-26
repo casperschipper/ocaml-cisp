@@ -43,6 +43,7 @@ let maximum a b =
   if a > b then a else b
 
 let sec s = !Process.sample_rate *. s
+let seci s = !Process.sample_rate *. s |> Int.of_float
 
 let two_pi = Float.pi *. 2.0
 
@@ -908,6 +909,11 @@ let pulse n sq filler =
   let p = interval n in
   weavePattern p sq filler
 
+let pulsegen freqSq =
+  let n = map ((/.) !Process.sample_rate) freqSq in
+  n |> trunc |> map (fun n () -> Cons (1.0, repeat (clip 0 441000 (n-1)) 0.0)) |> concat
+  
+
 (* f(a -> b) -> fa -> fb *)
 (* (a -> b) -> fa -> fb *)
 let applicative sqF sq =
@@ -1015,8 +1021,8 @@ let oscPhase freq startPhase =
   recursive
     freq
     startPhase
-    (fun freq phase -> phase +. (freq *. phase_inc) |> (fun x -> mod_float x (Float.pi *. 2.0)))
-    sin
+    (fun freq phase -> phase +. (freq *. phase_inc) |> (fun x -> mod_float x 1.0))
+    (fun x -> sin(x *. two_pi))
      
 let osc freq =
   oscPhase freq 0.0 
@@ -1164,3 +1170,122 @@ let bbpf_static f q x =
   let a1 = -2. *. cosw in
   let a2 = 1. -. a in
   biquad_static a0 a1 a2 b0 b1 b2 x
+      
+type timedSection
+  = TimedSection of { startSample : int
+                    ; duration : int
+                    ; seq : float Seq.t} 
+
+let mkSection start duration seq =
+  TimedSection { startSample = start ; duration = duration ; seq = seq }
+    
+                  
+let addStreo (seq1L,seq1R) (seq2L,seq2R) =
+  (seq1L +.~ seq2L,seq1R +.~ seq2R)
+                  
+let compareSection (TimedSection sectA) (TimedSection sectB) =
+  compare (sectA.startSample) (sectB.startSample)
+                  
+type playingSection
+  = PlayingSection of { endSample : int
+                      ; seq : float Seq.t
+                      }
+
+let printPlayingSect (PlayingSection s) =
+  let open Format in
+  printf "end %i\n" s.endSample 
+      
+                    
+type score =
+  Score of timedSection sorted
+                    
+let toPlay now (TimedSection section) =
+  PlayingSection { endSample = now + section.duration
+                 ; seq = section.seq }
+  
+type sectionScheduler =
+  SectionScheduler of { score : timedSection sorted
+                      ; now : int
+                      ; currentSecs : playingSection list
+                      ; currentOut : float
+                      }
+
+let schedulerOfScore (Score sortedTimedSecs) =
+  SectionScheduler { score = sortedTimedSecs
+                   ; now = 0
+                   ; currentSecs = []
+                   ; currentOut = 0.0 }
+
+let mkScore sectionLst =
+  Score (mkSorted compareSection sectionLst)
+
+let updateScheduler (SectionScheduler scheduler) =
+  let dropFinished playingSects =
+    List.filter (fun (PlayingSection playing) -> playing.endSample > scheduler.now)  playingSects
+  in
+  let (newCurrentSecs, future) = 
+    scheduler.score
+    |> mozesSorted (fun (TimedSection e) ->
+           e.startSample <= scheduler.now)
+    |> mapFst (fun (Sorted playableEvts) -> List.map (toPlay scheduler.now) playableEvts)
+  in
+  let currentSects = newCurrentSecs @ (dropFinished scheduler.currentSecs) in
+  let f (sum,tails) (PlayingSection playingSeq) = (* this takes the heads of secs sums them, and updates the remaining part in the state *)
+    match playingSeq.seq () with
+    | Nil -> (sum +. 0.0, tails)
+    | Cons(x,tail) -> (sum +. x, (PlayingSection { playingSeq with seq = tail })::tails)                  
+  in
+  let (out,newPlayingSecs) =
+    List.fold_left f (0.0,[]) currentSects
+  in 
+  (SectionScheduler
+     { score = future
+     ; now = scheduler.now + 1
+     ; currentSecs = newPlayingSecs
+     ; currentOut = out })
+
+let printTimedSectionLst timedSectionList =
+  let open Format in
+  let printSection i (TimedSection s) =
+    printf "-section nr %i\nstartSample %i\nduration %i\n" i s.startSample s.duration
+  in
+  List.iteri printSection timedSectionList
+  
+  
+let printScheduler (SectionScheduler sch) =
+  let open Format in
+  printf "\n** now: %i **\n score=\n" sch.now;
+  printTimedSectionLst (sortedAsList sch.score);
+  printf "playing: \n";
+  List.iter printPlayingSect sch.currentSecs
+  
+  
+let evaluateScheduler (SectionScheduler scheduler) =
+  scheduler.currentOut
+    
+let playScore score =
+  simpleRecursive
+    (schedulerOfScore score)
+    updateScheduler
+    evaluateScheduler
+
+let decay fb inSq =
+  recursive
+    inSq
+    0.0
+    (fun input state ->
+          (state +. input) *. fb)
+    id
+
+let decayPulse fb inSq =
+  recursive
+    inSq
+    0.0
+    (fun input state ->
+      if input > 0.0 then
+        input
+      else
+        (state +. input) *. fb)
+    id
+          
+

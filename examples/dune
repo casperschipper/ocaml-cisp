@@ -12,6 +12,12 @@
  (modules scheduler)
  (libraries cisp bigarray ctypes jack sndfile))
 
+(executable
+ (name decoherence)
+ (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules decoherence)
+ (libraries cisp bigarray ctypes jack sndfile))
 
 (executable
  (name multisine)

@@ -171,8 +171,21 @@ let rec cycle a () =
   in
   cycle_append a ()
 
-let rec range a b () = if a >= b then Nil else Cons (a, range (a +. 1.0) b)
+let rec range
+  a b () = if a >= b then Nil else Cons (a, range (a +. 1.0) b)
 
+let rangei a b =
+  let rec aux a b () =
+    if a = b then
+      Cons(a, fun () -> Nil)
+    else
+      Cons(a,aux (a+1) b)
+  in
+  if b < a then
+    aux b a
+  else
+    aux a b
+                     
 (* not sure about these *)
 let head ll = match ll () with Nil -> None | Cons (h, _) -> Some h
 

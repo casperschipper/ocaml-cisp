@@ -1,63 +1,73 @@
 open Cisp
 open Seq
-open Format 
+(*open Format *)
    
 let msec = map sec 
 
 let samplesize = 0.1
 
-let pitch = tmd (st samplesize) (ch [|0.5;1.0;2.0;0.25;4.0;1.25;0.75|] |> hold (seq [2;3;2;1;4]))   
-let baseline = walk 0.0 pitch |> map (wrapf 0.0 (sec samplesize))
-let entrydelay = (st samplesize)
-let offset = (rv (st 0) (st 50) |> hold (seq [3;2;2;3;5]) |> floatify) *.~ (st <| sec samplesize) 
-let randomSteppy = tmd entrydelay offset
-let jumpyLine = baseline +.~ randomSteppy
 
- 
-
-let oscil = osc (st 440.0) 
-
-let mySec1 = mkSection 10 441000 (osc (st 4400.0) *.~ percEnv ())
-let mySec2 = mkSection 44100 88000 (osc (st 1000.0))
-let mySec3 = mkSection 66000 50000 (osc (st 1200.0))
-   
-let myScore = mkScore ([mySec1;mySec2;mySec3])
-
-
-
-let myOut = playScore myScore
-
-let rangei a b =
-  let rec aux a b () =
-    if a = b then
-      Cons(a, fun () -> Nil)
-    else
-      Cons(a,aux (a+1) b)
-  in
-  if b < a then
-    aux b a
-  else
-    aux a b
 
 let voiceWithInputs voicef inputs =
   List.fold_left (fun acc inpt -> (voicef inpt) +.~ acc) (st 0.0) inputs 
   
-let testScheduler () =
-  myOut |> take 30 |> toList |> List.map (fun x -> printf "%f\t" x) 
+
               
 let makeVoice channelN =
+  let pitch = tmd (st samplesize) (ch [|0.5;1.0;2.0;0.25;4.0;1.25;0.75|] |> hold (seq [2;3;2;1;4])) in
+  let baseline = walk 0.0 pitch |> map (wrapf 0.0 (sec samplesize)) in
+  let entrydelay = (st samplesize) in
+  let offset = (rv (st 0) (st 50) |> hold (seq [3;2;2;3;5]) |> floatify) *.~ (st <| sec samplesize) in
+  let randomSteppy = tmd entrydelay offset in
+  let jumpyLine = baseline +.~ randomSteppy in
+  
   let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in 
   let input = Process.inputSeq channelN in
   let hpf = bhpf_static 100.0  0.9 input in
   let percEnv () =
    decayPulse 0.9999 (pulsegen (rvf (st 0.1) (st 5.0))) in
   let myReader () = (indexCub buffer (jumpyLine)) *.~ percEnv () in
-  let timefied = effect masterClock (myReader ()) in
+  
   let writer = write buffer (countTill (cap buffer)) hpf in
-  let joined = effect writer timefied in
+  let joined = effect writer (myReader ()) in
   joined
 
+
+let mkBoerman nInput =
+  let place =
+    (seq [0.0;4.0 |> sec]) +.~ (rvf (st 0.0) (st 3.0))
+  in
+  let dura =
+   (ch [|4.0;8.0;2.0;5.0;3.0;4.5;5.5;4.5|])
+  in       
+  let myLineTest () =
+    tline dura place +.~ (rvf (st 0.0) (st 2.0))
+  in
+  let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in 
+  let input = Process.inputSeq nInput in
+  let input_osc = input in
+  let hpf = bhpf_static 100.0 0.9 input_osc *.~ (st 2.0) |> map (clip (-1.0) 1.0) in
+  let writer = write buffer (countTill <| cap buffer) hpf in
+  let myReader () = indexCub buffer (myLineTest ()) in
+  
+  let joined = effectSync writer (myReader ()) in
+  joined 
+
+let sec1SqL = voiceWithInputs makeVoice (rangei 0 3 |> toList)
+let sec1SqR = voiceWithInputs makeVoice (rangei 4 7 |> toList)
+
+let sec2SqL = voiceWithInputs mkBoerman (rangei 0 3 |> toList)
+let sec2SqR = voiceWithInputs mkBoerman (rangei 4 7 |> toList)
+
+let sec1 = mkSection 0 (60.0 |> seci) sec1SqL
+let sec2 = mkSection (30.0 |> seci) (60.0 |> seci) sec2SqL
+let sec3 = mkSection (15.0 |> seci) (60.0 |> seci) sec1SqR
+let sec4 = mkSection (60.0 |> seci) (60.0 |> seci) sec2SqR
+
+let scoreL = playScore (mkScore [sec1;sec2])
+let scoreR = playScore (mkScore [sec3;sec4])
+
 let () = 
-  Jack.playSeqs 8 Process.sample_rate
-    [ voiceWithInputs makeVoice (rangei 0 3 |> toList); voiceWithInputs makeVoice (rangei 4 7 |> toList)]
+  Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL;scoreR]
+    
 

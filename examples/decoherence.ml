@@ -51,7 +51,7 @@ let mkBoerman nInput =
   
   let joined = effectSync writer (myReader ()) in
   joined 
-
+ 
 let mkSlowNoiseBuff nInput =
   let freq = tmd (rvf (st 1.0) (st 10.0)) (ch ([|2.0;4.0;5.0;6.0;1.0;0.5|])) |> map sec in
   let index () = slowNoise ((st 1.0) /.~ freq) |> map (fun x -> x *. (sec 5.0)) in
@@ -70,12 +70,12 @@ let noiseR = voiceWithInputs mkSlowNoiseBuff (rangei 4 7 |> toList)
 let stutterL = voiceWithInputs mkStutter (rangei 0 3 |> toList)
 let stutterR = voiceWithInputs mkStutter (rangei 4 7 |> toList)
 
-let l1 = mkSection 0 (120.0 |> seci) boerL
-let l2 = mkSection (seci 30.0) (10.0 |> seci) noiseL
+let l1 = mkSection 0 (120.0 |> seci) stutterL
+let l2 = mkSection (seci 30.0) (10.0 |> seci) stutterL
 let l3 = mkSection (seci 10.0) (seci 10.0) stutterL
 
-let r1 = mkSection 0 (120.0 |> seci) boerR
-let r2 = mkSection (seci 15.0) (10.0 |> seci) noiseR
+let r1 = mkSection 0 (120.0 |> seci) stutterR
+let r2 = mkSection (seci 15.0) (10.0 |> seci) stutterR
 let r3 = mkSection (seci 45.0) (60.0 |> seci) stutterR
 
 

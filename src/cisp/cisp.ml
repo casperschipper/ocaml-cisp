@@ -780,6 +780,10 @@ let rvf low high =
   let control = zip low high in
   map (fun (l, h) -> rvfi l h) control
 
+let pickOne arr =
+  let picker = rvi 0 (Array.length arr) in
+  arr.(picker)
+  
 (* choice *)
 let ch arr =
   let picker = rv (st 0) (st (Array.length arr)) in

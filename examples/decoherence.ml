@@ -17,11 +17,11 @@ let mkZigzag channelN =
   let writer = write buffer (countTill (cap buffer)) input in
   let tees () = fractRandTimer (ch [|0.01;0.003;0.0001;0.1;0.2;0.5;1.0;2.0|]) in
   let transpose () = tmd (rvf (st 0.5) (st 5.0)) (ch [|0.5;1.5;0.75;1.25;2.0|]) in
-  let speed = tmd (tees ()) (seq [-1.0;1.0] *.~ transpose ()) in                       
+  let speed = tmd (tees ()) (seq [-1.0;1.1] *.~ transpose ()) in                       
   let idx = walk 0.0 speed |> map (clip 0.0 (sec 4.9)) in
   let randEnv = tline (ch [|0.5;1.0;3.0;5.0|]) (seq [0.1;1.0;1.0;0.1]) in
-  let reader = indexCub buffer idx *.~ randEnv in
-  effect writer reader  
+  let reader () = indexCub buffer idx *.~ randEnv in
+  effect writer (reader ())
   
 let mkMirror channelN = 
   let buffer = Array.make (sec 20.0 |> Int.of_float) 0.0 in
@@ -60,16 +60,14 @@ let mkBoerman nInput =
   let dura =
    (ch [|1.0;2.0;3.0;4.0;5.0;6.0;7.0;8.0|])
   in       
-  let myLineTest () =
+  let myLineTest =
     tline dura place 
   in
-  let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in 
+  let buffer = Array.make (seci 5.0) 0.0 in 
   let input = Process.inputSeq nInput in
-  let hpf = bhpf_static 20.0 0.9 input *.~ (st 2.0) |> map (clip (-1.0) 1.0) in
-  let writer = write buffer (countTill <| cap buffer) hpf in
-  let myReader () = indexCub buffer (myLineTest ()) in
-  
-  let joined = effectSync writer (myReader ()) in
+  let writer = write buffer (countTill <| cap buffer) input in
+  let myReader = indexCub buffer myLineTest in
+  let joined = effect writer myReader in
   joined 
  
 let mkSlowNoiseBuff nInput =
@@ -96,16 +94,15 @@ let mirrorR = voiceWithInputs mkMirror (rangei 4 7 |> toList)
 let zigzagL = voiceWithInputs mkZigzag (rangei 0 3 |> toList)
 let zigzagR = voiceWithInputs mkZigzag (rangei 4 7 |> toList)
             
-
 let l1 = mkSection 0 (120.0 |> seci) zigzagL
 let r1 = mkSection 0 (120.0 |> seci) zigzagR
+let l2 = mkSection (seci 7.99) (seci 120.0) boerL
+let r2 = mkSection (seci 7.99) (seci 120.0) boerR
  
 
 
-let scoreL = playScore (mkScore [l1])
-let scoreR = playScore (mkScore [r1])
+let scoreL = playScore (mkScore [l1;l2])
+let scoreR = playScore (mkScore [r1;r2])
 
 let () = 
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL;scoreR]
-    
-

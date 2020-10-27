@@ -25,7 +25,7 @@ jack_connect klangraum_input:out_15 ocaml:input_6
 jack_connect klangraum_input:out_16 ocaml:input_7                                                                                                
 jack_connect klangraum_input:out_17 ocaml:input_0                                                                                                
 jack_connect klangraum_input:out_18 ocaml:input_1                                                                                                
-1jack_connect klangraum_input:out_19 ocaml:input_2                                                                                                
+jack_connect klangraum_input:out_19 ocaml:input_2                                                                                                
 jack_connect klangraum_input:out_20 ocaml:input_3                                                                                                
 jack_connect klangraum_input:out_21 ocaml:input_4                                                                                                
 jack_connect klangraum_input:out_22 ocaml:input_5                                                                                                

@@ -1,6 +1,5 @@
 open Seq
 
-
 (* Seq is a thunk that when forced returns a value and a thunk to get the tail *)
 
 (* 
@@ -31,7 +30,7 @@ let fst (x, _) = x
 let snd (_, x) = x
 
 let mapFst f (a,b) =
-  (f a,b)
+  (f a,b) 
                    
 
 let flip f a b = f b a
@@ -46,7 +45,7 @@ let sec s = !Process.sample_rate *. s
 let seci s = !Process.sample_rate *. s |> Int.of_float
 
 let two_pi = Float.pi *. 2.0
-
+ 
 let rec ofRef rf () = Cons (!rf, ofRef rf)
 
 let rdRef rf () = Cons(!rf,ofRef rf)
@@ -624,7 +623,7 @@ let mkWeights lst = match lst with [] -> None | w -> Some (Weights w)
 let weights weightLst () =
   let sumWeights = List.fold_left (fun acc (_, w) -> w + acc) 0 weightLst in
   let rec lookupWeight lst curr pick =
-    match lst with
+    match lst with 
     | [] -> raise <| Invalid_argument "weight not found"
     | [(value, _)] -> value
     | (value, weight) :: ws ->
@@ -1304,5 +1303,4 @@ let decayPulse fb inSq =
       else
         (state +. input) *. fb)
     id
-          
-
+         

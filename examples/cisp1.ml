@@ -33,7 +33,7 @@ let mkStutter channelN =
   joined
 
 
-let mkBoerman nInput =
+let mkBoerman nInput = 
   let place =
     (seq [0.0;4.0 |> sec]) 
   in

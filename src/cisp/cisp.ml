@@ -465,10 +465,16 @@ let mapLinlin inA inB outA outB input =
     
 
 let rec mkLots n thing =
-  if n > 1 then
-    thing () +.~ (mkLots (n-1) thing)
-  else
-    thing ()
+  let sum =
+    if n > 1 then
+      thing () +.~ (mkLots (n-1) thing) 
+    else
+      thing ()
+  in
+  let attenuate =
+    0.71 /. (Float.of_int n)
+  in
+  sum |> map (( *. ) attenuate)
 
 
 let mixList lst () = List.fold_left ( +~ ) lst
@@ -1186,6 +1192,29 @@ let bbpf_static f q x =
   let a1 = -2. *. cosw in
   let a2 = 1. -. a in
   biquad_static a0 a1 a2 b0 b1 b2 x
+
+
+type dcFilterState =
+    { previousX : float
+    ; out : float
+    }
+
+(* TESTED, from supercollider, using 0.995 as factor 
+   y[n] = x[n] - x[n-1] + coef * y[n-1] *)
+  
+  
+let leakDC coef inputSq =
+  recursive
+    inputSq
+    ({ out = 0.0
+    ; previousX = 0.0
+     })
+    (fun xIn state ->
+      let newOut =  (xIn -. state.previousX) +. (coef *. state.out)  in
+      { previousX = xIn
+      ; out = newOut })
+    (fun state -> state.out)
+
       
 type timedSection
   = TimedSection of { startSample : int

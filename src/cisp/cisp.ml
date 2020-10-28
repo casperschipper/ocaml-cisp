@@ -1250,13 +1250,15 @@ let toPlay now (TimedSection section) =
   
 type sectionScheduler =
   SectionScheduler of { score : timedSection sorted
+                      ; playingScore : timedSection sorted
                       ; now : int
                       ; currentSecs : playingSection list
                       ; currentOut : float
                       }
 
 let schedulerOfScore (Score sortedTimedSecs) =
-  SectionScheduler { score = sortedTimedSecs
+  SectionScheduler { playingScore = sortedTimedSecs
+                   ; score = sortedTimedSecs
                    ; now = 0
                    ; currentSecs = []
                    ; currentOut = 0.0 }
@@ -1269,7 +1271,7 @@ let updateScheduler (SectionScheduler scheduler) =
     List.filter (fun (PlayingSection playing) -> playing.endSample > scheduler.now)  playingSects
   in
   let (newCurrentSecs, future) = 
-    scheduler.score
+    scheduler.playingScore
     |> mozesSorted (fun (TimedSection e) ->
            e.startSample <= scheduler.now)
     |> mapFst (fun (Sorted playableEvts) -> List.map (toPlay scheduler.now) playableEvts)
@@ -1282,13 +1284,21 @@ let updateScheduler (SectionScheduler scheduler) =
   in
   let (out,newPlayingSecs) =
     List.fold_left f (0.0,[]) currentSects
-  in 
-  (SectionScheduler
-     { score = future
-     ; now = scheduler.now + 1
-     ; currentSecs = newPlayingSecs
-     ; currentOut = out })
-
+  in
+  match (future, newPlayingSecs) with (* to deal with reset, if there is no future, then we reset the score *)
+  | (Sorted [], []) -> (SectionScheduler 
+                    { scheduler with
+                     playingScore = scheduler.score
+                    ; now = 0
+                    ; currentSecs = []
+                    ; currentOut = out })
+  | (Sorted futureEvts,_) -> (SectionScheduler
+                            { scheduler with 
+                              playingScore = Sorted futureEvts
+                            ; now = scheduler.now + 1
+                            ; currentSecs = newPlayingSecs
+                            ; currentOut = out })
+                       
 let printTimedSectionLst timedSectionList =
   let open Format in
   let printSection i (TimedSection s) =

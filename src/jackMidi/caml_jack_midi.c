@@ -248,6 +248,8 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
 	ports = jack_get_ports(client, NULL,"midi", JackPortIsInput);
 	
 
+        /*
+	
 	if (ports == NULL) {
 	  fprintf(stderr, "no physical ports\n");
 	  exit(1);

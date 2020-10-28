@@ -8,28 +8,21 @@ let msec = map sec
 
 let samplesize = 0.1
 
-
-              
- 
-  
-(* TODO REMOVE MASTERCLOCK IF COPIED INTO MAIN *)
-                  
-let thing =      
-  let sumEight =
+ let sumEight =
      [0;1;2;3;4;5;6;7]
      |> List.map (fun n -> Process.inputSeq n)
      |> (fun lst -> List.fold_right (+.~) lst (st 0.0) )
-  in
+  
+               
+let mkDigi () =      
   let wl = rvf (st (-64.0)) (st 30.0) |> map mtof |> map (fun x -> 1.0 /. x) in
   let bottom = tmd (lift rvf 1.0 7.0) (seq [0.0;sec 10.0]) in
   let top = tmd (lift rvf 1.0 9.0) (seq [0.0;sec 10.0]) in
   let buffer = Array.make (sec 10.0 |> Int.of_float) 0.0 in
-  let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh |> ( ( *.~ ) (st 0.8) )) in
+  let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh |> ( ( *.~ ) (st 1.3) )) in
   let myIndex = tline (tmd (rvf (st 0.5) (st 5.0)) wl) ([bottom;top] |> ofList |> transpose |> concat) in
-  let mkOut = indexLin buffer myIndex in
-  let joined = effect writer mkOut in
-
-  Jack.playSeqs 8 Process.sample_rate [ effect masterClock joined; mkOut] 
+  let mkOut ()= indexLin buffer myIndex in
+  (effect writer (mkLots 5 mkOut),mkLots 5 mkOut)
 
 
 let mkZigzag channelN =
@@ -89,7 +82,27 @@ let mkBoerman nInput =
   let writer = write buffer (countTill <| cap buffer) input in
   let myReader = indexCub buffer myLineTest in
   let joined = effect writer myReader in
-  joined 
+  joined
+
+let mkBoerman2 nInput =
+  let place =
+    (seq [0.0;4.0 |> sec]) 
+  in
+  let detune =
+    tline (lift rvf 10.0 20.0) (rvf (st (-0.03))  (st 0.03))
+  in
+  let dura =
+   (ch [|3.0;3.5;4.0;4.5;5.0|]) +.~ detune
+  in       
+  let myLineTest =
+    tline dura place 
+  in
+  let buffer = Array.make (seci 5.0) 0.0 in 
+  let input = Process.inputSeq nInput |> map tanh in
+  let writer = write buffer (countTill <| cap buffer) input in
+  let myReader () = indexCub buffer myLineTest in
+  let joined = effect writer (myReader ()) in
+  joined
  
 let mkSlowNoiseBuff nInput =
   let freq = tmd (rvf (st 1.0) (st 10.0)) (ch ([|2.0;4.0;5.0;6.0;1.0;0.5|])) |> map sec in
@@ -110,26 +123,32 @@ let makeStereo mkfun =
   ( voiceWithInputs mkfun (rangei 0 3 |> toList)
   , voiceWithInputs mkfun (rangei 4 7 |> toList) )
   
-  
-let boerL,boerR = makeStereo mkBoerman 
+
+let boer2 = makeStereo mkBoerman2
+let boer = makeStereo mkBoerman 
 let noiseL,noiseR = makeStereo mkSlowNoiseBuff 
 let stutterL,stutterR = makeStereo mkStutter 
 let mirrorL, mirrorR = makeStereo mkMirror 
-let zigzagL, zigzagR = makeStereo mkZigzag 
+let zigzag = makeStereo mkZigzag 
 
 let mks a b (fl,fr) = (mkSection (seci a) (seci b) fl),(mkSection (seci a) (seci b) fr)
         
-let l1,r1 = mks 0.0 20.0 (zigzagL,zigzagR)
-let l2,r2 = mks 15.0 30.0 (boerL,boerR)
-let l3,r3 = mks 35.0 30.0 (stutterL,stutterR)
-let l4,r4 = mks 60.0 60.0 (mirrorL,mirrorR)
-let l5,r5 = mks 110.0 60.0 (noiseL,noiseR)
+let l1,r1 = mks 0.0 120.0 boer2
+let l2,r2 = mks 30.0 5.0 (mkDigi ())
+let l3,r3 = mks 35.0 3.0 (stutterL,stutterR)
+let l4,r4 = mks 120.0 20.0 (mirrorL,mirrorR)
+let l5,r5 = mks 115.0 5.0 (noiseL,noiseR)
+let l6,r6 = mks 120.0 60.0 (mkDigi ())
+let l7,r7 = mks 200.0 30.0 (noiseL,noiseR)
+let l8,r8 = mks 230.0 120.0 boer
+let l9,r9 = mks 345.0 20.0 zigzag
+          
 
         
 
 
-let scoreL = playScore (mkScore [l1;l2;l3;l4;l5])
-let scoreR = playScore (mkScore [r1;r2;r3;r4;r5])
+let scoreL = playScore (mkScore [l1;l2;l3;l4;l5;l6;l7;l8;l9])
+let scoreR = playScore (mkScore [r1;r2;r3;r4;r5;r6;l7;l8;l9])
 
 let () = 
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL;scoreR]

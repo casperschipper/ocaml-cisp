@@ -8,8 +8,7 @@ let msec = map sec
 
 let samplesize = 0.1
 
-let voiceWithInputs voicef inputs =
-  List.fold_left (fun acc inpt -> (voicef inpt) +.~ acc) (st 0.0) inputs
+
 
 let mkZigzag channelN =
   let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in
@@ -27,7 +26,7 @@ let mkMirror channelN =
   let buffer = Array.make (sec 20.0 |> Int.of_float) 0.0 in
   let input = Process.inputSeq channelN in
   let writer = write buffer (countTill (cap buffer)) input in
-  let speed = rvfi 0.9 1.1 in
+  let speed = ([|0.8;0.9;1.0;1.1;1.2;1.15;1.05;1.25|]).(channelN) in
   let idx = tline (speed *. 5.0 |> st) (seq [0.0;sec 5.0]) in
   let reader = indexCub buffer idx in
   effect writer reader     
@@ -80,29 +79,35 @@ let mkSlowNoiseBuff nInput =
   let joined = effect writer (myReader ()) in
   joined
   
-
-
+let softclip signal = map tanh signal
   
-let boerL = voiceWithInputs mkBoerman (rangei 0 3 |> toList)
-let boerR = voiceWithInputs mkBoerman (rangei 4 7 |> toList)
-let noiseL = voiceWithInputs mkSlowNoiseBuff (rangei 0 3 |> toList)
-let noiseR = voiceWithInputs mkSlowNoiseBuff (rangei 4 7 |> toList)
-let stutterL = voiceWithInputs mkStutter (rangei 0 3 |> toList)
-let stutterR = voiceWithInputs mkStutter (rangei 4 7 |> toList)
-let mirrorL = voiceWithInputs mkMirror (rangei 0 3 |> toList)
-let mirrorR = voiceWithInputs mkMirror (rangei 4 7 |> toList)
-let zigzagL = voiceWithInputs mkZigzag (rangei 0 3 |> toList)
-let zigzagR = voiceWithInputs mkZigzag (rangei 4 7 |> toList)
-            
-let l1 = mkSection 0 (120.0 |> seci) zigzagL
-let r1 = mkSection 0 (120.0 |> seci) zigzagR
-let l2 = mkSection (seci 7.99) (seci 120.0) boerL
-let r2 = mkSection (seci 7.99) (seci 120.0) boerR
- 
+let voiceWithInputs voicef inputs =
+  List.fold_left (fun acc inpt -> (voicef inpt) +.~ acc) (st 0.0) inputs |> softclip
+
+let makeStereo mkfun =
+  ( voiceWithInputs mkfun (rangei 0 3 |> toList)
+  , voiceWithInputs mkfun (rangei 4 7 |> toList) )
+  
+  
+let boerL,boerR = makeStereo mkBoerman 
+let noiseL,noiseR = makeStereo mkSlowNoiseBuff 
+let stutterL,stutterR = makeStereo mkStutter 
+let mirrorL, mirrorR = makeStereo mkMirror 
+let zigzagL, zigzagR = makeStereo mkZigzag 
+
+let mks a b (fl,fr) = (mkSection (seci a) (seci b) fl),(mkSection (seci a) (seci b) fr)
+        
+let l1,r1 = mks 0.0 20.0 (zigzagL,zigzagR)
+let l2,r2 = mks 15.0 30.0 (boerL,boerR)
+let l3,r3 = mks 35.0 30.0 (stutterL,stutterR)
+let l4,r4 = mks 60.0 60.0 (mirrorL,mirrorR)
+let l5,r5 = mks 110.0 60.0 (noiseL,noiseR)
+
+        
 
 
-let scoreL = playScore (mkScore [l1;l2])
-let scoreR = playScore (mkScore [r1;r2])
+let scoreL = playScore (mkScore [l1;l2;l3;l4;l5])
+let scoreR = playScore (mkScore [r1;r2;r3;r4;r5])
 
 let () = 
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL;scoreR]

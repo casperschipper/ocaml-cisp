@@ -22,7 +22,7 @@ let mkDigi () =
   let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh |> ( ( *.~ ) (st 1.3) )) in
   let myIndex = tline (tmd (rvf (st 0.5) (st 5.0)) wl) ([bottom;top] |> ofList |> transpose |> concat) in
   let mkOut ()= indexLin buffer myIndex in
-  (effect writer (mkLots 5 mkOut),mkLots 5 mkOut)
+  (effect writer (mkLots 15 mkOut),mkLots 15 mkOut)
 
 
 let mkZigzag channelN =
@@ -88,11 +88,8 @@ let mkBoerman2 nInput =
   let place =
     (seq [0.0;4.0 |> sec]) 
   in
-  let detune =
-    tline (lift rvf 10.0 20.0) (rvf (st (-0.03))  (st 0.03))
-  in
   let dura =
-   (ch [|3.0;3.5;4.0;4.5;5.0|]) +.~ detune
+   (ch [|1.0;2.0;3.0;2.99;3.01;4.0;8.0;16.0;3.99;4.01;4.02;3.89|])
   in       
   let myLineTest =
     tline dura place 
@@ -133,22 +130,24 @@ let zigzag = makeStereo mkZigzag
 
 let mks a b (fl,fr) = (mkSection (seci a) (seci b) fl),(mkSection (seci a) (seci b) fr)
         
-let l1,r1 = mks 0.0 120.0 boer2
-let l2,r2 = mks 30.0 5.0 (mkDigi ())
-let l3,r3 = mks 35.0 3.0 (stutterL,stutterR)
+let l1,r1 = mks 10.0 120.0 boer2
+let l2,r2 = mks 40.0 5.0 (mkDigi ())
+let l3,r3 = mks 5.0 3.0 (stutterL,stutterR)
 let l4,r4 = mks 120.0 20.0 (mirrorL,mirrorR)
 let l5,r5 = mks 115.0 5.0 (noiseL,noiseR)
-let l6,r6 = mks 120.0 60.0 (mkDigi ())
-let l7,r7 = mks 200.0 30.0 (noiseL,noiseR)
-let l8,r8 = mks 230.0 120.0 boer
+let l6,r6 = mks 120.0 120.0 (mkDigi ())
+let l7,r7 = mks 190.0 30.0 (noiseL,noiseR)
+let l8,r8 = mks 210.0 120.0 boer
 let l9,r9 = mks 345.0 20.0 zigzag
+let (l10,_) = mks 355.0 60.0 (mkDigi ())
+let (_,r10) = mks 355.0 60.0 boer            
           
 
         
 
 
-let scoreL = playScore (mkScore [l1;l2;l3;l4;l5;l6;l7;l8;l9])
-let scoreR = playScore (mkScore [r1;r2;r3;r4;r5;r6;l7;l8;l9])
+let scoreL = playScore (mkScore [l1;l2;l3;l4;l5;l6;l7;l8;l9;l10])
+let scoreR = playScore (mkScore [r1;r2;r3;r4;r5;r6;l7;l8;l9;r10])
 
 let () = 
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL;scoreR]

@@ -91,7 +91,75 @@ let mkBoerman2 nInput =
   let dura =
    (ch [|1.0;2.0;3.0;2.99;3.01;4.0;8.0;16.0;3.99;4.01;4.02;3.89|])
   in       
-60.0 boer
+  let myLineTest =
+    tline dura place 
+  in
+  let buffer = Array.make (seci 5.0) 0.0 in 
+  let input = Process.inputSeq nInput |> map tanh in
+  let writer = write buffer (countTill <| cap buffer) input in
+  let myReader () = indexCub buffer myLineTest in
+  let joined = effect writer (myReader ()) in
+  joined
+
+let mkBoerman3 nInput =
+  let place =
+    (seq [0.0;4.0 |> sec]) 
+  in
+  let dura =
+   (ch [|4.0;3.9;4.1;4.5;3.0;4.25;0.39|]) |> hold (st 4)
+  in       
+  let myLineTest =
+    tline dura place 
+  in
+  let buffer = Array.make (seci 5.0) 0.0 in 
+  let input = Process.inputSeq nInput |> map (( *. ) 0.2) |> map tanh in
+  let writer = write buffer (countTill <| cap buffer) input in
+  let myReader () = indexCub buffer myLineTest in
+  let joined = effect writer (myReader ()) in
+  joined
+ 
+let mkSlowNoiseBuff nInput =
+  let freq = tmd (rvf (st 1.0) (st 10.0)) (ch ([|2.0;4.0;5.0;6.0;1.0;0.5|])) |> map sec in
+  let index () = slowNoise ((st 1.0) /.~ freq) |> map (fun x -> x *. (sec 2.0)) in
+  let buffer = Array.make (sec 2.0 |> Int.of_float) 0.0 in
+  let input = Process.inputSeq nInput in
+  let writer = write buffer (countTill <| cap buffer) input in
+  let myReader () = indexCub buffer (index ()) in
+  let joined = effect writer (myReader ()) in
+  joined
+  
+let softclip signal = map tanh signal
+  
+let voiceWithInputs voicef inputs =
+  List.fold_left (fun acc inpt -> (voicef inpt) +.~ acc) (st 0.0) inputs |> softclip
+
+let makeStereo mkfun =
+  ( voiceWithInputs mkfun (rangei 0 3 |> toList)
+  , voiceWithInputs mkfun (rangei 4 7 |> toList) )
+  
+let boer3 = makeStereo mkBoerman3
+let boer2 = makeStereo mkBoerman2
+let boer = makeStereo mkBoerman 
+let noiseL,noiseR = makeStereo mkSlowNoiseBuff 
+let stutterL,stutterR = makeStereo mkStutter 
+let mirror= makeStereo mkMirror 
+let zigzag = makeStereo mkZigzag 
+
+let mks a b (fl,fr) = (mkSection (seci a) (seci b) fl),(mkSection (seci a) (seci b) fr)
+
+let stupid = (osc (st 220.0), osc (st 110.0))
+                    
+let l1,r1 = mks 0.0 30.0 (mkDigi ())
+let l2,r2 = mks 5.0 65.0 mirror
+let l3,r3 = mks 60.0 60.0 boer 
+let l4,r4 = mks 110.0 25.0 mirror 
+let l5,r5 = mks 120.0 5.0 (mkDigi())
+let l6,r6 = mks 120.0 60.0 (mkDigi ())
+let l7,r7 = mks 180.0 10.0 (noiseL,noiseR)
+let l8,r8 = mks 190.0 120.0 boer2
+let l9,r9 = mks 310.0 90.0 zigzag
+let (l10,_) = mks 400.0 60.0 (mkDigi ())
+let (_,r10) = mks 400.0  60.0 boer
 let l11,r11 = mks 460.0 1.0 stupid
           
 

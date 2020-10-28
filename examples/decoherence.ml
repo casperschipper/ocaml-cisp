@@ -16,7 +16,7 @@ let samplesize = 0.1
                
 let mkDigi () =      
   let wl = rvf (st (-64.0)) (st 30.0) |> map mtof |> map (fun x -> 1.0 /. x) in
-  let bottom = tmd (lift rvf 1.0 7.0) (seq [0.0;sec 10.0]) in
+  let bottom = (st 0.0) in
   let top = tmd (lift rvf 1.0 9.0) (seq [0.0;sec 10.0]) in
   let buffer = Array.make (sec 10.0 |> Int.of_float) 0.0 in
   let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh |> ( ( *.~ ) (st 1.3) )) in
@@ -41,8 +41,8 @@ let mkMirror channelN =
   let buffer = Array.make (sec 20.0 |> Int.of_float) 0.0 in
   let input = Process.inputSeq channelN in
   let writer = write buffer (countTill (cap buffer)) input in
-  let speed = ([|0.8;0.9;1.0;1.1;1.2;1.15;1.05;1.25|]).(channelN) in
-  let idx = tline (speed *. 5.0 |> st) (seq [0.0;sec 5.0]) in
+  let speed = ([|1.0;1.1;1.2;1.3;1.4;1.5;1.6;1.7;1.8|]).(channelN) in
+  let idx = tline (speed *. 20.0 |> st) (seq [0.0;sec 20.0]) in
   let reader = indexCub buffer idx in
   effect writer reader     
                
@@ -100,11 +100,28 @@ let mkBoerman2 nInput =
   let myReader () = indexCub buffer myLineTest in
   let joined = effect writer (myReader ()) in
   joined
+
+let mkBoerman3 nInput =
+  let place =
+    (seq [0.0;4.0 |> sec]) 
+  in
+  let dura =
+   (ch [|4.0;3.9;4.1;4.5;3.0;4.25;0.39|]) |> hold (st 4)
+  in       
+  let myLineTest =
+    tline dura place 
+  in
+  let buffer = Array.make (seci 5.0) 0.0 in 
+  let input = Process.inputSeq nInput |> map (( *. ) 0.2) |> map tanh in
+  let writer = write buffer (countTill <| cap buffer) input in
+  let myReader () = indexCub buffer myLineTest in
+  let joined = effect writer (myReader ()) in
+  joined
  
 let mkSlowNoiseBuff nInput =
   let freq = tmd (rvf (st 1.0) (st 10.0)) (ch ([|2.0;4.0;5.0;6.0;1.0;0.5|])) |> map sec in
-  let index () = slowNoise ((st 1.0) /.~ freq) |> map (fun x -> x *. (sec 5.0)) in
-  let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in
+  let index () = slowNoise ((st 1.0) /.~ freq) |> map (fun x -> x *. (sec 2.0)) in
+  let buffer = Array.make (sec 2.0 |> Int.of_float) 0.0 in
   let input = Process.inputSeq nInput in
   let writer = write buffer (countTill <| cap buffer) input in
   let myReader () = indexCub buffer (index ()) in
@@ -120,35 +137,38 @@ let makeStereo mkfun =
   ( voiceWithInputs mkfun (rangei 0 3 |> toList)
   , voiceWithInputs mkfun (rangei 4 7 |> toList) )
   
-
+let boer3 = makeStereo mkBoerman3
 let boer2 = makeStereo mkBoerman2
 let boer = makeStereo mkBoerman 
 let noiseL,noiseR = makeStereo mkSlowNoiseBuff 
 let stutterL,stutterR = makeStereo mkStutter 
-let mirrorL, mirrorR = makeStereo mkMirror 
+let mirror= makeStereo mkMirror 
 let zigzag = makeStereo mkZigzag 
 
 let mks a b (fl,fr) = (mkSection (seci a) (seci b) fl),(mkSection (seci a) (seci b) fr)
-        
-let l1,r1 = mks 10.0 30.0 boer2
-let l2,r2 = mks 40.0 5.0 (mkDigi ())
-let l3,r3 = mks 5.0 3.0 (stutterL,stutterR)
-let l4,r4 = mks 120.0 20.0 (mirrorL,mirrorR)
-let l5,r5 = mks 115.0 5.0 (noiseL,noiseR)
-let l6,r6 = mks 120.0 120.0 (mkDigi ())
-let l7,r7 = mks 190.0 30.0 (noiseL,noiseR)
-let l8,r8 = mks 210.0 120.0 boer
-let l9,r9 = mks 345.0 20.0 zigzag
-let (l10,_) = mks 355.0 60.0 (mkDigi ())
-let (_,r10) = mks 355.0 60.0 boer            
+
+let stupid = (osc (st 220.0), osc (st 110.0))
+                    
+let l1,r1 = mks 0.0 30.0 (mkDigi ())
+let l2,r2 = mks 5.0 65.0 mirror
+let l3,r3 = mks 60.0 60.0 boer 
+let l4,r4 = mks 110.0 25.0 mirror 
+let l5,r5 = mks 120.0 5.0 (mkDigi())
+let l6,r6 = mks 120.0 60.0 (mkDigi ())
+let l7,r7 = mks 180.0 10.0 (noiseL,noiseR)
+let l8,r8 = mks 190.0 120.0 boer2
+let l9,r9 = mks 310.0 90.0 zigzag
+let (l10,_) = mks 400.0 60.0 (mkDigi ())
+let (_,r10) = mks 400.0  60.0 boer
+let l11,r11 = mks 460.0 1.0 stupid
           
 
-        
-let scoreL = playScore (mkScore [l1])
-let scoreR = playScore (mkScore [r1])
+(*
+let scoreL = playScore (mkScore [l1])   
+let scoreR = playScore (mkScore [r1])*)
 
-(*let scoreL = playScore (mkScore [l1;l2;l3;l4;l5;l6;l7;l8;l9;l10])
-let scoreR = playScore (mkScore [r1;r2;r3;r4;r5;r6;l7;l8;l9;r10])*)
+let scoreL = playScore (mkScore [l1;l2;l3;l4;l5;l6;l7;l8;l9;l10;l11])
+let scoreR = playScore (mkScore [r1;r2;r3;r4;r5;r6;r7;r8;r9;r10;l11])
 
 let () = 
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL;scoreR]

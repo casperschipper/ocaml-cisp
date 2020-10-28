@@ -130,8 +130,8 @@ let zigzag = makeStereo mkZigzag
 
 let mks a b (fl,fr) = (mkSection (seci a) (seci b) fl),(mkSection (seci a) (seci b) fr)
         
-let l1,r1 = mks 10.0 30.0 boer2
-let l2,r2 = mks 40.0 5.0 (mkDigi ())
+let l1,r1 = mks 10.0 30.0 (mkDigi ())
+let l2,r2 = mks 30.0 90.0 boer
 let l3,r3 = mks 5.0 3.0 (stutterL,stutterR)
 let l4,r4 = mks 120.0 20.0 (mirrorL,mirrorR)
 let l5,r5 = mks 115.0 5.0 (noiseL,noiseR)
@@ -143,12 +143,12 @@ let (l10,_) = mks 355.0 60.0 (mkDigi ())
 let (_,r10) = mks 355.0 60.0 boer            
           
 
-        
-let scoreL = playScore (mkScore [l1])
-let scoreR = playScore (mkScore [r1])
+(*
+let scoreL = playScore (mkScore [l1])   
+let scoreR = playScore (mkScore [r1])*)
 
-(*let scoreL = playScore (mkScore [l1;l2;l3;l4;l5;l6;l7;l8;l9;l10])
-let scoreR = playScore (mkScore [r1;r2;r3;r4;r5;r6;l7;l8;l9;r10])*)
+let scoreL = playScore (mkScore [l1;l2;l3;l4;l5;l6;l7;l8;l9;l10])
+let scoreR = playScore (mkScore [r1;r2;r3;r4;r5;r6;l7;l8;l9;r10])
 
 let () = 
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL;scoreR]

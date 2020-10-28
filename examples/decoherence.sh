@@ -1,6 +1,6 @@
 #!/bin/bash
 dune exec ./decoherence.exe &
-sleep 10
+sleep 3
 
 jack_lsp
 

@@ -564,7 +564,11 @@ let cap arr =
 
 
   
-let safeIdx len idx = if idx < 0 then len - (abs idx mod len) else idx mod len
+let safeIdx len idx =
+  let result = idx mod len in
+  if result >= 0 then result
+  else
+    result + len
 
 (* guarentee that we are using a power of two *)
 type powerOfTwo = PowerOfTwo of int

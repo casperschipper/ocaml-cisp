@@ -30,13 +30,13 @@ let mkLoops channelN =
   (effect writer <| mkLots 2 reader)
                              
   
-let mkBrown () =
+let mkBrown cutoff =
    let buffer = Array.make (sec 10.0 |> Int.of_float) 0.0 in
    let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh) in
-   let top = tmd (st <| sec 3.0) (rv (st 100) (st 10000))  in
+   let top = tmd (st <| sec 3.0) (rv (st 1) (st 9000))  in
    let step =  (ch [|(-1.0);1.0|]) |> zipWith repeat top |> concat  in
    let index = walk 0.0 step  in
-   let reader () = indexLin buffer index |> leakDC 0.995 in
+   let reader () = indexLin buffer index |> bhpf_static cutoff 0.9 in
    (effect writer <| reader (), reader ())
                             
    
@@ -168,7 +168,7 @@ let boer3 = makeStereo mkBoerman3
 let boer2 = makeStereo mkBoerman2
 let boer = makeStereo mkBoerman 
 let noiseL,noiseR = makeStereo mkSlowNoiseBuff 
-let stutterL,stutterR = makeStereo mkStutter 
+let stutter = makeStereo mkStutter 
 let mirror= makeStereo mkMirror 
 let zigzag = makeStereo mkZigzag 
 let loopsy = makeStereo mkLoops
@@ -177,26 +177,28 @@ let mks a b (fl,fr) = (mkSection (seci a) (seci b) fl),(mkSection (seci a) (seci
 
 
 
-let stupid = (osc (st 220.0), osc (st 110.0))
-
-
+let ending = (osc (st 220.0) |> withEnv 3.0 30.0, osc (st 110.0) |> withEnv 3.0 30.0)
 
            
-let l1,r1 = mks 0.0 60.0 loopsy
-let l2,r2 = mks 55.0 65.0 mirror
-let l3,r3 = mks 120.0 60.0 boer 
-let l4,r4 = mks 180.0 25.0 mirror 
+let l1,r1 = mks 0.0 60.0 boer
+let l2,r2 = mks 55.0 80.0 (mkBrown 5000.0)
+let l2a,r2a = mks 100.0 10.0 (mkBrown 2000.0)
+let l3,r3 = mks 120.0 60.0 (mkDigi ()) 
+let l4,r4 = mks 180.0 25.0 stutter 
 let l5,r5 = mks 200.0 5.0 (mkDigi())
 let l6,r6 = mks 200.0 60.0 (mkDigi ())
 let l7,r7 = mks 260.0 15.0 (noiseL,noiseR)
-let l8,r8 = mks 275.0 60.0 boer2
-let l9,r9 = mks 330.0 90.0 zigzag
+let l8,_ = mks 275.0 135.0 boer2
+let _,r8 = mks 275.0 135.0 zigzag
 let (l10,_) = mks 410.0 60.0 (mkDigi ())
 let (_,r10) = mks 440.0 60.0 loopsy
 let l11,r11 = mks 500.0 60.0 zigzag
 let l12,r12 = mks 500.0 60.0 loopsy
 let l13,r13 = mks 550.0 120.0 boer
-let l14,r14 = mks 670.0 180.0 (mkBrown ())
+let l14,r14 = mks 670.0 180.0 (mkBrown 200.0)
+let l15,r15 = mks 620.0 200.0 boer
+let stl,str = mks 820.0 30.0 ending
+            
             
 (*
 let l1,r1 = mks 0.0 30.0 (makeStereo mkLoops)
@@ -204,10 +206,10 @@ let scoreL = playScore (mkScore [l1])
 let scoreR = playScore (mkScore [r1])
  *)
            
-let scoreL = playScore (mkScore [l1;l2;l3;l4;l5;l6;l7;l8;l9;l10;l11;l12;l13;l14])
-let scoreR = playScore (mkScore [r1;r2;r3;r4;r5;r6;r7;r8;r9;r10;r11;r12;r13;r14])
+let scoreL = playScore (mkScore [l1;l2;l2a;l3;l4;l5;l6;l7;l8;l10;l11;l12;l13;l14;l15])
+let scoreR = playScore (mkScore [r1;r2;r2a;r3;r4;r5;r6;r7;r8;r10;r11;r12;r13;r14;r15])
 
-let hardClip sq = map (clip (-1.0) 1.0) sq
+let hardClip sq = map tanh sq
             
 let () = 
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip ;scoreR |> hardClip]

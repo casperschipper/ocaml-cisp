@@ -834,6 +834,11 @@ let rec selfChain sq () =
 
 let seq lst = lst |> ofList |> cycle
 
+let lin ns targets =
+  let targs = selfChain targets in
+  let control = zip targs ns in
+  map (fun ((a, b), n) -> lineSegment a b n ()) control |> concat
+
 let line targets ns =
   let targs = selfChain targets in
   let control = zip targs ns in

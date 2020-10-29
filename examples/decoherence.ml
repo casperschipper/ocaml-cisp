@@ -8,18 +8,45 @@ let msec = map sec
 
 let samplesize = 0.1
 
- let sumEight =
-     [0;1;2;3;4;5;6;7]
-     |> List.map (fun n -> Process.inputSeq n)
-     |> (fun lst -> List.fold_right (+.~) lst (st 0.0) )
+let withEnv attack duration sq =
+  let susT = duration -. (2.0 *. attack) in
+  let env =  tline (seq [attack;susT;attack]) (seq [0.0;1.0;1.0;0.0]) in
+  sq *.~ env
   
+
+let sumEight =
+  [0;1;2;3;4;5;6;7]
+  |> List.map (fun n -> Process.inputSeq n)
+  |> (fun lst -> List.fold_right (+.~) lst (st 0.0) )
+  |> map (( *. ) 0.17)
+
+let mkLoops channelN =
+  let buffer = Array.make (sec 15.0 |> Int.of_float) 0.0 in
+  let writer = write buffer (countTill <| cap buffer) (Process.inputSeq channelN |> map (( *. ) 0.2)) in
+  let loopSize = rvfi 1.0 5.0 in
+  let loopIndex = countTill (sec loopSize |> Int.of_float) |> floatify in
+  let offset () = (st <| sec 0.5) *.~ (tmd (st 10.0) (rv (st 1) (st 100)) |> floatify) in
+  let reader () = indexLin buffer (offset () +.~ loopIndex) in
+  (effect writer <| mkLots 2 reader)
+                             
+  
+let mkBrown () =
+   let buffer = Array.make (sec 10.0 |> Int.of_float) 0.0 in
+   let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh) in
+   let top = tmd (st <| sec 3.0) (rv (st 100) (st 10000))  in
+   let step =  (ch [|(-1.0);1.0|]) |> zipWith repeat top |> concat  in
+   let index = walk 0.0 step  in
+   let reader () = indexLin buffer index |> leakDC 0.995 in
+   (effect writer <| reader (), reader ())
+                            
+   
                
 let mkDigi () =      
   let wl = rvf (st (-64.0)) (st 30.0) |> map mtof |> map (fun x -> 1.0 /. x) in
   let bottom = (st 0.0) in
   let top = tmd (lift rvf 1.0 9.0) (seq [0.0;sec 10.0]) in
   let buffer = Array.make (sec 10.0 |> Int.of_float) 0.0 in
-  let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh |> ( ( *.~ ) (st 1.3) )) in
+  let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh |> ( ( *.~ ) (st 4.0) )) in
   let myIndex = tline (tmd (rvf (st 0.5) (st 5.0)) wl) ([bottom;top] |> ofList |> transpose |> concat) in
   let mkOut ()= indexLin buffer myIndex in
   (effect writer (mkLots 15 mkOut),mkLots 15 mkOut)
@@ -78,7 +105,7 @@ let mkBoerman nInput =
     tline dura place 
   in
   let buffer = Array.make (seci 5.0) 0.0 in 
-  let input = Process.inputSeq nInput in
+  let input = Process.inputSeq nInput |> bhpf_static 100.0 0.9 in
   let writer = write buffer (countTill <| cap buffer) input in
   let myReader = indexCub buffer myLineTest in
   let joined = effect writer myReader in
@@ -89,13 +116,13 @@ let mkBoerman2 nInput =
     (seq [0.0;4.0 |> sec]) 
   in
   let dura =
-   (ch [|1.0;2.0;3.0;2.99;3.01;4.0;8.0;16.0;3.99;4.01;4.02;3.89|])
+   (ch [|1.0;2.0;3.0;2.99;3.01;4.0;8.0;12.0;11.98;12.01;12.03;12.03;16.0;3.99;4.01;4.02;3.89|])
   in       
   let myLineTest =
     tline dura place 
   in
   let buffer = Array.make (seci 5.0) 0.0 in 
-  let input = Process.inputSeq nInput |> map tanh in
+  let input = Process.inputSeq nInput |> map tanh |> bhpf_static 100.0 0.9  in
   let writer = write buffer (countTill <| cap buffer) input in
   let myReader () = indexCub buffer myLineTest in
   let joined = effect writer (myReader ()) in
@@ -122,7 +149,7 @@ let mkSlowNoiseBuff nInput =
   let freq = tmd (rvf (st 1.0) (st 10.0)) (ch ([|2.0;4.0;5.0;6.0;1.0;0.5|])) |> map sec in
   let index () = slowNoise ((st 1.0) /.~ freq) |> map (fun x -> x *. (sec 2.0)) in
   let buffer = Array.make (sec 2.0 |> Int.of_float) 0.0 in
-  let input = Process.inputSeq nInput in
+  let input = Process.inputSeq nInput |> map (( *. ) 0.2) in
   let writer = write buffer (countTill <| cap buffer) input in
   let myReader () = indexCub buffer (index ()) in
   let joined = effect writer (myReader ()) in
@@ -144,31 +171,43 @@ let noiseL,noiseR = makeStereo mkSlowNoiseBuff
 let stutterL,stutterR = makeStereo mkStutter 
 let mirror= makeStereo mkMirror 
 let zigzag = makeStereo mkZigzag 
-
+let loopsy = makeStereo mkLoops
+           
 let mks a b (fl,fr) = (mkSection (seci a) (seci b) fl),(mkSection (seci a) (seci b) fr)
 
+
+
 let stupid = (osc (st 220.0), osc (st 110.0))
-                    
-let l1,r1 = mks 0.0 30.0 (mkDigi ())
-let l2,r2 = mks 5.0 65.0 mirror
-let l3,r3 = mks 60.0 60.0 boer 
-let l4,r4 = mks 110.0 25.0 mirror 
-let l5,r5 = mks 120.0 5.0 (mkDigi())
-let l6,r6 = mks 120.0 60.0 (mkDigi ())
-let l7,r7 = mks 180.0 10.0 (noiseL,noiseR)
-let l8,r8 = mks 190.0 120.0 boer2
-let l9,r9 = mks 310.0 90.0 zigzag
-let (l10,_) = mks 400.0 60.0 (mkDigi ())
-let (_,r10) = mks 400.0  60.0 boer
-let l11,r11 = mks 460.0 1.0 stupid
-          
 
+
+
+           
+let l1,r1 = mks 0.0 60.0 loopsy
+let l2,r2 = mks 55.0 65.0 mirror
+let l3,r3 = mks 120.0 60.0 boer 
+let l4,r4 = mks 180.0 25.0 mirror 
+let l5,r5 = mks 200.0 5.0 (mkDigi())
+let l6,r6 = mks 200.0 60.0 (mkDigi ())
+let l7,r7 = mks 260.0 15.0 (noiseL,noiseR)
+let l8,r8 = mks 275.0 60.0 boer2
+let l9,r9 = mks 330.0 90.0 zigzag
+let (l10,_) = mks 410.0 60.0 (mkDigi ())
+let (_,r10) = mks 440.0 60.0 loopsy
+let l11,r11 = mks 500.0 60.0 zigzag
+let l12,r12 = mks 500.0 60.0 loopsy
+let l13,r13 = mks 550.0 120.0 boer
+let l14,r14 = mks 670.0 180.0 (mkBrown ())
+            
 (*
+let l1,r1 = mks 0.0 30.0 (makeStereo mkLoops)
 let scoreL = playScore (mkScore [l1])   
-let scoreR = playScore (mkScore [r1])*)
+let scoreR = playScore (mkScore [r1])
+ *)
+           
+let scoreL = playScore (mkScore [l1;l2;l3;l4;l5;l6;l7;l8;l9;l10;l11;l12;l13;l14])
+let scoreR = playScore (mkScore [r1;r2;r3;r4;r5;r6;r7;r8;r9;r10;r11;r12;r13;r14])
 
-let scoreL = playScore (mkScore [l1;l2;l3;l4;l5;l6;l7;l8;l9;l10;l11])
-let scoreR = playScore (mkScore [r1;r2;r3;r4;r5;r6;r7;r8;r9;r10;l11])
-
+let hardClip sq = map (clip (-1.0) 1.0) sq
+            
 let () = 
-  Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL;scoreR]
+  Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip ;scoreR |> hardClip]

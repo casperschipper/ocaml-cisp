@@ -116,24 +116,26 @@ let mkBoermanFading nInput =
     (seq [0.0;1.0]) 
   in
   let dura =
-   (ch [|1.0;2.0;3.0;4.0;5.0;6.0;7.0;8.0|])
+   (ch [|2.0;2.666666666666667;6.0;8.0|])
   in       
   let myLineTest =
     tline dura tabIndex
   in
   let bufIndex = myLineTest |> map (( *. ) <| sec 4.0) in
-  let taper x =
+  let taper fadeTime x =
     match x with
-      att when x < 0.05 -> att /. 0.05
-    | rel when x > 0.95 -> 1.0 -. ((rel -. 0.95) /. 0.05)
+    1.0 -> 1.0
+    | att when x < fadeTime -> att /. 0.05
+    | rel when x > (1.0 -. fadeTime) -> 1.0 -. ((rel -. (1.0 -. fadeTime)) /. fadeTime)
     | _ -> 1.0
   in
   let buffer = Array.make (seci 5.0) 0.0 in 
   let input = Process.inputSeq nInput |> bhpf_static 100.0 0.9 in
   let writerIdx = (countTill <| cap buffer) in
-  let inputEnv = writerIdx |> floatify |>  (map ((/.) (cap buffer |> Float.of_int) )) |> map taper in
-  let writer = write buffer (countTill <| cap buffer) (input *.~ inputEnv) in
-  let myReader = indexCub buffer bufIndex *.~ (bufIndex |> map taper) in
+  let env = writerIdx |> map Float.of_int |> map (fun x -> x /. (cap buffer |> Float.of_int) |> taper 0.05) in
+  let mupInput = input *.~ env in
+  let writer =  write buffer writerIdx mupInput in
+  let myReader = (indexCub buffer bufIndex) *.~ (myLineTest |> map (taper 0.05 )) in
   let joined = effect writer myReader in
   joined
 
@@ -233,7 +235,7 @@ let stl,str = mks 820.0 30.0 ending
 (** TESTING ***)
             
 let test f =
-  let l1,r1 = mks 0.0 30.0 (makeStereo f) in
+  let l1,r1 = mks 0.0 900.0 (makeStereo f) in
   let scoreL = playScore (mkScore [l1]) in
   let scoreR = playScore (mkScore [r1]) in
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]

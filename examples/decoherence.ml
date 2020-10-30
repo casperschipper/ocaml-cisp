@@ -110,6 +110,34 @@ let mkBoerman nInput =
   let myReader = indexCub buffer myLineTest in
   let joined = effect writer myReader in
   joined
+  
+let mkBoermanFading nInput =
+  let tabIndex =
+    (seq [0.0;1.0]) 
+  in
+  let dura =
+   (ch [|1.0;2.0;3.0;4.0;5.0;6.0;7.0;8.0|])
+  in       
+  let myLineTest =
+    tline dura tabIndex
+  in
+  let bufIndex = myLineTest |> map (( *. ) <| sec 4.0) in
+  let taper x =
+    match x with
+      att when x < 0.05 -> att /. 0.05
+    | rel when x > 0.95 -> 1.0 -. ((rel -. 0.95) /. 0.05)
+    | _ -> 1.0
+  in
+  let buffer = Array.make (seci 5.0) 0.0 in 
+  let input = Process.inputSeq nInput |> bhpf_static 100.0 0.9 in
+  let writerIdx = (countTill <| cap buffer) in
+  let inputEnv = writerIdx |> floatify |>  (map ((/.) (cap buffer |> Float.of_int) )) |> map taper in
+  let writer = write buffer (countTill <| cap buffer) (input *.~ inputEnv) in
+  let myReader = indexCub buffer bufIndex *.~ (bufIndex |> map taper) in
+  let joined = effect writer myReader in
+  joined
+
+
 
 let mkBoerman2 nInput =
   let place =
@@ -179,6 +207,9 @@ let mks a b (fl,fr) = (mkSection (seci a) (seci b) fl),(mkSection (seci a) (seci
 
 let ending = (osc (st 220.0) |> withEnv 3.0 30.0, osc (st 110.0) |> withEnv 3.0 30.0)
 
+let hardClip sq = map tanh sq
+
+let saneValue sq = map (fun x -> if Float.is_finite x then x else 0.0) sq
            
 let l1,r1 = mks 0.0 60.0 boer
 let l2,r2 = mks 55.0 80.0 (mkBrown 5000.0)
@@ -198,20 +229,30 @@ let l13,r13 = mks 550.0 120.0 boer
 let l14,r14 = mks 670.0 180.0 (mkBrown 200.0)
 let l15,r15 = mks 620.0 200.0 boer
 let stl,str = mks 820.0 30.0 ending
+
+(** TESTING ***)
             
-            
-(*
-let l1,r1 = mks 0.0 30.0 (makeStereo mkLoops)
-let scoreL = playScore (mkScore [l1])   
-let scoreR = playScore (mkScore [r1])
- *)
-           
+let test f =
+  let l1,r1 = mks 0.0 30.0 (makeStereo f) in
+  let scoreL = playScore (mkScore [l1]) in
+  let scoreR = playScore (mkScore [r1]) in
+  Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]
+
+let () =
+  test mkBoermanFading
+
+       (*** END OF TESTING ***)
+    
+    
+(*     
+the real piece:
+      
 let scoreL = playScore (mkScore [l1;l2;l2a;l3;l4;l5;l6;l7;l8;l10;l11;l12;l13;l14;l15])
 let scoreR = playScore (mkScore [r1;r2;r2a;r3;r4;r5;r6;r7;r8;r10;r11;r12;r13;r14;r15])
 
-let hardClip sq = map tanh sq
 
-let saneValue sq = map (fun x -> if Float.is_finite x then x else 0.0) sq
             
 let () = 
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]
+
+ *)

@@ -1,6 +1,5 @@
 open Seq
 
-
 (* Seq is a thunk that when forced returns a value and a thunk to get the tail *)
 
 (* 
@@ -31,7 +30,7 @@ let fst (x, _) = x
 let snd (_, x) = x
 
 let mapFst f (a,b) =
-  (f a,b)
+  (f a,b) 
                    
 
 let flip f a b = f b a
@@ -46,7 +45,7 @@ let sec s = !Process.sample_rate *. s
 let seci s = !Process.sample_rate *. s |> Int.of_float
 
 let two_pi = Float.pi *. 2.0
-
+ 
 let rec ofRef rf () = Cons (!rf, ofRef rf)
 
 let rdRef rf () = Cons(!rf,ofRef rf)
@@ -466,10 +465,16 @@ let mapLinlin inA inB outA outB input =
     
 
 let rec mkLots n thing =
-  if n > 1 then
-    thing () +.~ (mkLots (n-1) thing)
-  else
-    thing ()
+  let sum =
+    if n > 1 then
+      thing () +.~ (mkLots (n-1) thing) 
+    else
+      thing ()
+  in
+  let attenuate =
+    0.71 /. (Float.of_int n)
+  in
+  sum |> map (( *. ) attenuate)
 
 
 let mixList lst () = List.fold_left ( +~ ) lst
@@ -559,7 +564,11 @@ let cap arr =
 
 
   
-let safeIdx len idx = if idx < 0 then len - (abs idx mod len) else idx mod len
+let safeIdx len idx =
+  let result = idx mod len in
+  if result >= 0 then result
+  else
+    result + len
 
 (* guarentee that we are using a power of two *)
 type powerOfTwo = PowerOfTwo of int
@@ -624,7 +633,7 @@ let mkWeights lst = match lst with [] -> None | w -> Some (Weights w)
 let weights weightLst () =
   let sumWeights = List.fold_left (fun acc (_, w) -> w + acc) 0 weightLst in
   let rec lookupWeight lst curr pick =
-    match lst with
+    match lst with 
     | [] -> raise <| Invalid_argument "weight not found"
     | [(value, _)] -> value
     | (value, weight) :: ws ->
@@ -828,6 +837,11 @@ let rec selfChain sq () =
         Cons((h,h2),  selfChain tail)
 
 let seq lst = lst |> ofList |> cycle
+
+let lin ns targets =
+  let targs = selfChain targets in
+  let control = zip targs ns in
+  map (fun ((a, b), n) -> lineSegment a b n ()) control |> concat
 
 let line targets ns =
   let targs = selfChain targets in
@@ -1187,6 +1201,29 @@ let bbpf_static f q x =
   let a1 = -2. *. cosw in
   let a2 = 1. -. a in
   biquad_static a0 a1 a2 b0 b1 b2 x
+
+
+type dcFilterState =
+    { previousX : float
+    ; out : float
+    }
+
+(* TESTED, from supercollider, using 0.995 as factor 
+   y[n] = x[n] - x[n-1] + coef * y[n-1] *)
+  
+  
+let leakDC coef inputSq =
+  recursive
+    inputSq
+    ({ out = 0.0
+    ; previousX = 0.0
+     })
+    (fun xIn state ->
+      let newOut =  (xIn -. state.previousX) +. (coef *. state.out)  in
+      { previousX = xIn
+      ; out = newOut })
+    (fun state -> state.out)
+
       
 type timedSection
   = TimedSection of { startSample : int
@@ -1222,13 +1259,15 @@ let toPlay now (TimedSection section) =
   
 type sectionScheduler =
   SectionScheduler of { score : timedSection sorted
+                      ; playingScore : timedSection sorted
                       ; now : int
                       ; currentSecs : playingSection list
                       ; currentOut : float
                       }
 
 let schedulerOfScore (Score sortedTimedSecs) =
-  SectionScheduler { score = sortedTimedSecs
+  SectionScheduler { playingScore = sortedTimedSecs
+                   ; score = sortedTimedSecs
                    ; now = 0
                    ; currentSecs = []
                    ; currentOut = 0.0 }
@@ -1241,7 +1280,7 @@ let updateScheduler (SectionScheduler scheduler) =
     List.filter (fun (PlayingSection playing) -> playing.endSample > scheduler.now)  playingSects
   in
   let (newCurrentSecs, future) = 
-    scheduler.score
+    scheduler.playingScore
     |> mozesSorted (fun (TimedSection e) ->
            e.startSample <= scheduler.now)
     |> mapFst (fun (Sorted playableEvts) -> List.map (toPlay scheduler.now) playableEvts)
@@ -1254,13 +1293,21 @@ let updateScheduler (SectionScheduler scheduler) =
   in
   let (out,newPlayingSecs) =
     List.fold_left f (0.0,[]) currentSects
-  in 
-  (SectionScheduler
-     { score = future
-     ; now = scheduler.now + 1
-     ; currentSecs = newPlayingSecs
-     ; currentOut = out })
-
+  in
+  match (future, newPlayingSecs) with (* to deal with reset, if there is no future, then we reset the score *)
+  | (Sorted [], []) -> (SectionScheduler 
+                    { scheduler with
+                     playingScore = scheduler.score
+                    ; now = 0
+                    ; currentSecs = []
+                    ; currentOut = out })
+  | (Sorted futureEvts,_) -> (SectionScheduler
+                            { scheduler with 
+                              playingScore = Sorted futureEvts
+                            ; now = scheduler.now + 1
+                            ; currentSecs = newPlayingSecs
+                            ; currentOut = out })
+                       
 let printTimedSectionLst timedSectionList =
   let open Format in
   let printSection i (TimedSection s) =
@@ -1304,5 +1351,4 @@ let decayPulse fb inSq =
       else
         (state +. input) *. fb)
     id
-          
-
+         

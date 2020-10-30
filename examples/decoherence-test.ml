@@ -200,14 +200,16 @@ let l15,r15 = mks 620.0 200.0 boer
 let stl,str = mks 820.0 30.0 ending
             
             
-(*
-let l1,r1 = mks 0.0 30.0 (makeStereo mkLoops)
+
+let l1,r1 = mks 0.0 30.0 boer
+
 let scoreL = playScore (mkScore [l1])   
 let scoreR = playScore (mkScore [r1])
- *)
-           
+
+(*           
 let scoreL = playScore (mkScore [l1;l2;l2a;l3;l4;l5;l6;l7;l8;l10;l11;l12;l13;l14;l15])
 let scoreR = playScore (mkScore [r1;r2;r2a;r3;r4;r5;r6;r7;r8;r10;r11;r12;r13;r14;r15])
+ *)
 
 let hardClip sq = map tanh sq
             

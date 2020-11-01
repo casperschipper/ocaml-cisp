@@ -139,24 +139,35 @@ let mkBoermanFading nInput =
   let joined = effect writer myReader in
   joined
 
-
-
-let mkBoerman2 nInput =
-  let place =
-    (seq [0.0;4.0 |> sec]) 
+let mkBoermanFading2 nInput =
+  let tabIndex =
+    (seq [0.0;1.0]) 
   in
   let dura =
-   (ch [|1.0;2.0;3.0;2.99;3.01;4.0;8.0;12.0;11.98;12.01;12.03;12.03;16.0;3.99;4.01;4.02;3.89|])
+    (ch [|1.0;2.0;3.0;2.99;3.01;4.0;8.0;12.0;11.98;12.01;12.03;12.03;16.0;3.99;4.01;4.02;3.89|])
   in       
   let myLineTest =
-    tline dura place 
+    tline dura tabIndex
+  in
+  let bufIndex = myLineTest |> map (( *. ) <| sec 4.0) in
+  let taper fadeTime x =
+    match x with
+    1.0 -> 1.0
+    | att when x < fadeTime -> att /. 0.05
+    | rel when x > (1.0 -. fadeTime) -> 1.0 -. ((rel -. (1.0 -. fadeTime)) /. fadeTime)
+    | _ -> 1.0
   in
   let buffer = Array.make (seci 5.0) 0.0 in 
-  let input = Process.inputSeq nInput |> map tanh |> bhpf_static 100.0 0.9 |> ( *.- ) 10.0  in
-  let writer = write buffer (countTill <| cap buffer) input in
-  let myReader () = indexCub buffer myLineTest in
-  let joined = effect writer (myReader ()) in
+  let input = Process.inputSeq nInput |> bhpf_static 100.0 0.9 in
+  let writerIdx = (countTill <| cap buffer) in
+  let env = writerIdx |> map Float.of_int |> map (fun x -> x /. (cap buffer |> Float.of_int) |> taper 0.05) in
+  let mupInput = input *.~ env in
+  let writer =  write buffer writerIdx mupInput in
+  let myReader = (indexCub buffer bufIndex) *.~ (myLineTest |> map (taper 0.05 )) in
+  let joined = effect writer myReader in
   joined
+
+
 
 let mkBoerman3 nInput =
   let place =
@@ -174,7 +185,37 @@ let mkBoerman3 nInput =
   let myReader () = indexCub buffer myLineTest in
   let joined = effect writer (myReader ()) in
   joined
- 
+
+let mkBoermanFading3 nInput=
+    let tabIndex =
+    (seq [0.0;1.0]) 
+  in
+  let dura =
+   (ch [|4.0;3.9;4.1;4.5;3.0;4.25;0.39|]) |> hold (st 4)  
+  in       
+  let myLineTest =
+    tline dura tabIndex
+  in
+  let bufIndex = myLineTest |> map (( *. ) <| sec 4.0) in
+  let taper fadeTime x =
+    match x with
+    1.0 -> 1.0
+    | att when x < fadeTime -> att /. 0.05
+    | rel when x > (1.0 -. fadeTime) -> 1.0 -. ((rel -. (1.0 -. fadeTime)) /. fadeTime)
+    | _ -> 1.0
+  in
+  let buffer = Array.make (seci 5.0) 0.0 in 
+  let input = Process.inputSeq nInput |> bhpf_static 100.0 0.9 in
+  let writerIdx = (countTill <| cap buffer) in
+  let env = writerIdx |> map Float.of_int |> map (fun x -> x /. (cap buffer |> Float.of_int) |> taper 0.05) in
+  let mupInput = input *.~ env in
+  let writer =  write buffer writerIdx mupInput in
+  let myReader = (indexCub buffer bufIndex) *.~ (myLineTest |> map (taper 0.05 )) in
+  let joined = effect writer myReader in
+  joined
+
+     
+    
 let mkSlowNoiseBuff nInput =
   let freq = tmd (rvf (st 1.0) (st 10.0)) (ch ([|2.0;4.0;5.0;6.0;1.0;0.5|])) |> map sec in
   let index () = slowNoise ((st 1.0) /.~ freq) |> map (fun x -> x *. (sec 2.0)) in
@@ -194,9 +235,9 @@ let makeStereo mkfun =
   ( voiceWithInputs mkfun (rangei 0 3 |> toList)
   , voiceWithInputs mkfun (rangei 4 7 |> toList) )
   
-let boer3 = makeStereo mkBoerman3
-let boer2 = makeStereo mkBoerman2
-let boer = makeStereo mkBoerman 
+let boer3 = makeStereo mkBoermanFading3
+let boer2 = makeStereo mkBoermanFading2
+let boer = makeStereo mkBoermanFading
 let noiseL,noiseR = makeStereo mkSlowNoiseBuff 
 let stutter = makeStereo mkStutter 
 let mirror= makeStereo mkMirror 
@@ -240,14 +281,15 @@ let test f =
   let scoreR = playScore (mkScore [r1]) in
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]
 
+(*  
 let () =
-  test mkBoerman2
+  test mkBoermanFading2
 
        (*** END OF TESTING ***)
+ *)    
     
     
-(*     
-the real piece:
+
       
 let scoreL = playScore (mkScore [l1;l2;l2a;l3;l4;l5;l6;l7;l8;l10;l11;l12;l13;l14;l15])
 let scoreR = playScore (mkScore [r1;r2;r2a;r3;r4;r5;r6;r7;r8;r10;r11;r12;r13;r14;r15])
@@ -257,4 +299,4 @@ let scoreR = playScore (mkScore [r1;r2;r2a;r3;r4;r5;r6;r7;r8;r10;r11;r12;r13;r14
 let () = 
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]
 
- *)
+

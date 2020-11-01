@@ -152,7 +152,7 @@ let mkBoerman2 nInput =
     tline dura place 
   in
   let buffer = Array.make (seci 5.0) 0.0 in 
-  let input = Process.inputSeq nInput |> map tanh |> bhpf_static 100.0 0.9  in
+  let input = Process.inputSeq nInput |> map tanh |> bhpf_static 100.0 0.9 |> ( *.- ) 10.0  in
   let writer = write buffer (countTill <| cap buffer) input in
   let myReader () = indexCub buffer myLineTest in
   let joined = effect writer (myReader ()) in
@@ -169,7 +169,7 @@ let mkBoerman3 nInput =
     tline dura place 
   in
   let buffer = Array.make (seci 5.0) 0.0 in 
-  let input = Process.inputSeq nInput |> map (( *. ) 0.2) |> map tanh in
+  let input = Process.inputSeq nInput |> map (( *. ) 0.2) |> map tanh |> bhpf_static 100.0 0.9 |> ( *.- ) 10.0  in
   let writer = write buffer (countTill <| cap buffer) input in
   let myReader () = indexCub buffer myLineTest in
   let joined = effect writer (myReader ()) in
@@ -241,7 +241,7 @@ let test f =
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]
 
 let () =
-  test mkBoermanFading
+  test mkBoerman2
 
        (*** END OF TESTING ***)
     

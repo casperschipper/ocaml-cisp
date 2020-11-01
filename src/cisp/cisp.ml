@@ -431,6 +431,19 @@ let rec zipWith f a b () =
     | Nil -> Nil
     | Cons (b, btl) -> Cons (f a b, zipWith f atl btl) )
 
+
+(* static versions, so you do not have to use st *)
+
+let ( *.- ) x sq = map ( ( *. ) x ) sq
+
+let (+.-) x sq = map ((+.) x) sq
+
+let (-.-) x sq = map ((-.) x) sq
+
+let (/.-) x sq = map ((/.) x) sq
+
+(* dual seq operators *)
+                   
 let ( +.~ ) = zipWith (fun a b -> a +. b)
 
 let ( *.~ ) = zipWith (fun a b -> a *. b)

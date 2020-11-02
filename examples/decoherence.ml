@@ -30,13 +30,13 @@ let mkLoops channelN =
   (effect writer <| mkLots 2 reader)
                              
   
-let mkBrown cutoff =
+let mkBrown cutoff attenuate =
    let buffer = Array.make (sec 10.0 |> Int.of_float) 0.0 in
    let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh) in
    let top = tmd (st <| sec 3.0) (rv (st 1) (st 9000))  in
    let step =  (ch [|(-1.0);1.0|]) |> zipWith repeat top |> concat  in
    let index = walk 0.0 step  in
-   let reader () = indexLin buffer index |> bhpf_static cutoff 0.9 in
+   let reader () = indexLin buffer index |> bhpf_static cutoff 0.9|> ( *.-) attenuate in
    (effect writer <| reader (), reader ())
                             
    
@@ -49,7 +49,7 @@ let mkDigi () =
   let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh |> ( ( *.~ ) (st 4.0) )) in
   let myIndex = tline (tmd (rvf (st 0.5) (st 5.0)) wl) ([bottom;top] |> ofList |> transpose |> concat) in
   let mkOut ()= indexLin buffer myIndex in
-  (effect writer (mkLots 2 mkOut),mkLots 2 mkOut)
+  (effect writer (mkLots 3 mkOut),mkLots 3 mkOut)
 
 
 let mkZigzag channelN =
@@ -232,8 +232,8 @@ let voiceWithInputs voicef inputs =
   List.fold_left (fun acc inpt -> (voicef inpt) +.~ acc) (st 0.0) inputs |> softclip
 
 let makeStereo mkfun =
-  ( voiceWithInputs mkfun (rangei 0 3 |> toList)
-  , voiceWithInputs mkfun (rangei 4 7 |> toList) )
+  ( voiceWithInputs mkfun [0;1;2;4;6]
+  , voiceWithInputs mkfun [0;1;3;5;7])
   
 let boer3 = makeStereo mkBoermanFading3
 let boer2 = makeStereo mkBoermanFading2
@@ -255,8 +255,8 @@ let hardClip sq = map tanh sq
 let saneValue sq = map (fun x -> if Float.is_finite x then x else 0.0) sq
            
 let l1,r1 = mks 0.0 60.0 boer
-let l2,r2 = mks 55.0 80.0 (mkBrown 5000.0)
-let l2a,r2a = mks 100.0 10.0 (mkBrown 2000.0)
+let l2,r2 = mks 55.0 80.0 (mkBrown 5000.0 6.0)
+let l2a,r2a = mks 100.0 10.0 (mkBrown 2000.0 2.0) 
 let l3,r3 = mks 120.0 60.0 (mkDigi ()) 
 let l4,r4 = mks 180.0 25.0 stutter 
 let l5,r5 = mks 200.0 5.0 (mkDigi())
@@ -269,11 +269,12 @@ let (_,r10) = mks 440.0 60.0 loopsy
 let l11,r11 = mks 500.0 60.0 zigzag
 let l12,r12 = mks 500.0 60.0 loopsy
 let l13,r13 = mks 550.0 120.0 boer
-let l14,r14 = mks 670.0 180.0 (mkBrown 200.0)
+let l14,r14 = mks 670.0 180.0 (mkBrown 200.0 3.0)
 let l15,r15 = mks 620.0 200.0 boer
 let stl,str = mks 820.0 30.0 ending
 
 (** TESTING ***)
+(*
             
 let test f =
   let l1,r1 = mks 0.0 900.0 (makeStereo f) in
@@ -281,7 +282,7 @@ let test f =
   let scoreR = playScore (mkScore [r1]) in
   Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]
 
-(*  
+  
 let () =
   test mkBoermanFading2
 

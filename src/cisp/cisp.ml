@@ -1278,6 +1278,10 @@ type sectionScheduler =
                       ; currentOut : float
                       }
 
+let schedWithOffset (SectionScheduler score) offsetInSmps =
+  SectionScheduler { score with now = offsetInSmps }
+  
+                    
 let schedulerOfScore (Score sortedTimedSecs) =
   SectionScheduler { playingScore = sortedTimedSecs
                    ; score = sortedTimedSecs

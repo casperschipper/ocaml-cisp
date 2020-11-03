@@ -11,23 +11,22 @@ let computeTimeConst x = 1.0 -. exp ((-2.2) /. x)
 type avgState =
   { attack : float
   ; release : float
-  ; filterC : float
-  ; idx : int
   ; currentAvg : float
   ; out : float }
                
-let avg windowSize sq =
+let avg sq =
   let init () =
-    { attack : 0.01
-    ; release : 0.01
-    ; size = windowSize
+    { attack = 0.01
+    ; release = 0.01
     ; currentAvg = 0.0
     ; out = 0.0 }
   in
   recursive
     sq
     (init ())
-    (fun c state ->
+    (fun inp state ->
+      if inp > out then
+        
     )
     
 let () = 

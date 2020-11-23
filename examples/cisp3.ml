@@ -1,109 +1,44 @@
 open Cisp
+open Midi
 open Seq
-(* open Format   *)
-   
-let sec s = !Process.sample_rate *. s
+open Reader.Ops
 
-let msec = map sec 
+(* simple mod of controller 1 onto pitch *)
 
-let samplesize = 0.1
+let sr = ref 44100.0
 
-let pitch = tmd (st samplesize) (ch [|0.5;1.0;2.0;0.25;4.0;1.25;0.75|] |> hold (seq [2;3;2;1;4]))   
-let baseline = walk 0.0 pitch |> map (wrapf 0.0 (sec samplesize))
-let entrydelay = (st samplesize)
-let offset = (rv (st 0) (st 50) |> hold (seq [3;2;2;3;5]) |> floatify) *.~ (st <| sec samplesize) 
-let randomSteppy = tmd entrydelay offset
-let jumpyLine = baseline +.~ randomSteppy
+let pitchControl =
+  MidiState.getControlR (MidiCh 0) (MidiCtrl 0) 
+  >>= (fun (MidiVal ctrl1) ->
+    MidiState.getControlR (MidiCh 0) (MidiCtrl 1) >>=
+      (fun (MidiVal ctrl2) ->
+        MidiState.triggerR 3000 >>= (fun evt ->
+         (ctrl1,ctrl2, evt) |> Reader.return)))
+       
+let offsetPitch offset evt =
+  mapOverPitch ((+) offset) evt
 
-let decay fb inSq =
-  let rec aux prev inSq () = 
-  match inSq () with
-  | Cons(hd, tail) -> Cons (hd +. prev, aux (hd *. fb) tail)
-  | Nil -> Nil
-  in
-  aux 0.0 inSq 
-
-let env () =
-  tline (seq [0.1 -. 0.00001;0.00001]) (seq [1.0;0.0]) |> map (fun x -> x *. x |> clip 0.0 1.0) 
-
-let oscil = osc (st 440.0) 
+(* zipWith is awesome! it allows to combine two seqs into one! *)
 
 
-    
-type timedSection
-  = TimedSection of { startSample : int
-                    ; duration : int
-                    ; seqs : float Seq.t list } 
-
-let compareSection (TimedSection sectA) (TimedSection sectB) =
-  compare (sectA.startSample) (sectB.startSample)
-                  
-type playingSection
-  = PlayingSection of { endSample : int
-                      ; seqs : (float Seq.t) list
-                      }
-
-type score =
-  Score of timedSection list
-                    
-let toPlay now (TimedSection section) =
-  PlayingSection { endSample = now + section.duration
-                 ; seqs = section.seqs }
+let ofTuple tup =
+  let (c1,_,evt) = unzip3 tup in (* a seq of (x,y) make it (seq x, seq y) *)
+   (*let arr = [|0;2;4|] in (* myseq *)
+   let mywalk = walki 0 c1 in
+   let indexed = index arr mywalk in 
+  let arr2 = [|0;12|] in
+  let mywalk2 = walki 0 c2 in
+  let indexed2 = index arr2 mywalk2 in*)
+  overwritePitch (c1) evt (* add the summed seqs to evt.pitch *)
   
-type sectionScheduler =
-  SectionScheduler of { score : timedSection list
-                      ; now : int
-                      ; currentSeqs : playingSection list
-                      }
+(* this maps midi input msg to an output msg (raw midi) *)
+let midiInputTestFun input =
+  input 
+  |> MidiState.makeSeq (* take msg, make it a state *)
+  |> map (Reader.run pitchControl) (* run a bunch of readers to extract properties *)
+  |> ofTuple (* the result is then used to contruct streams *)
+  |> serialize |> map toRaw (* turn back into raw midi *)
 
-let schedulerOfScore (Score timedSeqs) =
-  SectionScheduler { score = timedSeqs
-                   ; now = 0
-                   ; currentSeqs = [] }
   
-let mkScore sectionLst =
-  Score (List.sort compareSection sectionLst)
-
-let updateScheduler (SectionScheduler scheduler) =
-  let dropFinished playingSects =
-    List.filter (fun (PlayingSection playing) -> playing.endSample > scheduler.now)  playingSects
-  in
-  let (newCurrent, future) =
-    scheduler.score
-    |> mozesSorted (fun (TimedSection e) -> e.startSample >= scheduler.now)
-    |> mapFst (fun es -> List.map (toPlay scheduler.now) es)
-  in
-  let currentSects = newCurrent @ (dropFinished scheduler.currentSeqs) in
-  (SectionScheduler
-     { score = future
-     ; now = scheduler.now + 1
-     ; currentSeqs = currentSects })
-
-let evaluateCurrentChannels (SectionScheduler scheduler) =
-  let getChannels (PlayingSection ps) = ps.seqs in
-  let currentChannelLsts = List.map getChannels scheduler.currentSeqs in
-    list_fold_left1 addChannelLsts currentChannelLsts |> Option.value ~default:(listRepeat 8 (st 0.0))
-
-let eightChannelSilence =
-  [st(0.0);st(0.0);st(0.0);st(0.0);st(0.0);st(0.0);st(0.0);st(0.0)]
-
-let playScore score =
-  simpleRecursive
-    ((schedulerOfScore score))
-    updateScheduler
-    evaluateCurrentChannels
-   
-  
-let singleton a =
-  [a]
-              
-let () =
-  let buffer = Array.make (sec 5.0 |> Int.of_float) 0.0 in 
-  let input = Process.inputSeq 0 in
-  let hpf = bhpf_static  50.0  0.9 input in
-  let myReader () = (indexCub buffer (jumpyLine)) *.~ env () in
-  let timefied = effect masterClock (myReader ()) in
-  let writer = write buffer (countTill (cap buffer)) hpf in
-  let joined = effect writer timefied in
-  Jack.playSeqs 2 Process.sample_rate [joined +.~ mkLots 6 myReader;mkLots 6 myReader]
-
+let () = Midi.playMidi midiInputTestFun sr 
+           

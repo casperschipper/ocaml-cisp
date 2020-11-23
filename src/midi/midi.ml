@@ -43,6 +43,20 @@ type midiEvent =
   | ControlEvent of midiChannel * controller * midiValue
   | SilenceEvent
 
+let midiEventToString evt =
+  match evt with
+  | NoteEvent (MidiCh mc,Pitch p,Velo v,Samps s) ->
+     [("mc: ",mc);("pitch: ",p);("velo: ",v);("samps: ",s)] |> List.map (fun (label,value) -> label ^ Int.to_string value) |> String.concat " " |> fun str -> str ^ "\n" |> fun  s-> Some s
+  | ControlEvent (MidiCh mc,MidiCtrl c,MidiVal v) ->
+       [("mc: ",mc);("ctrl: ",c);("val: ",v)] |> List.map (fun (label,value) -> label ^ Int.to_string value) |> String.concat " " |> fun str -> str ^ "\n" |> fun s ->  Some s
+  | SilenceEvent ->
+     None
+  
+let printMidiEvent evt =
+  match midiEventToString evt with
+  | None -> ()
+  | Some str -> print_endline str
+  
 let mkMidiValue v =
   if v < 0 || v > 127 then Error "out of range midi value" else Ok (MidiVal v)
 
@@ -488,6 +502,9 @@ let print_midi_msg msg =
   midiToString msg |> print_string ;
   print_newline ()
 
+
+  
+
 let print_timed_midi_event (t, msg) =
   let () =
     print_string "t=" ;
@@ -639,7 +656,7 @@ let pitchVelo midiRef midiCh =
   aux (0, 0)
 
   
-let rec  overwritePitch pitchSq evtSeq () =
+let rec overwritePitch pitchSq evtSeq () =
   match evtSeq () with
   | Cons (NoteEvent (c,_,v,d), tl) ->
      begin

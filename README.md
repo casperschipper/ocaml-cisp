@@ -31,3 +31,6 @@ Further documentation can be found in the ```doc``` directory.
 Further examples can be found in the ```examples``` directory. See the
 ```dune``` file in the ```examples``` directory for information on how
 to set up and compile your own projects using these libraries.
+
+For midi on OSX run Jackd with
+jackd -X coremidi -d coreaudio 

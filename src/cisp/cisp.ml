@@ -431,6 +431,21 @@ let rec zipWith f a b () =
     | Nil -> Nil
     | Cons (b, btl) -> Cons (f a b, zipWith f atl btl) )
 
+let rec zipWith4 f a b c d () =
+  match a () with
+  | Nil -> Nil
+  | Cons(a, atl) -> (
+    match b () with
+    | Nil -> Nil
+    | Cons (b, btl) -> (
+      match c () with
+      | Nil -> Nil
+      | Cons (c, ctl) -> (
+        match d () with
+        | Nil -> Nil
+        | Cons (d, dtl) -> 
+          Cons (f a b c d, zipWith4 f atl btl ctl dtl))))
+
 
 (* static versions, so you do not have to use st *)
 

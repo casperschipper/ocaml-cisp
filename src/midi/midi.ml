@@ -371,8 +371,7 @@ module MidiState =
       
   end
 
-  
-  
+
 
     
     
@@ -820,6 +819,7 @@ let isNoteOn midiMsg =
 let trigger event midiIn =
   let t = map isNoteOn midiIn in
   weave t event (st SilenceEvent)
+
 
 let testmidi midi =
   midi |> take 80 |> serialize |> iter (toRaw >> printRaw)

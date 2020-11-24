@@ -12,8 +12,7 @@ let pitchControl2 =
   let* (MidiVal ctrl1) = MidiState.getControlR (MidiCh 0) (MidiCtrl 0) in
   let* (MidiVal ctrl2) = MidiState.getControlR (MidiCh 0) (MidiCtrl 1) in
   let* evt = MidiState.triggerR 9000 in
-  let evtTransposed = evt |> overWritePitch (waki 0 ctrl1) in
-  Reader.return (ctrl1,ctrl2, evt)
+  Reader.return  (ctrl1,ctrl2,evt)
   
 let offsetPitch offset evt =
   mapOverPitch ((+) offset) evt

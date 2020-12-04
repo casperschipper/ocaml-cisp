@@ -199,12 +199,14 @@ let ofList l =
   let rec aux l () = match l with [] -> Nil | x :: l' -> Cons (x, aux l') in
   aux l
 
-let rec toList ls =
-  match ls () with Nil -> [] | Cons (h, ts) -> h :: toList ts
+let rec toList sq =
+  match sq () with Nil -> [] | Cons (h, ts) -> h :: toList ts
 
-let rec take n lst () =
+let rec take n sq () =
   if n <= 0 then Nil
-  else match lst () with Nil -> Nil | Cons (h, ts) -> Cons (h, take (n - 1) ts)
+  else match sq () with
+         Nil -> Nil
+       | Cons (h, ts) -> Cons (h, take (n - 1) ts)
 
 
 
@@ -241,12 +243,18 @@ let rec split n lst =
         let f, l = split (n - 1) xs in
         (thunk (Cons (x, f)), l)
 
-let rec filter f lst () =
+let rec filter f lst =
   match lst () with
   | Nil -> Nil
   | Cons (h, tl) ->
-      if f h then Cons (h, fun () -> filter f tl ()) else filter f tl ()
+      if f h then Cons (h, fun () -> filter f tl ) else filter f tl 
 
+let filterOptions sq = 
+  filter (fun opt ->
+      match opt with
+        Some _ -> true
+      | None -> false) sq
+    
 let list_fold_left1 f lst =
   match lst with
   | x::xs -> Some (List.fold_left f x xs)
@@ -431,6 +439,18 @@ let rec zipWith f a b () =
     | Nil -> Nil
     | Cons (b, btl) -> Cons (f a b, zipWith f atl btl) )
 
+let rec zipWith3 f a b c () =
+  match a () with
+  | Nil -> Nil
+  | Cons (a, atl) -> (
+    match b () with
+    | Nil -> Nil
+    | Cons (b, btl) -> (
+      match c () with
+      | Nil -> Nil
+      | Cons (c, ctl) ->
+        Cons (f a b c, zipWith3 f atl btl ctl) ) )
+       
 let rec zipWith4 f a b c d () =
   match a () with
   | Nil -> Nil
@@ -479,6 +499,7 @@ let addChannelLsts channelAList channelBList =
   let (aChs,bChs) = normalizeNumberOfChannels channelAList channelBList in
   List.map2 (+.~) aChs bChs
 
+  
 
 let linlin inA inB outA outB input =
   let a = minimum inA inB in
@@ -983,7 +1004,21 @@ let getPreciseTime () =
 (*Mtime_clock.elapsed () |> Mtime.Span.to_uint64_ns |> Int64.to_float |> ( *. ) Mtime.ns_to_s*)
     
 
+let updateOpt old newOpt =
+  match newOpt with
+  | Some value -> value
+  | None -> old
 
+let ofOpt default optSq =
+  recursive
+    optSq
+    default
+    (fun x state -> match x with
+                      Some value -> value
+                    | None -> state)
+    id
+                                     
+    
   
 type tLineState =
   { oldT : float

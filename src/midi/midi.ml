@@ -1,6 +1,8 @@
 open Cisp
 open Seq
 
+
+   
 module Reader = struct
   type ('e, 'a) t = Reader of ('e -> 'a)
 
@@ -43,6 +45,52 @@ type midiEvent =
   | ControlEvent of midiChannel * controller * midiValue
   | SilenceEvent
 
+type note =
+  Note of midiChannel * pitch * velocity 
+
+type noteEvt =
+  NoteEvt of midiChannel * pitch * velocity * deltaT 
+        
+type control =
+  Control of midiChannel * controller * midiValue
+
+type midiData 
+  = NoteData of note
+  | ControlData of control
+  
+let filterNotes midiEvt =
+  match midiEvt with
+  | NoteEvent (c,p,v,d) -> Some ( NoteEvt (c,p,v,d))
+  | _ -> None
+
+let filterControl midiEvt =
+  match midiEvt with
+  | ControlEvent (ch,c,m) ->
+     Some (Control (ch,c,m)) 
+  | _ -> None
+
+(* a (opt b) -> opt (a, b) *)
+  (*     
+let filterEvts midiEvt =
+  match midiEvt with
+  | NoteEvent (c,p,v,d) -> Some (NoteData (NoteEvt (c,p,v,d)))
+  | ControlEvent (ch,c,v) -> Some (ControlData (Control (ch,c,v)))
+  | _ -> None*)
+       
+(* let getPitch (Note (_,p,_,_)) = p
+
+let getChannel (Note (c,_,_,_)) = c
+
+let getVelo (Note (_,_,v,_)) = v
+
+let getDur (Note (_,_,_,d)) = d *)
+              
+let optionToEvent = function
+  | Some evt -> evt
+  | None -> SilenceEvent
+
+
+                            
 let midiEventToString evt =
   match evt with
   | NoteEvent (MidiCh mc,Pitch p,Velo v,Samps s) ->
@@ -72,6 +120,12 @@ let mkPitchClip p =
   let clipped = clip 0 127 p in
   Pitch clipped
 
+let pitchOfInt =
+  mkPitchClip
+
+let transpose (Pitch p) offset =
+  p + offset |> mkPitchClip
+  
 let mkVelocityClip v =
   let clipped = clip 0 127 v in
   Velo clipped
@@ -94,11 +148,14 @@ let mapResult4 f a b c d =
   | _, Error b', _, _ -> Error b'
   | _, _, Error c', _ -> Error c'
   | _, _, _, Error d' -> Error d'
-
+                       
 let mkNote c p v d =
   mapResult4
     (fun ch pi ve dt -> NoteEvent (ch, pi, ve, dt))
     (mkChannel c) (mkPitch p) (mkVelocity v) (mkSamps d)
+
+let zipToNoteEvt c p v d =
+  zipWith4 (fun ch pi ve du -> NoteEvent (ch,pi,ve,du)) c p v d
 
 (* always returns a note, even if your parameters are out of range *)
 let mkNoteClip c p v d =
@@ -133,7 +190,7 @@ let mapOverDuration f evt =
 (* applicative 
 (a -> b -> c) -> Seq.t a -> Seq.t b -> Seq.t c  
  *)                                     
-
+    
                      
          
   
@@ -246,7 +303,11 @@ let mapSeqOverPitch f inputMidiMsg pitchSq =
   
 let hasHigherPitch msga msgb =
   getPitch msga |> Option.map (>) |> optionAndMap (getPitch msgb)
-   
+
+let isNoteOn midiMsg =
+  match midiMsg with
+  | NoteOn (_,_,_) -> true
+  | _ -> false
   
 module ControllerMap = Map.Make(Int)
 
@@ -257,7 +318,8 @@ module MidiState =
     type t =
       { depressedNotes : velocity KeyPitchMap.t 
       ; controlValues : midiValue ControllerMap.t
-      ; currentNote : (midiChannel * pitch * velocity) option  } (* this is the note that was played just now, for triggering, default is none *)
+      ; currentNote : (midiChannel * pitch * velocity) option
+      ; currentPitch : pitch } (* this is the note that was played just now, for triggering, default is none *)
      
     let chanPitchToKey (MidiCh ch) p = p + (ch * 128)
 
@@ -270,7 +332,9 @@ module MidiState =
     let empty =
       { depressedNotes = KeyPitchMap.empty
       ; controlValues = ControllerMap.empty
-      ; currentNote = None }                 
+      ; currentNote = None
+      ; currentPitch = Pitch 60
+      }
                     
     let update midiMsg state =
       (* map.add = x y m = item key map *)
@@ -278,11 +342,14 @@ module MidiState =
       | NoteOn (midiCh, Pitch p, v) ->
          { state with
            depressedNotes = KeyPitchMap.add (chanPitchToKey midiCh p) v state.depressedNotes
-          ; currentNote = Some (midiCh, Pitch p, v) }
+         ; currentNote = Some (midiCh, Pitch p, v)
+         ; currentPitch = Pitch p
+         }
       | NoteOff (midiCh, Pitch p, Velo _) ->
          { state with
            depressedNotes = KeyPitchMap.remove (chanPitchToKey midiCh p) state.depressedNotes
-         ; currentNote = None }
+         ; currentNote = None
+         }
       | Control (midiCh,ctrl,value) ->
          { state with
            controlValues = ControllerMap.add (chanCtrlToKey midiCh ctrl) value state.controlValues
@@ -344,21 +411,53 @@ module MidiState =
     let getControlR midiCh ctrlNumber =
       let open Reader.Ops in
       Reader.ask () >>= (fun env -> getControllerValue midiCh ctrlNumber env |> Reader.return)
-      
+
+    let getCurrentNote =
+      let open Reader.Ops in
+      Reader.ask () >>=
+        (fun state -> state.currentNote |> Reader.return)
+
     let triggerFromCurrent duration state =
-      let current =
-        state.currentNote
-      in
-       (fun pv ->
-          match pv with
+          match state.currentNote with
           | Some (MidiCh ch,Pitch p, Velo v) -> mkNoteClip ch p v duration
-          | None -> SilenceEvent)
-         current
+          | None -> SilenceEvent
+         
 
     let triggerR duration =
       let open Reader.Ops in
       Reader.ask () >>= (fun env -> triggerFromCurrent duration env |> Reader.return )
 
+    let triggerOptionR value =
+      let open Reader.Ops in
+      Reader.ask () >>= (fun state ->
+        let opt = 
+          match state.currentNote with
+          | Some _ -> Some value 
+          | _ -> None
+        in
+        Reader.return opt)
+
+    let triggerFromNoteR f =
+      let open Reader.Ops in
+      Reader.ask () >>= (fun state ->
+        let opt =
+          match state.currentNote with
+          | Some (c,p,v) -> Some (f (Note (c,p,v)))
+          | None -> None
+        in
+        Reader.return opt)
+
+    let boolFromNote =
+      let open Reader.Ops in
+      Reader.ask () >>= (fun state ->
+        Reader.return (Option.is_some state.currentNote))
+
+    let getPitchR =
+      let open Reader.Ops in
+      Reader.ask() >>= (fun state ->
+        Reader.return state.currentPitch)
+                      
+      
     let getCurrentOfChannel channel state =
       let curr = state.currentNote in
       match curr with
@@ -371,6 +470,16 @@ module MidiState =
       
   end
 
+  (* 
+
+convert everything into a stream of records, as options
+
+so Some r, Some r, None, None, None, Some r
+
+then have something map that back to midi stream
+
+
+ *)
 
 
     
@@ -747,7 +856,22 @@ let hasChannel ch event =
   | ControlEvent (MidiCh c,_,_) -> ch == c
   | SilenceEvent -> false
 
-let fiterCh ch sq = filterEvents (hasChannel ch) sq
+let filterCh ch sq = filterEvents (hasChannel ch) sq
+
+let skip n sqIn =
+  let rec aux m sq =
+    match sq () with
+    | Nil -> Nil
+    | Cons( evt, tail ) ->
+       match evt with
+       | NoteEvent (MidiCh c,Pitch p,Velo v,Samps d) ->
+          if m = 0 then
+            Cons ( NoteEvent (MidiCh c,Pitch p,Velo v,Samps d), fun () -> aux m tail)
+          else
+            Cons ( SilenceEvent, fun () -> aux (m-1) tail)
+       | other -> Cons( other, fun () -> aux m tail)
+  in
+  aux n sqIn
   
   
 let mkRhythm sq note rest =
@@ -811,11 +935,12 @@ let midiInputTestFun input =
 let c3 =
   mkNoteClip 1 60 100 3000
 
-let isNoteOn midiMsg =
-  match midiMsg with
-  | NoteOn (_,_,_) -> true
-  | _ -> false
+let c4 =
+  mkNoteClip 1 72 100 3000
 
+
+
+       
 let trigger event midiIn =
   let t = map isNoteOn midiIn in
   weave t event (st SilenceEvent)
@@ -845,3 +970,6 @@ let playMidi midiSq samplerateRef =
     out
   in
   JackMidi.playMidi callback samplerateRef
+
+
+

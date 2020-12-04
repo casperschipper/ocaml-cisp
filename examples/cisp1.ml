@@ -27,23 +27,16 @@ let ofTrigger trig =
   let midiIn = ofRef currentState in
   
   let myWalk = walki 0 (midiIn |> map (fun state -> state.c1)) in
-  let arr = [|0;2;4;3|] in
+  let arr = [|-12;0;12;0|] in
   let ixi = index arr myWalk in
 
   let myWalk2 = walki 0 (midiIn |> map (fun state -> state.c2)) in
   let arr2 = [|-12;0;12;0;7;0;24|] in
               let ixi2 = index arr2 myWalk2 in
-              
-
-  (* this will not work, since the pitch is not updated all the time *)
-  let pitch =
-    midiIn |> map (fun state -> state.p)
-  in
-    
-
+             
   let notes =  zipToNoteEvt
-                 (MidiCh 1 |> st)
-                 (zipWith transpose pitch (ixi +~ ixi2))
+                 (MidiCh 0 |> st)
+                  (weaveArray [|ixi |> floatify;ixi2 |> floatify|] (seq [0;1])  |> (+.~) (st 60.0) |> trunc |>  map mkPitchClip)
                  (Velo 100 |> st)
                  (Samps 1000 |> st)
   in

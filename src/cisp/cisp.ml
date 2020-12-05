@@ -964,6 +964,23 @@ let rec weavePattern pattern xs ys () =
     | Cons (false, ptl) -> Cons (y, weavePattern ptl xs ytl)
     | Nil -> Nil )
 
+let rec weavePattern2 pattern xs ys () =
+  match pattern () with
+  | Nil -> Nil
+  | Cons (true, ptl) ->
+     begin
+       match xs () with
+       | Cons (x, xtl) -> Cons (x, weavePattern2 ptl xtl ys)
+       | Nil -> Nil
+     end
+  | Cons (false, ptl) ->
+     begin
+       match ys () with
+       | Cons (y, ytl) -> Cons(y, weavePattern2 ptl xs ytl)
+       | Nil -> Nil
+     end
+     
+                                  
 let weave = weavePattern
 
 let weaveArray arr indexer =
@@ -974,6 +991,16 @@ let weaveArray arr indexer =
       match sq () with
       | Cons (h,tail) -> fWr idx tail; h 
       | Nil -> 0.0
+      ) indexer
+
+let weaveArrayI arr indexer =
+  let fIdx = getSafeIndexFun arr in
+  let fWr = getSafeWriteFun arr in
+    map (fun idx ->
+      let sq = fIdx idx in
+      match sq () with
+      | Cons (h,tail) -> fWr idx tail; h 
+      | Nil -> 0
     ) indexer
    
     

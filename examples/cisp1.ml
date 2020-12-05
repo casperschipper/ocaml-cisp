@@ -1,8 +1,7 @@
 open Cisp
 open Midi
 open Seq
-
-
+   
 (* simple mod of controller 1 onto pitch *)
 
 let sr = ref 44100.0
@@ -30,13 +29,14 @@ let ofTrigger trig =
   let arr = [|-12;0;12;0|] in
   let ixi = index arr myWalk in
 
+  
   let myWalk2 = walki 0 (midiIn |> map (fun state -> state.c2)) in
   let arr2 = [|-12;0;12;0;7;0;24|] in
               let ixi2 = index arr2 myWalk2 in
              
   let notes =  zipToNoteEvt
                  (MidiCh 0 |> st)
-                  (weaveArray [|ixi |> floatify;ixi2 |> floatify|] (seq [0;1])  |> (+.~) (st 60.0) |> trunc |>  map mkPitchClip)
+                 (ixi |> (+~) (st 60) |> (+~) ixi2 |> map mkPitchClip)
                  (Velo 100 |> st)
                  (Samps 1000 |> st)
   in

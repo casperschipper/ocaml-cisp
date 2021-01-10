@@ -26,13 +26,13 @@ let ofTrigger trig =
   let midiIn = ofRef currentState in
   
   let myWalk = walki 0 (midiIn |> map (fun state -> state.c1)) in
-  let arr = [|-12;0;12;0|] in
+  let arr = [|(-12);0;12;0|] in
   let ixi = index arr myWalk in
 
   
   let myWalk2 = walki 0 (midiIn |> map (fun state -> state.c2)) in
-  let arr2 = [|-12;0;12;0;7;0;24|] in
-              let ixi2 = index arr2 myWalk2 in
+  let arr2 = [|(-12);0;12;0;7;0;24|] in
+  let ixi2 = index arr2 myWalk2 in
              
   let notes =  zipToNoteEvt
                  (MidiCh 0 |> st)

@@ -25,7 +25,7 @@ let pitchControl3 =
 let ofTrigger trig =
   let midiIn = ofRef currentState in
 
-  
+  let step = midiIn |> map (fun state -> state.c1) |> (/~) 
   let myWalk = walki 0 (midiIn |> map (fun state -> state.c1)) in
   let arr = [|-12;0;12;0|] in
   let ixi = index arr myWalk in
@@ -42,7 +42,7 @@ let ofTrigger trig =
                  (Velo 100 |> st)
                  (Samps 1000 |> st)
   in
-  weavePattern2 trig notes (st SilenceEvent)
+  weavePattern trig notes (st SilenceEvent)
   
  
 

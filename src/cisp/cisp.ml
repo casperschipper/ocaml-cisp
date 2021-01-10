@@ -936,6 +936,7 @@ let waveOscL arr frq =
 
 
 (* combine two Seq's: a, b, a, b, a, b etc.. *)
+(*
 let rec interleave xs ys () =
   match (xs (), ys ()) with
   | Nil, Nil -> Nil
@@ -943,7 +944,27 @@ let rec interleave xs ys () =
   | Nil, ys' -> ys'
   | Cons (x, xtl), Cons (y, ytl) ->
       Cons (x, fun () -> Cons (y, interleave xtl ytl))
+ *)
 
+(* more lazy version *)
+let interleave xs ys =
+  let rec aux startWithX xs ys () =
+    if startWithX then
+      match xs () with
+      | Nil -> Nil
+      | Cons (x, xtl) ->
+         Cons (x, aux false xtl ys )
+    else
+      match ys () with
+      | Nil -> Nil
+      | Cons (y, ytl) ->
+         Cons (y, aux true xs ytl)
+  in
+  aux true xs ys
+  
+     
+        
+    
 (*
 Similar to interleave, but now you can provide in which pattern the seqs needs to be combined.
 For example if the pattern is true;false;fase;true;false 
@@ -953,6 +974,8 @@ then you will get
 1, 11, 12, 2, 13, 14
 This is different from zipWith3, since there are no values thrown away
  *)
+(* this implementation caused problems, it was peeking ahead causing CPU leak!
+
 let rec weavePattern pattern xs ys () =
   match (xs (), ys ()) with
   | Nil, Nil -> Nil
@@ -962,21 +985,21 @@ let rec weavePattern pattern xs ys () =
     match pattern () with
     | Cons (true, ptl) -> Cons (x, weavePattern ptl xtl ys)
     | Cons (false, ptl) -> Cons (y, weavePattern ptl xs ytl)
-    | Nil -> Nil )
+    | Nil -> Nil )*)
 
-let rec weavePattern2 pattern xs ys () =
+let rec weavePattern pattern xs ys () =
   match pattern () with
   | Nil -> Nil
   | Cons (true, ptl) ->
      begin
        match xs () with
-       | Cons (x, xtl) -> Cons (x, weavePattern2 ptl xtl ys)
+       | Cons (x, xtl) -> Cons (x, weavePattern ptl xtl ys)
        | Nil -> Nil
      end
   | Cons (false, ptl) ->
      begin
        match ys () with
-       | Cons (y, ytl) -> Cons(y, weavePattern2 ptl xs ytl)
+       | Cons (y, ytl) -> Cons(y, weavePattern ptl xs ytl)
        | Nil -> Nil
      end
      

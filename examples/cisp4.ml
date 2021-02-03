@@ -1,49 +1,53 @@
 open Cisp
 open Midi
 open Seq
-open Reader.Ops
 
 (* simple mod of controller 1 onto pitch *)
 
 let sr = ref 44100.0
 
-let pitchControl =
-  MidiState.getControlR (MidiCh 0) (MidiCtrl 0) 
-  >>= (fun (MidiVal ctrl1) ->
-    MidiState.getControlR (MidiCh 0) (MidiCtrl 1) >>=
-      (fun (MidiVal ctrl2) ->
-        MidiState.triggerR 3000 >>= (fun evt ->
-         (ctrl1,ctrl2, evt) |> Reader.return)))
-       
-let offsetPitch offset evt =
-  mapOverPitch ((+) offset) evt
+type data = {c1: int; p: pitch; c2: int}
 
-let overwritePitch newPitch evt =
-  mapOverPitch (fun _ -> newPitch) evt
+let currentState = ref {c1= 0; p= Pitch 0; c2= 0}
 
-(* zipWith is awesome! it allows to combine two seqs into one! *)
+let pitchControl3 =
+  let ( let* ) x f = Reader.bind f x in
+  let* (MidiVal ctrl1) = MidiState.getControlR (MidiCh 0) (MidiCtrl 3) in
+  let* (MidiVal ctrl2) = MidiState.getControlR (MidiCh 0) (MidiCtrl 4) in
+  let* pitch = MidiState.getPitchR in
+  let* trigger = MidiState.boolFromNote in
+  (* create trigger from note On *)
+  let () = currentState := {c1= ctrl1; p= pitch; c2= ctrl2} in
+  (* write state ref *)
+  Reader.return trigger
 
+let ofTrigger trig =
+  let midiIn = ofRef currentState in
+  let myWalk = walki 0 (midiIn |> map (fun state -> state.c1)) in
+  let arr = [|0; 3; 6; 9; 12|] in
+  let ixi = index arr myWalk in
+  let myWalk2 = walki 0 (midiIn |> map (fun state -> state.c2)) in
+  let arr2 = [|0; 2; 4; 6; 8; 10; 12|] in
+  let ixi2 = index arr2 myWalk2 in
+  let notes =
+    zipToNoteEvt (MidiCh 3 |> st)
+      (ixi |> ( +~ ) (st 60) |> ( +~ ) ixi2 |> map mkPitchClip)
+      ( [0; 0; 100] |> List.map mkVelocityClip |> seq
+      |> hold
+           (seq [2; 3; 2; 2; 2; 3; 2; 3; 2; 2; 2; 3; 2; 2; 2; 1; 2; 2; 2; 3; 4])
+      )
+      (Samps 1000 |> st)
+  in
+  weavePattern trig notes (st SilenceEvent)
 
-let ofTuple tup =
-  let (c1,c2,evt) = unzip3 tup in (* a seq of (x,y) make it (seq x, seq y) *)
-  (* let arr = [|0;2;4;5|] in (* myseq *)
- 
-  let mywalk = walki 0 c1 in
- 
-  let indexed = index arr mywalk in*)
-  let cMod = map (fun x -> x - (x mod 12)) c2 in
-  let cGate = map (fun x -> if x > 0 then 1 else 0) c1 in
- 
-  zipWith overwritePitch (((seq [0;2;4;5]) *~ cGate) +~ cMod +~ (st 60)) evt |> overwriteVelo (seq [0;100] |> hold (seq [2;3;2;2;2;3;3;3;2;1;2])) (* add the summed seqs to evt.pitch *)
-  
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
-  input 
-  |> MidiState.makeSeq (* take msg, make it a state *)
-  |> map (Reader.run pitchControl) (* run a bunch of readers to extract properties *)
-  |> ofTuple (* the result is then used to contruct streams *)
-  |> serialize |> map toRaw (* turn back into raw midi *)
+  input |> MidiState.makeSeq (* take msg, make it a state *)
+  |> map (Reader.run pitchControl3)
+  (* run a bunch of readers to extract properties *)
+  |> ofTrigger
+  |> serialize |> map toRaw
 
-  
-let () = Midi.playMidi midiInputTestFun sr 
-           
+(* turn back into raw midi *)
+
+let () = Midi.playMidi midiInputTestFun sr

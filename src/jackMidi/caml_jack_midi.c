@@ -163,7 +163,7 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
 	caml_register_global_root(&midi_msg_array_in);
 
 	
-	if ((client = jack_client_open ("ocaml midi client", JackNullOption, &status, NULL)) == 0) {
+	if ((client = jack_client_open ("ocaml_midi", JackNullOption, &status, NULL)) == 0) {
 	  fprintf (stderr, "JACK server not running?\n");
 	  CAMLreturn(Val_unit);
 	}

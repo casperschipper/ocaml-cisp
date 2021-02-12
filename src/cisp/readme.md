@@ -1,3 +1,8 @@
+# Ideas
+
+* simple read and write to arrays (state)
+* simple parser
+
 # midi over ip example:
 * <elm/apiTest/src/>
 

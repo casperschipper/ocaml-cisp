@@ -152,16 +152,14 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
 	jack_nframes_t nframes;
 	jack_status_t status;
 	jack_nframes_t sample_rate;
-	const char **ports;
-	const char **in_ports;
-	int connect_result;
+	const char **ports; // pointer to a pointer -> this is just a bunch of strings
+	const char **in_ports; 
 
 	midi_output_buffer = Caml_ba_data_val(midi_msg_array_out);
 	midi_input_buffer = Caml_ba_data_val(midi_msg_array_in);
 	
 	caml_register_global_root(&midi_msg_array_out); // protect this pointer from the Ocaml garbage collector
 	caml_register_global_root(&midi_msg_array_in);
-
 	
 	if ((client = jack_client_open ("ocaml_midi", JackNullOption, &status, NULL)) == 0) {
 	  fprintf (stderr, "JACK server not running?\n");
@@ -248,21 +246,20 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
 	ports = jack_get_ports(client, NULL,"midi", JackPortIsInput);
 	
 
-        /*
+        
 	
 	if (ports == NULL) {
 	  fprintf(stderr, "no physical ports\n");
 	  exit(1);
 	}      
 
-	// DEBUG no connect
+	int connect_result;
+	
 	connect_result = jack_connect(client, jack_port_name(output_port), ports[0]);
 	if (connect_result) {
 	  fprintf (stderr, "cannot connect output ports error: %i\n",connect_result);
 	}
 
-	
-	
 	in_ports = jack_get_ports(client, "system_midi:capture_2", "midi" , JackNullOption);
 	if (in_ports[0] == NULL) {
 	  fprintf(stderr, "no output found to use as input");
@@ -275,7 +272,7 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
 	  fprintf(stderr, "connected to system_midi:capture_2");
 	}
 
-	/* run until interrupted */
+	// run until interrupted 
 	while (1) {
 	  sleep(1);
 	};

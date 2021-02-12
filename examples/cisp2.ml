@@ -35,27 +35,34 @@ let pulseDivider divider sq =
   in
   aux 0 divider sq
 
+let sync mask sq = weavePattern mask sq (st false)
+
 let ofTrigger trig =
   let midiIn = ofRef currentState in
   let myWalk = walki 0 (midiIn |> map (fun state -> state.c1)) in
-  let arr = [|-12; 0; 12; 0|] in
+  let arr = [|4; 2; 3; 1; 0|] in
   let ixi = index arr myWalk in
   let myWalk2 = walki 0 (midiIn |> map (fun state -> state.c2)) in
-  let arr2 = [|-12; 0; 12; 0; 7; 0; 24|] in
+  let arr2 = [|0; 5; 10; 15|] in
   let ixi2 = index arr2 myWalk2 in
   let notes =
     zipToNoteEvt (MidiCh 0 |> st)
-      (ixi |> ( +~ ) (st 60) |> ( +~ ) ixi2 |> map mkPitchClip)
+      (ixi |> ( +~ ) (st 36) |> ( +~ ) ixi2 |> map mkPitchClip)
       (Velo 100 |> st) (Samps 1000 |> st)
   in
   weavePattern trig notes (st SilenceEvent)
 
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
+  let mask =
+    let x = true in
+    let o = false in
+    seq [x; o; x; x; o; o; x; o; x; x; o; x]
+  in
   input |> MidiState.makeSeq (* take msg, make it a state *)
   |> map (Reader.run pitchControl3)
   (* run a bunch of readers to extract properties *)
-  |> pulseDivider ([1; 3; 2; 1; 1; 1] |> seq)
+  |> sync mask
   |> ofTrigger |> serialize |> map toRaw
 
 (* turn back into raw midi *)

@@ -4,7 +4,7 @@ type 'a parser = Parser of (char Seq.t -> ('a * char Seq.t) Seq.t)
 
 let parse (Parser p) s = p s
 
-let test = "x.."
+let test = "rhythm x.."
 
 let expect = [true; false; false]
 
@@ -104,34 +104,18 @@ let mplus = combine
 
 let empty = mzero
 
-(*
-                -- | One or more.
-some :: f a -> f [a]
-some v = some_v
-  where
-    many_v = some_v <|> pure []
-    some_v = (:) <$> v <*> many_v
-
--- | Zero or more.
-many :: f a -> f [a]
-many v = many_v
-  where
-    many_v = some_v <|> pure []
-    some_v = (:) <$> v <*> many_v
-
- *)
-
 let ( <*> ) = applyP
 
 let liftA2 f p1 p2 = f <$> p1 <*> p2
 
+(** ambiguous parsers will be ignored *)
 let rec parseZeroOrMore p input =
   let firstResult = parse p input in
   match firstResult () with
   | Seq.Nil -> ([], input)
   | Seq.Cons ((res, remainInput), _) ->
       let subsequentValues, remainingInput = parseZeroOrMore p remainInput in
-      let values = res :: subsequentValues in
+      let values = List.cons res subsequentValues in
       (values, remainingInput)
 
 let many p = Parser (fun input -> Seq.return (parseZeroOrMore p input))
@@ -153,8 +137,14 @@ let chainl1 p op =
 
 let chainl p op a = chainl1 p op <|> return a
 
+let explode = String.to_seq
+
 let opt_int_of_string str =
   try Option.Some (int_of_string str) with Failure _ -> None
+
+let int_of_char_seq charLst =
+  let str = charLst |> List.to_seq |> String.of_seq in
+  opt_int_of_string str |> Option.value ~default:0
 
 let char c = satisfy (fun ch -> ch == c)
 
@@ -162,6 +152,6 @@ let is_digit = function '0' .. '9' -> true | _ -> false
 
 let is_alpha = function 'a' .. 'z' | 'A' .. 'Z' -> true | _ -> false
 
-let explode s = List.init (String.length s) (String.get s)
+let digitP = satisfy is_digit
 
-let digit = satisfy is_digit
+let natural = int_of_char_seq <$> some (satisfy is_digit)

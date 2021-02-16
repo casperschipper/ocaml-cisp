@@ -1,26 +1,15 @@
 (* super tiny parser ! *)
+open Format
 
 type 'a parser = Parser of (char Seq.t -> ('a * char Seq.t) Seq.t)
 
 let parse (Parser p) s = p s
 
-let test = "x..x."
-
-let test = "1..2 1!2 1 2 3 "
-
-(**
-   program = int | expr
-   expr = int <|> range <|> announcement
-   range = int (symbol "..") int
-   
-    
- *)
+let parse_string_to_list (Parser p) s = p (String.to_seq s) |> List.of_seq
 
 (**
  
  *)
-
-let expect = [true; false; false]
 
 let bind p f =
   let step = Seq.flat_map (fun (a, ss) -> parse (f a) ss) in
@@ -145,7 +134,7 @@ let flip f x y = (f y) x
 
 let elem x xs = List.exists (fun x' -> x' == x) xs
 
-let oneOf s = satisfy (flip elem s)
+let one_of s = satisfy (flip elem s)
 
 let chainl1 p op =
   let rec rest a = op >>= (fun f -> p >>= fun b -> rest (f a b)) <|> return a in
@@ -172,9 +161,27 @@ let digitP = satisfy is_digit
 
 let natural = int_of_char_seq <$> some (satisfy is_digit)
 
+(** start of actual steno program *)
+
 let pattElem = char 'x'
 
-type pattern = Rest | Emphasis | Normal | FadeIn | FadeOut
+type pattern = Rest | Emphasis | Normal | FadeIn | FadeOut | Never
+
+let pat_of_char = function
+  | 'x' -> Emphasis
+  | '.' -> Rest
+  | '-' -> Normal
+  | '/' -> FadeIn
+  | '\\' -> FadeOut
+  | _ -> Never
+
+let bool_of_char = function 'x' -> true | '.' -> false | _ -> false
+
+let stenoMapper voca smap = many (smap <$> one_of (explode voca |> List.of_seq))
+
+let patternP = many (pat_of_char <$> one_of (explode "x.-/\\" |> List.of_seq))
+
+let boolmask = many (bool_of_char <$> one_of (explode "x." |> List.of_seq))
 
 type sect =
   | Range of int * int
@@ -195,3 +202,15 @@ let token p = p >>= fun a -> p >>= fun _ -> return a
 let reserved s = token (string s)
 
 let parens m = reserved "(" >> m >>= fun n -> reserved ")" >> return n
+
+let test = "x..x."
+
+let test = "1..2 1!2 1 2 3 "
+
+(**
+   program = int | expr
+   expr = int <|> range <|> announcement
+   range = int (symbol "..") int
+   
+    
+ *)

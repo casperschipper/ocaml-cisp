@@ -4,9 +4,9 @@ type 'a parser = Parser of (char Seq.t -> ('a * char Seq.t) Seq.t)
 
 let parse (Parser p) s = p s
 
-let test = "rhythm x.."
+let test = "x..x."
 
-let test = "1..2"
+let test = "1..2 1!2 1 2 3 "
 
 (**
  
@@ -161,3 +161,13 @@ let is_alpha = function 'a' .. 'z' | 'A' .. 'Z' -> true | _ -> false
 let digitP = satisfy is_digit
 
 let natural = int_of_char_seq <$> some (satisfy is_digit)
+
+let pattElem = char 'x'
+
+type pattern = Rest | Emphasis | Normal | FadeIn | FadeOut
+
+type sect =
+  | Range of int * int
+  | Value of int
+  | Repeat of int * int
+  | Pattern of int

@@ -7,7 +7,16 @@ let parse (Parser p) s = p s
 let test = "rhythm x.."
 
 let test = "1..2"
-
+             
+(**
+   program = int | expr
+   expr = int <|> range <|> announcement
+   range = int (symbol "..") int
+   
+    
+ *)
+                           
+         
 (**
  
  *)
@@ -19,6 +28,8 @@ let bind p f =
   Parser (fun s -> step (parse p s))
 
 let ( >>= ) = bind
+
+let ( >> ) m k = m >>= fun _ -> k
 
 let unit a = Parser (fun s -> Seq.return (a, s))
 
@@ -161,3 +172,25 @@ let is_alpha = function 'a' .. 'z' | 'A' .. 'Z' -> true | _ -> false
 let digitP = satisfy is_digit
 
 let natural = int_of_char_seq <$> some (satisfy is_digit)
+
+let rec string str =
+  let rec aux sq =
+    match sq () with
+    | Seq.Nil -> return []
+    | Seq.Cons(chr,rest) ->
+       List.cons <$> char chr <*> aux rest
+  in
+  aux (String.to_seq str)
+            
+let token p =
+    p >>= (fun a ->
+    p >>= (fun _ -> return a))
+  
+let reserved s =
+  token (string s)
+
+let parens m =
+  reserved "(" >>
+    m >>= (fun n ->
+    reserved ")" >>
+      return n)

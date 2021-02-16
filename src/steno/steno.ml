@@ -6,6 +6,12 @@ let parse (Parser p) s = p s
 
 let test = "rhythm x.."
 
+let test = "1..2"
+
+(**
+ 
+ *)
+
 let expect = [true; false; false]
 
 let bind p f =

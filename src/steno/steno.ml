@@ -134,15 +134,19 @@ let flip f x y = (f y) x
 
 let elem x xs = List.exists (fun x' -> x' == x) xs
 
+let explode = String.to_seq
+
+let explode_lst str = str |> explode |> List.of_seq
+
 let one_of s = satisfy (flip elem s)
+
+let one_of_string str = explode_lst str |> one_of
 
 let chainl1 p op =
   let rec rest a = op >>= (fun f -> p >>= fun b -> rest (f a b)) <|> return a in
   p >>= fun a -> rest a
 
 let chainl p op a = chainl1 p op <|> return a
-
-let explode = String.to_seq
 
 let opt_int_of_string str =
   try Option.Some (int_of_string str) with Failure _ -> None
@@ -197,7 +201,9 @@ let rec string str =
   in
   aux (String.to_seq str)
 
-let token p = p >>= fun a -> p >>= fun _ -> return a
+let spaces = many (one_of_string " \n\r")
+
+let token p = p >>= fun a -> spaces >> return a
 
 let reserved s = token (string s)
 
@@ -206,6 +212,28 @@ let parens m = reserved "(" >> m >>= fun n -> reserved ")" >> return n
 let test = "x..x."
 
 let test = "1..2 1!2 1 2 3 "
+
+let range a b =
+  let op = if a > b then fun x -> x - 1 else ( + ) 1 in
+  let rec aux a b = if a = b then [a] else a :: aux (op a) b in
+  aux a b
+
+let rangeP =
+  natural >>= fun a -> string ".." >> natural >>= fun b -> return (range a b)
+
+let chainl p op a = chainl1 p op <|> return a
+
+(**
+   how to do arrays !?
+ let lijstP = chainl natural spaces
+
+https://github.com/elm/parser/blob/02839df10e462d8423c91917271f4b6f8d2f284d/src/Parser/Advanced.elm#L393
+
+ *)
+
+let chainl1 p op =
+  let rec rest a = op >>= fun f -> p >>= fun b -> rest (f a b) <|> return a in
+  p >>= fun a -> rest a
 
 (**
    program = int | expr

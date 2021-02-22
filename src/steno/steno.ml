@@ -235,6 +235,32 @@ let chainl1 p op =
   let rec rest a = op >>= fun f -> p >>= fun b -> rest (f a b) <|> return a in
   p >>= fun a -> rest a
 
+type ('state, 'a) step = Loop of 'state | Done of 'a
+
+(**
+loopHelp : Bool -> state -> (state -> Parser c x (Step state a)) -> State c -> PStep c x a
+
+ *)
+
+let between openSymbol closeSymbol p =
+  openSymbol >> p >>= fun x -> closeSymbol >> return x
+
+let rec loop state callback s0 =
+  let nextParser = callback state in
+  let parsed = parse nextParser s0 in
+  match parsed () with
+  | Seq.Nil -> failure
+  | Seq.Cons ((first_result, input_remain), _) -> (
+    match first_result with
+    | Loop newState -> loop newState callback input_remain
+    | Done result -> unit result )
+
+let sepBy1 p sep = p >>= fun x -> many (sep >> p) >>= fun xs -> return (x :: xs)
+
+let sepBy p sep = sepBy1 p sep <|> return []
+
+let slist = between (char '(') (char ')') (sepBy natural spaces)
+
 (**
    program = int | expr
    expr = int <|> range <|> announcement

@@ -5,7 +5,11 @@ type 'a parser = Parser of (char Seq.t -> ('a * char Seq.t) Seq.t)
 
 let parse (Parser p) s = p s
 
-let parse_string_to_list (Parser p) s = p (String.to_seq s) |> List.of_seq
+let parse_string (Parser p) s =
+  let simplify sq =
+    match sq () with Seq.Cons ((result, _), _) -> result | Seq.Nil -> []
+  in
+  s |> String.to_seq |> p |> simplify
 
 (**
  
@@ -218,29 +222,44 @@ let range a b =
   let rec aux a b = if a = b then [a] else a :: aux (op a) b in
   aux a b
 
+let repeats x n =
+  let rec aux x n = match n with 0 -> [] | n' -> x :: aux x (n' - 1) in
+  if n < 1 then [] else aux x n
+
+let rangeFromThenTo a b c =
+  let diff = b - a in
+  let finished a c =
+    match (a < b, b < c) with
+    | true, true -> fun a c -> a > c (* 1,2 3 *)
+    | true, false -> fun _ _ -> true (* 1,3,2 *)
+    | false, false -> fun a c -> a < c (* 3 2 1 *)
+    | false, true -> fun _ _ -> true
+  in
+  let rec aux a c diff finished =
+    if finished a c then [] else a :: aux (a + diff) c diff finished
+  in
+  aux a c diff (finished a c)
+
 let rangeP =
   natural >>= fun a -> string ".." >> natural >>= fun b -> return (range a b)
 
+let repeatsP =
+  natural >>= fun a -> char '!' >> natural >>= fun b -> return (repeats a b)
+
+let rangeFromThenToP =
+  natural
+  >>= fun a ->
+  char ',' >> natural
+  >>= fun b ->
+  string ".." >> natural >>= fun c -> return (rangeFromThenTo a b c)
+
 let chainl p op a = chainl1 p op <|> return a
-
-(**
-   how to do arrays !?
- let lijstP = chainl natural spaces
-
-https://github.com/elm/parser/blob/02839df10e462d8423c91917271f4b6f8d2f284d/src/Parser/Advanced.elm#L393
-
- *)
 
 let chainl1 p op =
   let rec rest a = op >>= fun f -> p >>= fun b -> rest (f a b) <|> return a in
   p >>= fun a -> rest a
 
 type ('state, 'a) step = Loop of 'state | Done of 'a
-
-(**
-loopHelp : Bool -> state -> (state -> Parser c x (Step state a)) -> State c -> PStep c x a
-
- *)
 
 let between openSymbol closeSymbol p =
   openSymbol >> p >>= fun x -> closeSymbol >> return x
@@ -260,6 +279,12 @@ let sepBy1 p sep = p >>= fun x -> many (sep >> p) >>= fun xs -> return (x :: xs)
 let sepBy p sep = sepBy1 p sep <|> return []
 
 let slist = between (char '(') (char ')') (sepBy natural spaces)
+
+let singletonP = (fun x -> [x]) <$> natural
+
+let stenoP =
+  let shortHand = rangeP <|> repeatsP <|> rangeFromThenToP <|> singletonP in
+  List.concat <$> sepBy shortHand (char ' ')
 
 (**
    program = int | expr

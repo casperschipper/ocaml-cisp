@@ -169,6 +169,51 @@ let digitP = satisfy is_digit
 
 let natural = int_of_char_seq <$> some (satisfy is_digit)
 
+let spaces = many (one_of_string " \n\r")
+
+let chainl p op a = chainl1 p op <|> return a
+
+let chainl1 p op =
+  let rec rest a = op >>= fun f -> p >>= fun b -> rest (f a b) <|> return a in
+  p >>= fun a -> rest a
+
+type ('state, 'a) step = Loop of 'state | Done of 'a
+
+let between openSymbol closeSymbol p =
+  openSymbol >> p >>= fun x -> closeSymbol >> return x
+
+let rec loop state callback s0 =
+  let nextParser = callback state in
+  let parsed = parse nextParser s0 in
+  match parsed () with
+  | Seq.Nil -> failure
+  | Seq.Cons ((first_result, input_remain), _) -> (
+    match first_result with
+    | Loop newState -> loop newState callback input_remain
+    | Done result -> unit result )
+
+let sepBy1 p sep = p >>= fun x -> many (sep >> p) >>= fun xs -> return (x :: xs)
+
+let sepBy p sep = sepBy1 p sep <|> return []
+
+let slist = between (char '(') (char ')') (sepBy natural spaces)
+
+let singletonP = (fun x -> [x]) <$> natural
+
+let rec string str =
+  let rec aux sq =
+    match sq () with
+    | Seq.Nil -> return []
+    | Seq.Cons (chr, rest) -> List.cons <$> char chr <*> aux rest
+  in
+  aux (String.to_seq str)
+
+let token p = p >>= fun a -> spaces >> return a
+
+let reserved s = token (string s)
+
+let parens m = reserved "(" >> m >>= fun n -> reserved ")" >> return n
+
 (** start of actual steno program *)
 
 let pattElem = char 'x'
@@ -196,22 +241,6 @@ type sect =
   | Value of int
   | Repeat of int * int
   | Pattern of int
-
-let rec string str =
-  let rec aux sq =
-    match sq () with
-    | Seq.Nil -> return []
-    | Seq.Cons (chr, rest) -> List.cons <$> char chr <*> aux rest
-  in
-  aux (String.to_seq str)
-
-let spaces = many (one_of_string " \n\r")
-
-let token p = p >>= fun a -> spaces >> return a
-
-let reserved s = token (string s)
-
-let parens m = reserved "(" >> m >>= fun n -> reserved ")" >> return n
 
 let test = "x..x."
 
@@ -252,35 +281,6 @@ let rangeFromThenToP =
   char ',' >> natural
   >>= fun b ->
   string ".." >> natural >>= fun c -> return (rangeFromThenTo a b c)
-
-let chainl p op a = chainl1 p op <|> return a
-
-let chainl1 p op =
-  let rec rest a = op >>= fun f -> p >>= fun b -> rest (f a b) <|> return a in
-  p >>= fun a -> rest a
-
-type ('state, 'a) step = Loop of 'state | Done of 'a
-
-let between openSymbol closeSymbol p =
-  openSymbol >> p >>= fun x -> closeSymbol >> return x
-
-let rec loop state callback s0 =
-  let nextParser = callback state in
-  let parsed = parse nextParser s0 in
-  match parsed () with
-  | Seq.Nil -> failure
-  | Seq.Cons ((first_result, input_remain), _) -> (
-    match first_result with
-    | Loop newState -> loop newState callback input_remain
-    | Done result -> unit result )
-
-let sepBy1 p sep = p >>= fun x -> many (sep >> p) >>= fun xs -> return (x :: xs)
-
-let sepBy p sep = sepBy1 p sep <|> return []
-
-let slist = between (char '(') (char ')') (sepBy natural spaces)
-
-let singletonP = (fun x -> [x]) <$> natural
 
 let stenoP =
   let shortHand = rangeP <|> repeatsP <|> rangeFromThenToP <|> singletonP in

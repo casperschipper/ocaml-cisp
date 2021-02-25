@@ -21,21 +21,9 @@ let pitchControl3 =
   (* write state ref *)
   Reader.return trigger
 
-let pulseDivider divider sq =
-  let rec aux n divider sq () =
-    match sq () with
-    | Cons (true, tail) -> (
-        if n > 0 then Cons (false, aux (n - 1) divider tail)
-        else
-          match divider () with
-          | Cons (curDiv, divTail) -> Cons (true, aux curDiv divTail tail)
-          | Nil -> Nil )
-    | Cons (false, tail) -> Cons (false, aux n divider tail)
-    | Nil -> Nil
-  in
-  aux 0 divider sq
-
 let scale_down y x = x |> float_of_int |> fun x' -> x' /. y
+
+let map2 f xs ys = zipWith f xs ys
 
 let ofTrigger trig =
   let midiIn = ofRef currentState in
@@ -54,16 +42,37 @@ let ofTrigger trig =
       (ixi |> ( +~ ) (st 40) |> ( +~ ) ixi2 |> map mkPitchClip)
       (Velo 100 |> st) (Samps 4000 |> st)
   in
-  weavePattern trig notes (st SilenceEvent)
+  let bundles =
+    notes
+    |> map2
+         (fun offset x -> [x; transposePitch offset x] |> List.to_seq)
+         (st 12)
+    |> Seq.map chord
+  in
+  let silence = st silenceBundle in
+  weavePattern trig bundles silence
 
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
   input |> MidiState.makeSeq (* take msg, make it a state *)
   |> map (Reader.run pitchControl3)
   (* run a bunch of readers to extract properties *)
-  |> pulseDivider ([1] |> seq)
-  |> ofTrigger |> serialize |> map toRaw
+  |> ofTrigger
+  |> serializeBundles |> map toRaw
 
-(* turn back into raw midi *)
+(* turn back into raw midi
+let testIn =
+  let s = SilenceEvent in
+  [c3; s; s; s; s; s; s; s; s; s; s]
+  |> seq
+  |> map (fun note -> [note; mapOverPitch (( + ) 12) note] |> List.to_seq)
+  |> Seq.map chord |> take 30
+
+let () =
+  testIn |> serializeBundles |> map toRaw
+  |> Seq.fold_left
+       (fun () x -> print_string "\nraw =" ; printRaw x ; print_string "\n\n")
+       ()
+     *)
 
 let () = Midi.playMidi midiInputTestFun sr

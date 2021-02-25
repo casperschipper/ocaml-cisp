@@ -42,6 +42,17 @@ type midiEvent =
   | ControlEvent of midiChannel * controller * midiValue
   | SilenceEvent
 
+type midiBundle = Bundle of midiEvent * midiEvent Seq.t
+
+let soloBundle note = Bundle (note, Seq.empty)
+
+let silenceBundle = Bundle (SilenceEvent, Seq.empty)
+
+let chord noteSeq =
+  match noteSeq () with
+  | Cons (note, rest) -> Bundle (note, rest)
+  | Nil -> Bundle (SilenceEvent, Seq.empty)
+
 type note = Note of midiChannel * pitch * velocity
 
 type noteEvt = NoteEvt of midiChannel * pitch * velocity * deltaT
@@ -113,6 +124,12 @@ let mkPitchClip p =
 let pitchOfInt = mkPitchClip
 
 let transpose (Pitch p) offset = p + offset |> mkPitchClip
+
+let transposePitch trans evt =
+  match evt with
+  | NoteEvent (ch, Pitch p, v, dur) ->
+      NoteEvent (ch, mkPitchClip (p + trans), v, dur)
+  | other -> other
 
 let mkVelocityClip v =
   let clipped = clip 0 127 v in
@@ -588,9 +605,12 @@ let print_state m label =
   print_string "now: " ;
   print_int now ;
   print_string
-    (" pending offs: " ^ Int.to_string (List.length pendingNoteOffs) ^ "-") ;
+    ( " pending offs: "
+    ^ Int.to_string (List.length pendingNoteOffs)
+    ^ "-" ^ "\n" ) ;
   List.iter print_timed_midi_event pendingNoteOffs ;
-  print_string (" deferred: " ^ Int.to_string (List.length deferred) ^ "-") ;
+  print_string "\n" ;
+  print_string (" deferred: " ^ Int.to_string (List.length deferred) ^ "-\n") ;
   List.iter print_midi_msg deferred ;
   print_newline ()
 
@@ -626,6 +646,23 @@ let handleMidiEvent midiEvt m =
 
 let nowPlusOne evt m = ({m with now= m.now + 1}, evt)
 
+let handleBundle (Bundle (midiEvt, midiEvts)) m0 =
+  let queueEvent m evt =
+    (* acc x *)
+    match evt with
+    | NoteEvent (ch, p, v, Samps dura) ->
+        let noteOff = (m.now + dura, NoteOff (ch, p, v)) in
+        { m with
+          pendingNoteOffs= enqueue noteOff m.pendingNoteOffs
+        ; deferred= enqueueOnlyNotes (NoteOn (ch, p, v)) m.deferred }
+    | ControlEvent (ch, ctrl, v) ->
+        {m with deferred= enqueueOnlyNotes (Control (ch, ctrl, v)) m.deferred}
+    | SilenceEvent -> m
+  in
+  let currentNote, m1 = handleMidiEvent midiEvt m0 in
+  let m2 = Seq.fold_left queueEvent m1 midiEvts in
+  (currentNote, m2)
+
 let updateMidi midiEvt m =
   (* waterfall event through a bunch of state changing functions *)
   let ( ||> ) (evt, m) f = f evt m in
@@ -640,6 +677,26 @@ let updateMidi midiEvt m =
     ||> nowPlusOne
   in
   (evt, state)
+
+let updateMidiBundle bundle m =
+  let ( ||> ) (evt, m) f = f evt m in
+  let state, evt =
+    (bundle, m) ||> handleBundle ||> getPending ||> getDeferred ||> nowPlusOne
+  in
+  (evt, state)
+
+let serializeBundles bundles =
+  let startM = initSerializer in
+  let rec aux msg_sq model () =
+    match msg_sq () with
+    | Nil -> Nil
+    | Cons (evt, tl) ->
+        let e, state = updateMidiBundle evt model in
+        (* segmentation fault !!
+           let () = print_state state "\n\n\n" in *)
+        Cons (e, aux tl state)
+  in
+  aux bundles startM
 
 let serialize midi =
   let startM = initSerializer in
@@ -859,9 +916,9 @@ let midiInputTestFun input =
   |> withVelo (st 100)
   |> serialize |> map toRaw
  *)
-let c3 = mkNoteClip 1 60 100 3000
+let c3 = mkNoteClip 1 60 100 1000
 
-let c4 = mkNoteClip 1 72 100 3000
+let c4 = mkNoteClip 1 72 100 1000
 
 let trigger event midiIn =
   let t = map isNoteOn midiIn in

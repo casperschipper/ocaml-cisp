@@ -1223,3 +1223,17 @@ let decayPulse fb inSq =
   recursive inSq 0.0
     (fun input state -> if input > 0.0 then input else (state +. input) *. fb)
     id
+
+let pulseDivider divider sq =
+  let rec aux n divider sq () =
+    match sq () with
+    | Cons (true, tail) -> (
+        if n > 0 then Cons (false, aux (n - 1) divider tail)
+        else
+          match divider () with
+          | Cons (curDiv, divTail) -> Cons (true, aux curDiv divTail tail)
+          | Nil -> Nil )
+    | Cons (false, tail) -> Cons (false, aux n divider tail)
+    | Nil -> Nil
+  in
+  aux 0 divider sq

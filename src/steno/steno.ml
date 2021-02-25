@@ -55,7 +55,7 @@ let product l1 l2 =
        (fun x a -> List.fold_left (fun y b -> b :: a :: y) x l2)
        [] l1)
 
-let applyP fP xP = bind fP (fun f -> bind xP (fun x -> return (f x)))
+let applyP fP xP = fP >>= fun f -> xP >>= fun x -> return (f x)
 
 let applicative = applyP
 
@@ -107,13 +107,13 @@ let option p q =
 
 let ( <|> ) = option
 
+(*
 let mzero = failure
 
 let mplus = combine
 
 let empty = mzero
-
-let ( <*> ) = applyP
+ *)
 
 let liftA2 f p1 p2 = f <$> p1 <*> p2
 

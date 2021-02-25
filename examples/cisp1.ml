@@ -25,28 +25,33 @@ let scale_down y x = x |> float_of_int |> fun x' -> x' /. y
 
 let map2 f xs ys = zipWith f xs ys
 
+let sec2samp s = s |> seci |> fun x -> Samps x
+
 let ofTrigger trig =
   let midiIn = ofRef currentState in
   let myWalk =
     walk 0.0 (midiIn |> map (fun state -> state.c1 |> scale_down 4.0)) |> trunc
   in
-  let arr = [|16; 12; 8; 4; 0|] in
+  let arr = [|0; 5; 10; 15|] in
   let ixi = index arr myWalk in
   let myWalk2 =
     walk 0.0 (midiIn |> map (fun state -> state.c2 |> scale_down 4.0)) |> trunc
   in
-  let arr2 = [|0; 2; -2; -7; 7|] in
+  let arr2 = [|0; 7; 14; 21; 28; 35; 42|] in
   let ixi2 = index arr2 myWalk2 in
   let notes =
     zipToNoteEvt (MidiCh 1 |> st)
-      (ixi |> ( +~ ) (st 40) |> ( +~ ) ixi2 |> map mkPitchClip)
-      (Velo 100 |> st) (Samps 4000 |> st)
+      (ixi |> ( +~ ) (st 20) |> map mkPitchClip)
+      ([100; 80; 90; 100; 70] |> List.map mkVelocityClip |> seq)
+      ([|sec2samp 0.2; sec2samp 0.1|] |> ch)
   in
   let bundles =
     notes
     |> map2
-         (fun offset x -> [x; transposePitch offset x] |> List.to_seq)
-         (st 12)
+         (fun offset x ->
+           [x; transposePitch offset x; transposePitch (offset * 2) x]
+           |> List.to_seq)
+         (ixi2 |> hold (seq [2; 3; 5]))
     |> Seq.map chord
   in
   let silence = st silenceBundle in

@@ -37,6 +37,12 @@ type controller = MidiCtrl of int
 
 type deltaT = Samps of int
 
+let oneTick (Samps x) = Samps (x + 1)
+
+let compareSamps (Samps sA) (Samps sB) = sA == sB
+
+let offsetSamps (Samps offset) (Samps dT) = Samps (offset + dT)
+
 type midiEvent =
   | NoteEvent of midiChannel * pitch * velocity * deltaT
   | ControlEvent of midiChannel * controller * midiValue
@@ -44,9 +50,13 @@ type midiEvent =
 
 type midiBundle = Bundle of midiEvent * midiEvent Seq.t
 
+let bundleAsSeq (Bundle (head, tail)) () = Seq.Cons (head, tail)
+
 let soloBundle note = Bundle (note, Seq.empty)
 
 let silenceBundle = Bundle (SilenceEvent, Seq.empty)
+
+let getFirstOfBundle (Bundle (fst, _)) = fst
 
 let chord noteSeq =
   match noteSeq () with
@@ -101,10 +111,14 @@ let midiEventToString evt =
       |> List.map (fun (label, value) -> label ^ Int.to_string value)
       |> String.concat " "
       |> fun str -> str ^ "\n" |> fun s -> Some s
-  | SilenceEvent -> None
+  | SilenceEvent -> Some "---\n"
 
 let printMidiEvent evt =
   match midiEventToString evt with None -> () | Some str -> print_endline str
+
+let printBundle (Bundle (fst, rest)) =
+  printMidiEvent fst ;
+  Seq.iter printMidiEvent rest
 
 let mkMidiValue v =
   if v < 0 || v > 127 then Error "out of range midi value" else Ok (MidiVal v)
@@ -130,6 +144,8 @@ let transposePitch trans evt =
   | NoteEvent (ch, Pitch p, v, dur) ->
       NoteEvent (ch, mkPitchClip (p + trans), v, dur)
   | other -> other
+
+let transP = transposePitch
 
 let mkVelocityClip v =
   let clipped = clip 0 127 v in
@@ -843,6 +859,10 @@ let hasChannel ch event =
 
 let filterCh ch sq = filterEvents (hasChannel ch) sq
 
+let c3 = mkNoteClip 1 60 100 1000
+
+let c4 = mkNoteClip 1 72 100 1000
+
 let skip n sqIn =
   let rec aux m sq =
     match sq () with
@@ -858,6 +878,113 @@ let skip n sqIn =
       | other -> Cons (other, fun () -> aux m tail) )
   in
   aux n sqIn
+
+type delayedNote = DelayedNote of deltaT * midiEvent
+
+let printDelNote (DelayedNote (Samps dt, mEvt)) =
+  print_int dt ; printMidiEvent mEvt
+
+let getDelayedNote (DelayedNote (_, evt)) = evt
+
+let shiftDelayedNote offset (DelayedNote (deltaT, evt)) =
+  DelayedNote (offsetSamps offset deltaT, evt)
+
+let mkDelayedNote samps note =
+  let absolute = if samps < 0 then samps * -1 else samps in
+  DelayedNote (Samps absolute, note)
+
+let mkDelNote = mkDelayedNote
+
+let compareDelNote (DelayedNote (ta, _)) (DelayedNote (tb, _)) = ta < tb
+
+let getTimeOfDelNote (DelayedNote (ta, _)) = ta
+
+let isDelNoteNow (DelayedNote (ta, _)) tb = compareSamps ta tb
+
+let isDelNotePassed (DelayedNote (ta, _)) tNow = not (compareSamps ta tNow)
+
+(* garantee that notes are sorted *)
+type midiScore = MidiScore of delayedNote sorted
+
+let printMidiScore (MidiScore (Sorted dNotes)) =
+  List.iter (fun nt -> printDelNote nt) dNotes
+
+let emptyScore = MidiScore emptySorted
+
+let insertNoteInScore (MidiScore (Sorted lst)) note =
+  MidiScore (Sorted (insertSorted compareDelNote lst note))
+
+let unconsDelNotes (MidiScore (Sorted lst)) =
+  match lst with h :: tl -> Some (h, MidiScore (Sorted tl)) | [] -> None
+
+let ofScore (MidiScore (Sorted lst)) = lst
+
+(** 
+val arpeggiator : arpeggio Seq.t -> midiBundle Seq.t
+ *)
+
+let mergeScores scoreA scoreB =
+  let notesA = ofScore scoreA in
+  List.fold_left insertNoteInScore scoreB notesA
+
+let shiftScoreTime (offset : deltaT) (MidiScore dNotes) =
+  let f = Linear (shiftDelayedNote offset) in
+  MidiScore (mapSortedLinear f dNotes)
+
+type midiPlayer = PlayState of {now: deltaT; score: midiScore}
+
+let printMidiPlayer (PlayState {now; score}) =
+  print_string "playerState\n" ;
+  match (now, score) with
+  | Samps s, scr ->
+      print_string ("now: " ^ string_of_int s ^ "\n") ;
+      printMidiScore scr
+
+let updateMidiPlayerTime (PlayState player) =
+  PlayState {player with now= oneTick player.now}
+
+let cleanup (PlayState {now; score}) =
+  match score with
+  | MidiScore (Sorted lst) ->
+      PlayState
+        { now
+        ; score=
+            MidiScore
+              (Sorted (List.filter (fun n -> isDelNotePassed n now) lst)) }
+
+let addScoreToPlayer (newScore : midiScore) (PlayState {now; score}) =
+  let scoreWithOffset = shiftScoreTime now newScore in
+  PlayState {now; score= mergeScores score scoreWithOffset}
+
+let init scoreSq =
+  match scoreSq () with
+  | Cons (Some scr, tl) -> (PlayState {now= Samps 0; score= scr}, tl)
+  | Cons (None, tl) -> (PlayState {now= Samps 0; score= emptyScore}, tl)
+  | Nil -> (PlayState {now= Samps 0; score= emptyScore}, fun () -> Nil)
+
+let playArp scoreSq =
+  (* how to time relatively *)
+  let s0, scoreTail = init scoreSq in
+  let update evt player =
+    let s1 =
+      match evt with
+      | None -> player
+      | Some score -> addScoreToPlayer score player
+    in
+    s1 |> cleanup |> updateMidiPlayerTime
+  in
+  let eval (PlayState {score; now}) =
+    let _ = printMidiPlayer (PlayState {now; score}) in
+    let notes = ofScore score in
+    let currentNotes =
+      List.filter (fun delNote -> isDelNoteNow delNote now) notes
+    in
+    match currentNotes with
+    | [] -> silenceBundle
+    | h :: ts ->
+        Bundle (getDelayedNote h, List.to_seq (List.map getDelayedNote ts))
+  in
+  recursive scoreTail s0 update eval
 
 let mkRhythm sq note rest =
   (* note and rest should be of type int Seq.t 
@@ -916,9 +1043,6 @@ let midiInputTestFun input =
   |> withVelo (st 100)
   |> serialize |> map toRaw
  *)
-let c3 = mkNoteClip 1 60 100 1000
-
-let c4 = mkNoteClip 1 72 100 1000
 
 let trigger event midiIn =
   let t = map isNoteOn midiIn in

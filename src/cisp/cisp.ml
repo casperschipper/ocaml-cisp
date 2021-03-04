@@ -250,6 +250,26 @@ let sortedAsList (Sorted lst) = lst
 
 let mkSorted f lst = Sorted (List.sort f lst)
 
+(** Maybe the f is non linear, so we have to always sort afterwards *)
+let mapSorted sortf f (Sorted lst) = Sorted (List.sort sortf (List.map f lst))
+
+(** this function is not allowed to destruct the order *)
+type ('a, 'b) typedFunc = Linear of ('a -> 'b)
+
+(** this should only be used with linear functions *)
+let mapSortedLinear (Linear f) (Sorted lst) = Sorted (List.map f lst)
+
+let emptySorted = Sorted []
+
+let insertSorted f lst a =
+  (* note, insertSorted (<) [1;2;3;4;5] 3 -returns- [1;2;3;3;4;5] *)
+  let rec aux lst a =
+    match lst with
+    | [] -> [a]
+    | h :: tl -> if f a h then a :: h :: tl else h :: aux tl a
+  in
+  aux lst a
+
 let mozesSorted f sortedLst =
   let rec aux lsta (Sorted lst) =
     match lst with
@@ -260,6 +280,7 @@ let mozesSorted f sortedLst =
   in
   aux [] sortedLst
 
+(* UNSAFE
 let hd lst =
   match lst () with
   | Nil -> raise (Invalid_argument "empty list has no head")
@@ -268,7 +289,7 @@ let hd lst =
 let tl lst =
   match lst () with
   | Nil -> raise (Invalid_argument "empty list has no tail")
-  | Cons (_, tl) -> tl
+  | Cons (_, tl) -> tl *)
 
 let for_all f sq =
   let rec aux sq start =
@@ -378,6 +399,8 @@ let rec zipWith f a b () =
     match b () with
     | Nil -> Nil
     | Cons (b, btl) -> Cons (f a b, zipWith f atl btl) )
+
+let map2 = zipWith
 
 let rec zipWith3 f a b c () =
   match a () with
@@ -1237,3 +1260,9 @@ let pulseDivider divider sq =
     | Nil -> Nil
   in
   aux 0 divider sq
+
+let maskTriggerList triggerSq lst = zipWith ( && ) (seq lst) triggerSq
+
+let maskTrigger trigger mask = zipWith ( && ) mask trigger
+
+let metre nSq = nSq |> map (fun n () -> Cons (true, repeat n false)) |> concat

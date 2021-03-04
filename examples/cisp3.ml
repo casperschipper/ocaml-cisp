@@ -6,65 +6,84 @@ open Seq
 
 let sr = ref 44100.0
 
-type data = {c1: int; p: pitch; c2: int}
+type data = {c1: int; p: pitch; c2: int; c3: int}
 
-let currentState = ref {c1= 0; p= Pitch 0; c2= 0}
+let currentState = ref {c1= 0; p= Pitch 0; c2= 0; c3= 0}
 
 let pitchControl3 =
   let ( let* ) x f = Reader.bind f x in
-  let* (MidiVal ctrl1) = MidiState.getControlR (MidiCh 0) (MidiCtrl 3) in
-  let* (MidiVal ctrl2) = MidiState.getControlR (MidiCh 0) (MidiCtrl 4) in
+  let* (MidiVal ctrl1) = MidiState.getControlR (MidiCh 0) (MidiCtrl 1) in
+  let* (MidiVal ctrl2) = MidiState.getControlR (MidiCh 0) (MidiCtrl 2) in
+  let* (MidiVal ctrl3) = MidiState.getControlR (MidiCh 0) (MidiCtrl 3) in
   let* pitch = MidiState.getPitchR in
   let* trigger = MidiState.boolFromNote in
   (* create trigger from note On *)
-  let () = currentState := {c1= ctrl1; p= pitch; c2= ctrl2} in
+  let () = currentState := {c1= ctrl1; p= pitch; c2= ctrl2; c3= ctrl3} in
   (* write state ref *)
   Reader.return trigger
 
-let pulseDivider divider sq =
-  let rec aux n divider sq () =
-    match sq () with
-    | Cons (true, tail) -> (
-        if n > 0 then Cons (false, aux (n - 1) divider tail)
-        else
-          match divider () with
-          | Cons (curDiv, divTail) -> Cons (true, aux curDiv divTail tail)
-          | Nil -> Nil )
-    | Cons (false, tail) -> Cons (false, aux n divider tail)
-    | Nil -> Nil
-  in
-  aux 0 divider sq
+let scale_down y x = x |> float_of_int |> fun x' -> x' /. y
 
-let sync mask sq = weavePattern mask sq (st false)
+let map2 f xs ys = zipWith f xs ys
+
+let sec2samp s = s |> seci |> fun x -> Samps x
 
 let ofTrigger trig =
   let midiIn = ofRef currentState in
-  let myWalk = walki 0 (midiIn |> map (fun state -> state.c1)) in
-  let arr = [|0; 4; 4; 1; 4; 1|] in
-  let ixi = index arr myWalk in
-  let myWalk2 = walki 0 (midiIn |> map (fun state -> state.c2)) in
-  let arr2 = [|0; 5; 0; 0; 5|] in
-  let ixi2 = index arr2 myWalk2 in
-  let notes =
-    zipToNoteEvt (MidiCh 0 |> st)
-      (ixi |> ( +~ ) (st 36) |> ( +~ ) ixi2 |> map mkPitchClip)
-      (Velo 100 |> st) (Samps 1000 |> st)
+  let myWalk =
+    walk 0.0 (midiIn |> map (fun state -> state.c1 |> scale_down 4.0)) |> trunc
   in
-  weavePattern trig notes (st SilenceEvent)
+  let arr = [|0; 7; 14|] in
+  let ixi = index arr myWalk in
+  let myWalk2 =
+    walk 0.0 (midiIn |> map (fun state -> state.c2 |> scale_down 4.0)) |> trunc
+  in
+  let arr2 = [|12; -12; 7; 5; 5|] in
+  let ixi2 = index arr2 myWalk2 in
+  let myWalk3 =
+    walk 0.0 (midiIn |> map (fun state -> state.c3 |> scale_down 32.0)) |> trunc
+  in
+  let arr3 = [|0; 5; 0; 7; -7; 0; 12; -12; 0; -7|] in
+  let ixi3 = index arr3 myWalk3 in
+  let notes =
+    zipToNoteEvt (MidiCh 1 |> st)
+      (ixi |> ( +~ ) (st 50) |> ( +~ ) ixi3 |> map mkPitchClip)
+      ([100; 80; 90; 100; 70] |> List.map mkVelocityClip |> seq)
+      ([|sec2samp 0.2; sec2samp 0.1|] |> ch)
+  in
+  let bundles =
+    notes
+    |> map2
+         (fun offset x ->
+           [x; transposePitch offset x; transposePitch (offset * 2) x]
+           |> List.to_seq)
+         (ixi2 |> hold (seq [2; 3; 5]))
+    |> Seq.map chord
+  in
+  let silence = st silenceBundle in
+  weavePattern trig bundles silence
 
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
-  let mask =
-    let x = true in
-    let o = false in
-    seq [x; x; x; x; x; x; o; x; x; x; x; x; o]
-  in
   input |> MidiState.makeSeq (* take msg, make it a state *)
   |> map (Reader.run pitchControl3)
   (* run a bunch of readers to extract properties *)
-  |> sync mask
-  |> ofTrigger |> serialize |> map toRaw
+  |> zipWith ( && ) (seq [true; false; false])
+  |> ofTrigger |> serializeBundles |> map toRaw
 
-(* turn back into raw midi *)
+(* turn back into raw midi
+let testIn =
+  let s = SilenceEvent in
+  [c3; s; s; s; s; s; s; s; s; s; s]
+  |> seq
+  |> map (fun note -> [note; mapOverPitch (( + ) 12) note] |> List.to_seq)
+  |> Seq.map chord |> take 30
+
+let () =
+  testIn |> serializeBundles |> map toRaw
+  |> Seq.fold_left
+       (fun () x -> print_string "\nraw =" ; printRaw x ; print_string "\n\n")
+       ()
+     *)
 
 let () = Midi.playMidi midiInputTestFun sr

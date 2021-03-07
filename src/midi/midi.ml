@@ -137,7 +137,7 @@ let mkPitchClip p =
 
 let pitchOfInt = mkPitchClip
 
-let transpose (Pitch p) offset = p + offset |> mkPitchClip
+let transposeP (Pitch p) offset = p + offset |> mkPitchClip
 
 let transposePitch trans evt =
   match evt with
@@ -917,6 +917,10 @@ let insertNoteInScore (MidiScore (Sorted lst)) note =
 let unconsDelNotes (MidiScore (Sorted lst)) =
   match lst with h :: tl -> Some (h, MidiScore (Sorted tl)) | [] -> None
 
+let scoreOfList lst = List.fold_left insertNoteInScore emptyScore lst
+
+let scoreOfSeq sq = Seq.fold_left insertNoteInScore emptyScore sq
+
 let ofScore (MidiScore (Sorted lst)) = lst
 
 (** 
@@ -974,7 +978,6 @@ let playArp scoreSq =
     s1 |> cleanup |> updateMidiPlayerTime
   in
   let eval (PlayState {score; now}) =
-    let _ = printMidiPlayer (PlayState {now; score}) in
     let notes = ofScore score in
     let currentNotes =
       List.filter (fun delNote -> isDelNoteNow delNote now) notes

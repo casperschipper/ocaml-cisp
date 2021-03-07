@@ -31,6 +31,8 @@ let snd (_, x) = x
 
 let mapFst f (a, b) = (f a, b)
 
+(** f (a -> b) -> f a -> f b *)
+
 let flip f a b = f b a
 
 let minimum a b = if a > b then b else a
@@ -66,6 +68,12 @@ let rec zip a b () =
   | Nil -> Nil
   | Cons (a, atl) -> (
     match b () with Nil -> Nil | Cons (b, btl) -> Cons ((a, b), zip atl btl) )
+
+let applySq fSq sq = zip fSq sq |> Seq.map (fun (f, x) -> f x)
+
+let pureSq = Seq.return
+
+let ( <*> ) = applySq
 
 let syncEffect sq effectSq =
   (* just update an effect stream in sync with sq, but don't use its return value *)
@@ -197,10 +205,10 @@ let reverse lst =
   in
   aux Nil lst
 
-let rec split n lst =
-  if n <= 0 then (thunk Nil, lst)
+let rec split n sq =
+  if n <= 0 then (thunk Nil, sq)
   else
-    match lst () with
+    match sq () with
     | Nil -> (thunk Nil, thunk Nil)
     | Cons (x, xs) ->
         let f, l = split (n - 1) xs in
@@ -921,7 +929,6 @@ let pulsegen freqSq =
 
 (* f(a -> b) -> fa -> fb *)
 (* (a -> b) -> fa -> fb *)
-let applicative sqF sq = map sqF sq |> concat
 
 let getPreciseTime () = (!currentSampleCounter |> Float.of_int) /. 44100.0
 

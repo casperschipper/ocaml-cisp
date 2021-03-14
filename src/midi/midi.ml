@@ -989,6 +989,17 @@ let playArp scoreSq =
   in
   recursive scoreTail s0 update eval
 
+type relNote = RelNote of deltaT * midiEvent
+
+let relToScore relScore =
+  let seqRev (clock, lst) note =
+    let wait, evt = match note with RelNote (Samps w, e) -> (w, e) in
+    let newClock = clock + wait in
+    (newClock, DelayedNote (Samps newClock, evt) :: lst)
+  in
+  let notes = List.fold_left seqRev (0, []) relScore |> snd in
+  MidiScore (Sorted (List.rev notes))
+
 let mkRhythm sq note rest =
   (* note and rest should be of type int Seq.t 
    * this function will return note x sqs then rest x silenceevents and repeat 

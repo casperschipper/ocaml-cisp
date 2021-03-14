@@ -195,6 +195,25 @@ let rec group chunkSize sq () =
       let sqTail = drop n sq in
       Cons (chunk, group ntl sqTail)
 
+let rec split n sq =
+  if n <= 0 then (thunk Nil, sq)
+  else
+    match sq () with
+    | Nil -> (thunk Nil, thunk Nil)
+    | Cons (x, xs) ->
+        let f, l = split (n - 1) xs in
+        (thunk (Cons (x, f)), l)
+
+let batcher batchSizeSq sq =
+  let f (control, tail) =
+    match control () with
+    | Cons (n, ctl) ->
+        let curBatch, rest = split n tail in
+        Some (curBatch, (ctl, rest))
+    | Nil -> None
+  in
+  Seq.unfold f (batchSizeSq, sq)
+
 let rec nth n sq = if n = 0 then head sq else nth (n - 1) sq
 
 let reverse lst =
@@ -204,15 +223,6 @@ let reverse lst =
     | Cons (h, ts) -> aux (Cons (h, thunk acc)) ts ()
   in
   aux Nil lst
-
-let rec split n sq =
-  if n <= 0 then (thunk Nil, sq)
-  else
-    match sq () with
-    | Nil -> (thunk Nil, thunk Nil)
-    | Cons (x, xs) ->
-        let f, l = split (n - 1) xs in
-        (thunk (Cons (x, f)), l)
 
 let rec filter f lst =
   match lst () with

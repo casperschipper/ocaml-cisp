@@ -29,27 +29,6 @@ let scale_down y x = x |> float_of_int |> fun x' -> x' /. y
 
 let sec2samp s = s |> seci |> fun x -> Samps x
 
-let batcher batchSizeSq sq =
-  let f (control, tail) =
-    match control () with
-    | Cons (n, ctl) ->
-        let curBatch, rest = split n tail in
-        Some (curBatch, (ctl, rest))
-    | Nil -> None
-  in
-  Seq.unfold f (batchSizeSq, sq)
-
-type relNote = RelNote of deltaT * midiEvent
-
-let relToScore relScore =
-  let seqRev (clock, lst) note =
-    let wait, evt = match note with RelNote (Samps w, e) -> (w, e) in
-    let newClock = clock + wait in
-    (newClock, DelayedNote (Samps newClock, evt) :: lst)
-  in
-  let notes = List.fold_left seqRev (0, []) relScore |> snd in
-  MidiScore (Sorted (List.rev notes))
-
 let wlkr midiIn arr divider lens =
   let wlk =
     walk 0.0 (midiIn |> map lens |> map (scale_down divider)) |> trunc
@@ -60,7 +39,8 @@ let wlkr midiIn arr divider lens =
 let mkScore delay pitchesSq =
   pitchesSq
   |> map (fun off ->
-         RelNote (Samps delay, transP off (mapOverDuration (fun _ -> 10000) c3)))
+         RelNote
+           (Samps delay, transP off (mapOverDuration (fun _ -> seci 2.0) c3)))
   |> List.of_seq |> relToScore
 
 (** everything needs to be a stream, this is too static *)
@@ -73,11 +53,11 @@ let ofTrigger trig =
     stt
     |> map (fun s ->
            s.c4 |> float_of_int
-           |> fun x -> x /. 128.0 |> ( *. ) 0.4 |> ( +. ) 0.01)
+           |> fun x -> x /. 128.0 |> ( *. ) 0.4 |> ( +. ) 0.004)
   in
   let combinedWalks =
     wlkr stt [|0; 7; 0; -7; 14|] 4.0 l1
-    +~ wlkr stt [|0; 4; 2; 6; 0|] 4.0 l2
+    +~ wlkr stt [|0; 5; 10; 14; -7; 0|] 4.0 l2
     +~ wlkr stt [|-12; 0; 12; 0; -12|] 4.0 l3
   in
   let arpSq =

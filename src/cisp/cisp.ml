@@ -204,6 +204,9 @@ let rec split n sq =
         let f, l = split (n - 1) xs in
         (thunk (Cons (x, f)), l)
 
+(** function that turns a seq.t into seq.t seq.t (in haskell [a] -> [[a]])
+    the size is controlled by the first argument
+ *)
 let batcher batchSizeSq sq =
   let f (control, tail) =
     match control () with
@@ -251,7 +254,18 @@ let rec concat str () =
         Cons (h', concat newtail)
     | Nil -> concat ls () )
 
-let concatMap f sq () = map f sq |> concat
+let listCartesian f xs ys =
+  List.concat (List.map (fun x -> List.map (fun y -> f x y) ys) xs)
+
+let cartesian f sqa sqb = concat (map (fun x -> map (fun y -> f x y) sqb) sqa)
+
+let concatMap f sq = map f sq |> concat
+
+let bind ma f = map f ma |> concat
+
+let caspersion f sqa sqb =
+  let ( >>= ) x f = bind x f in
+  sqa >>= fun x -> sqb >>= fun y -> Seq.return (f x y)
 
 let mozes f lst =
   let rec aux lsta lstb lst =
@@ -419,6 +433,8 @@ let rec zipWith f a b () =
     | Cons (b, btl) -> Cons (f a b, zipWith f atl btl) )
 
 let map2 = zipWith
+
+let map3 f a b c = zipWith3 f a b c
 
 let rec zipWith3 f a b c () =
   match a () with

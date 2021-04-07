@@ -106,6 +106,8 @@ let test sq = map print_float sq
    for example:
    
     map (fun a b c = a * b * c) seq1 |> andMap seq2 |> andMap seq3 
+
+   This applicative applies in parrelel, it is not the cartesian product.
  *)
 let andMap seq seqOfFuns =
   let zipped = zip seq seqOfFuns in
@@ -434,8 +436,6 @@ let rec zipWith f a b () =
 
 let map2 = zipWith
 
-let map3 f a b c = zipWith3 f a b c
-
 let rec zipWith3 f a b c () =
   match a () with
   | Nil -> Nil
@@ -446,6 +446,8 @@ let rec zipWith3 f a b c () =
       match c () with
       | Nil -> Nil
       | Cons (c, ctl) -> Cons (f a b c, zipWith3 f atl btl ctl) ) )
+
+let map3 f a b c = zipWith3 f a b c
 
 let rec zipWith4 f a b c d () =
   match a () with
@@ -524,12 +526,21 @@ let wrap low high x =
   let modded = (x - low) mod range in
   if modded < 0 then high + x else low + x
 
+(* return evaluated state, update then *)
 let rec recursive control init update evaluate () =
   match control () with
   | Nil -> Nil
   | Cons (x, xs) ->
       let nextState = update x init in
       Cons (evaluate init, recursive xs nextState update evaluate)
+
+(* first run update, then evaluate new state *)
+let rec recursive1 control init update evaluate () =
+  match control () with
+  | Nil -> Nil
+  | Cons (x, xs) ->
+      let next = update x init in
+      Cons (evaluate next, recursive1 xs next update evaluate)
 
 (* recursive no control seq. Allows for non-trivial control update *)
 let rec simpleRecursive init update evaluate () =
@@ -947,11 +958,74 @@ let pulse n sq filler =
   let p = interval n in
   weavePattern p sq filler
 
-let pulsegen freqSq =
+(*let pulsegen freqSq =
   let n = map (( /. ) !Process.sample_rate) freqSq in
   n |> trunc
   |> map (fun n () -> Cons (1.0, repeat (clip 0 441000 (n - 1)) 0.0))
   |> concat
+ *)
+type pulseGenState = {phase: float; out: float}
+
+let pulsegen freqSq =
+  let init = {phase= 1.0; out= 0.0} in
+  let sr = !Process.sample_rate in
+  let update newFreq state =
+    let phaseIncr = newFreq /. sr |> clip 0.0 1.0 in
+    if state.phase >= 1.0 then {out= 1.0; phase= state.phase -. 1.0 +. phaseIncr}
+    else {out= 0.0; phase= state.phase +. phaseIncr}
+  in
+  recursive freqSq init update (fun state -> state.out)
+
+type 'a mutateArrayState = {arr: 'a Array.t; out: 'a}
+
+type 'a mutateArrayMsg = MutateArrayMsg of (int * ('a * int) option)
+
+let makeMutateArray indexSq optUpdate =
+  map2 (fun i upd -> MutateArrayMsg (i, upd)) indexSq optUpdate
+
+(**  
+   * play back a source of boolean triggers 
+   * for example:
+   * let clock = seq [true;false;false] in
+   * let source = seq [1;2;3] in
+   * syncOverClock clock source |> for_example 30 
+   * [Some 1;None;None;Some 2; None; None; Some 3.. etc 
+   * This is similar to mask, except source is not consumed further if there is no trigger
+   *)
+let syncOverClock (clock : bool Seq.t) (source : 'a Seq.t) =
+  let init = (source, None) in
+  let ctrl = clock in
+  let update currentTick (source, _) =
+    match currentTick with
+    | true -> (
+      match source () with
+      | Nil -> (source, None)
+      | Cons (value, rest) -> (rest, Some value) )
+    | false -> (source, None)
+  in
+  let eval (_, value) = value in
+  recursive1 ctrl init update eval
+
+let makeUpdateStream clockSq indexSq valueSq =
+  let z = zip indexSq valueSq in
+  syncOverClock clockSq z
+
+let mutateArray initial atIndexValue arr =
+  let init = {arr; out= initial} in
+  let safe = safeIdx (Array.length arr) in
+  let update ctrl state =
+    match ctrl with
+    | MutateArrayMsg (i, Some (value, vIndex)) ->
+        state.arr.(safe vIndex) <- value ;
+        {state with out= arr.(safe i)}
+    | MutateArrayMsg (i, None) -> {state with out= arr.(safe i)}
+  in
+  let output state = state.out in
+  recursive1 atIndexValue init update output
+
+let mutateArrayi = mutateArray 0
+
+let mutateArrayf = mutateArray 0.0
 
 (* f(a -> b) -> fa -> fb *)
 (* (a -> b) -> fa -> fb *)

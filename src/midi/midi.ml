@@ -58,6 +58,19 @@ let silenceBundle = Bundle (SilenceEvent, Seq.empty)
 
 let getFirstOfBundle (Bundle (fst, _)) = fst
 
+let addToBundle (Bundle (fst, rest)) note =
+  let rec appendToEnd a sq () =
+    match sq () with
+    | Nil -> Cons (a, fun () -> Nil)
+    | Cons (h, rest) -> Cons (h, appendToEnd a rest)
+  in
+  match fst with
+  | SilenceEvent -> Bundle (note, rest)
+  | NoteEvent (c, p, v, d) ->
+      Bundle (NoteEvent (c, p, v, d), appendToEnd note rest)
+  | ControlEvent (ch, co, va) ->
+      Bundle (ControlEvent (ch, co, va), appendToEnd note rest)
+
 let chord noteSeq =
   match noteSeq () with
   | Cons (note, rest) -> Bundle (note, rest)
@@ -213,49 +226,25 @@ let mapOverDuration f evt =
 (a -> b -> c) -> Seq.t a -> Seq.t b -> Seq.t c  
  *)
 
-let rec withPitch pitchSq sq () =
-  match sq () with
-  | Cons (NoteEvent (c, _, v, d), tl) -> (
-    match pitchSq () with
-    | Cons (pitch, ptl) ->
-        let p = mkPitchClip pitch in
-        Cons (NoteEvent (c, p, v, d), withPitch ptl tl)
-    | Nil -> Nil )
-  | Cons (event, tl) -> Cons (event, withPitch pitchSq tl)
-  | Nil -> Nil
+let withChannel c evt =
+  match evt with NoteEvent (_, p, v, d) -> NoteEvent (c, p, v, d) | any -> any
 
-let rec withDur durSq sq () =
-  match sq () with
-  | Cons (NoteEvent (c, p, v, _), tl) -> (
-    match durSq () with
-    | Cons (dur, dtl) ->
-        let d = mkSampsClip dur in
-        Cons (NoteEvent (c, p, v, d), withDur dtl tl)
-    | Nil -> Nil )
-  | Cons (event, tl) -> Cons (event, withDur durSq tl)
-  | Nil -> Nil
+let withPitch p evt =
+  match evt with NoteEvent (c, _, v, d) -> NoteEvent (c, p, v, d) | any -> any
 
-let rec withChan chanSq sq () =
-  match sq () with
-  | Cons (NoteEvent (_, p, v, d), tl) -> (
-    match chanSq () with
-    | Cons (chan, chtl) ->
-        let c = mkChannelClip chan in
-        Cons (NoteEvent (c, p, v, d), withChan chtl tl)
-    | Nil -> Nil )
-  | Cons (event, tl) -> Cons (event, withChan chanSq tl)
-  | Nil -> Nil
+let withVelo v evt =
+  match evt with NoteEvent (c, p, _, d) -> NoteEvent (c, p, v, d) | any -> any
 
-let rec withVelo veloSq sq () =
-  match sq () with
-  | Cons (NoteEvent (c, p, _, d), tl) -> (
-    match veloSq () with
-    | Cons (velo, vtl) ->
-        let v = mkVelocityClip velo in
-        Cons (NoteEvent (c, p, v, d), withVelo vtl tl)
-    | Nil -> Nil )
-  | Cons (event, tl) -> Cons (event, withVelo veloSq tl)
-  | Nil -> Nil
+let withDur d evt =
+  match evt with NoteEvent (c, p, v, _) -> NoteEvent (c, p, v, d) | any -> any
+
+let withPitchSq = map2 withPitch
+
+let withDurSq = map2 withDur
+
+let withChannelSq = map2 withChannel
+
+let withVeloSq = map2 withVelo
 
 type midiMessage =
   | NoteOn of midiChannel * pitch * velocity
@@ -392,6 +381,7 @@ module MidiState = struct
     let lst = getDepressedKeysChannel channel state in
     match lst with [] -> (Pitch 0, Velo 0) | (p, v) :: _ -> (Pitch p, v)
 
+  (* zero if there is no controller *)
   let getControllerValue channel ctrlNumber state =
     let key = chanCtrlToKey channel ctrlNumber in
     state.controlValues |> ControllerMap.find_opt key
@@ -662,6 +652,22 @@ let handleMidiEvent midiEvt m =
 
 let nowPlusOne evt m = ({m with now= m.now + 1}, evt)
 
+let mergeBundles (Bundle (midiEvtA, midiEvtsA)) (Bundle (midiEvtB, midiEvtsB)) =
+  Bundle (midiEvtA, fun () -> Seq.Cons (midiEvtB, append midiEvtsA midiEvtsB))
+
+let mergeBundlesSq bundleSq1 bundleSq2 =
+  zipWith mergeBundles bundleSq1 bundleSq2
+
+type midiEventSeq = midiEvent Seq.t
+
+let emptyBundle = Bundle (SilenceEvent, Seq.empty)
+
+let polyphoneBundles (seqLst : midiEvent Seq.t list) =
+  let mapIntoBundle =
+    List.map (fun midiEvtSq -> Seq.map soloBundle midiEvtSq) seqLst
+  in
+  List.fold_left mergeBundlesSq (st emptyBundle) mapIntoBundle
+
 let handleBundle (Bundle (midiEvt, midiEvts)) m0 =
   let queueEvent m evt =
     (* acc x *)
@@ -847,6 +853,9 @@ let testSequence =
 let justSilence = ref (st (toRaw MidiSilence))
 
 let makeNote pitch velo dur channel = (pitch, velo, dur, channel)
+
+let makeNoteOfInts p v d ch =
+  NoteEvent (mkChannelClip ch, mkPitchClip p, mkVelocityClip v, mkSampsClip d)
 
 let filterEvents f sq =
   map (fun midiEvent -> if f midiEvent then midiEvent else SilenceEvent) sq

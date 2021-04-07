@@ -2,6 +2,8 @@
 
 * simple read and write to arrays (state)
 * simple parser
+* merge multiple streams of events into bundles
+
 
 # midi over ip example:
 * <elm/apiTest/src/>

@@ -6,11 +6,9 @@ open Seq
 
 let sr = ref 44100.0
 
-type data =
-  {c1: int; p: pitch; c2: int; c3: int; c4: int; c5: int; c6: int; c7: int}
+type data = {c1: int; p: pitch; c2: int; c3: int; c4: int; c5: int; c6: int}
 
-let currentState =
-  ref {c1= 0; p= Pitch 0; c2= 0; c3= 0; c4= 1; c5= 1; c6= 1; c7= 1}
+let currentState = ref {c1= 0; p= Pitch 0; c2= 0; c3= 0; c4= 1; c5= 1; c6= 1}
 
 let pitchControl3 =
   let ( let* ) x f = Reader.bind f x in
@@ -20,7 +18,6 @@ let pitchControl3 =
   let* (MidiVal ctrl4) = MidiState.getControlR (MidiCh 0) (MidiCtrl 4) in
   let* (MidiVal ctrl5) = MidiState.getControlR (MidiCh 0) (MidiCtrl 5) in
   let* (MidiVal ctrl6) = MidiState.getControlR (MidiCh 0) (MidiCtrl 6) in
-  let* (MidiVal ctrl7) = MidiState.getControlR (MidiCh 0) (MidiCtrl 7) in
   let* pitch = MidiState.getPitchR in
   let* trigger = MidiState.boolFromNote in
   (* create trigger from note On *)
@@ -32,8 +29,7 @@ let pitchControl3 =
       ; c3= ctrl3
       ; c4= ctrl4
       ; c5= ctrl5
-      ; c6= ctrl6
-      ; c7= ctrl7 }
+      ; c6= ctrl6 }
   in
   (* write state ref *)
   Reader.return trigger
@@ -67,45 +63,46 @@ let growTill ratio start target =
         if next > target then None else Some (state, next))
       start
 
-let mkScore delaySq pitchesSq duraSq =
-  zipWith3
-    (fun delay off dura ->
-      RelNote
-        ( Samps (seci delay)
-        , transP off (mapOverDuration (fun _ -> seci (0.01 *. dura)) c3) ))
-    delaySq pitchesSq (st duraSq)
-  |> List.of_seq |> relToScore
+let toNote dura off velo =
+  c3
+  |> mapOverPitch (fun _ -> off)
+  |> mapOverDuration (fun _ -> dura)
+  |> mapOverVelo (fun _ -> velo)
+  |> mapOverCh (fun _ -> 3)
 
-(** everything needs to be a stream, this is too static *)
 let ofTrigger trig =
-  let stt = ofRef currentState in
-  let l1 s = s.c1 in
-  let l2 s = s.c2 in
-  let l3 s = s.c3 in
-  let l5 s = s.c5 in
-  let l6 s = s.c6 in
-  let l7 s = s.c7 in
-  let entryDelays =
-    stt |> map (fun s -> s.c4 |> float_of_int |> ( *. ) (0.01 /. 4.))
+  (*let stt = ofRef currentState in
+    let l1 s = s.c1 in
+      let l2 s = s.c2 in
+      let l3 s = s.c3 in
+      let l5 s = s.c5 in
+      let l6 s = s.c6 in*)
+  (*let noteDurs =
+      stt |> map (fun s -> s.c4 |> float_of_int |> ( *. ) (0.01 /. 4.) |> seci)
+    in*)
+  let noteDurs = st 1000 in
+  let patts =
+    Array.map List.to_seq
+      [| [100; 20; 100; 100; 0]
+       ; [100; 50; 0; 0; 0]
+       ; [100; 20; 50; 10; 0]
+       ; [100; 0; 0]
+       ; [100; 0; 100; 0]
+       ; [100; 0; 10; 0]
+       ; [100; 80; 40; 80; 0] |]
   in
-  let combinedWalks =
-    [ wlkr stt [|5; 4; 7|] 16.0 l1
-    ; wlkr stt [|5; 7; 4|] 16.0 l2
-    ; wlkr stt [|12; 7; 0|] 16.0 l3 ]
-    |> List.to_seq |> transpose |> concat
-  in
-  let direction = wlkr stt [|-1; 1|] 16.0 l5 in
-  let arpSq =
-    combinedWalks
-    |> batcher (stt |> map l6 |> ( +~ ) (st 1))
-    |> map (fun steps -> walki 0 (direction *~ steps) |> ( +~ ) (stt |> map l6))
-    |> zipWith3
-         (fun entry duraSq score -> mkScore (st entry) score duraSq)
-         entryDelays
-         (stt |> map l7 |> floatify)
-    |> map Option.some
-  in
-  weavePattern trig arpSq (st None)
+  let arr = [|0; 1; 2|] in
+  let idx () = count |> map (fun x -> x mod Array.length arr) in
+  let value = map2 rvi (st 0) (st (Array.length patts)) in
+  let clock = metre (st 30) in
+  let writeHead = syncOverClock clock (zip value (idx ())) in
+  let mutantCtrl = makeMutateArray (idx ()) writeHead in
+  let mutant = mutateArrayi mutantCtrl arr in
+  let indexed = index patts mutant in
+  let catted = indexed |> concat in
+  let pitches = seq [36; 39; 41] |> hold (seq [1; 5; 1; 3; 1; 4; 2]) in
+  let notesSq = st toNote <*> noteDurs <*> pitches <*> catted in
+  weavePattern trig notesSq (st SilenceEvent)
 
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
@@ -113,7 +110,7 @@ let midiInputTestFun input =
   |> map (Reader.run pitchControl3)
   (* run a bunch of readers to extract properties *)
   |> ofTrigger
-  |> playArp |> serializeBundles |> map toRaw
+  |> serialize |> map toRaw
 
 (* turn back into raw midi
 let testIn =

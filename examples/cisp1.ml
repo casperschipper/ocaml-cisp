@@ -63,41 +63,45 @@ let growTill ratio start target =
         if next > target then None else Some (state, next))
       start
 
-let mkScore delaySq pitchesSq =
-  pitchesSq
-  |> map2
-       (fun delay off ->
-         RelNote
-           (Samps delay, transP off (mapOverDuration (fun _ -> seci 0.1) c3)))
-       delaySq
-  |> List.of_seq |> relToScore
+let toNote dura off velo =
+  c3
+  |> mapOverPitch (fun _ -> off)
+  |> mapOverDuration (fun _ -> dura)
+  |> mapOverVelo (fun _ -> velo)
 
-(** everything needs to be a stream, this is too static *)
 let ofTrigger trig =
-  let stt = ofRef currentState in
-  let l1 s = s.c1 in
-  let l2 s = s.c2 in
-  let l3 s = s.c3 in
-  let l5 s = s.c5 in
-  let l6 s = s.c6 in
-  let entryDelays =
-    stt |> map (fun s -> s.c4 |> float_of_int |> ( *. ) (0.01 /. 4.))
+  (*let stt = ofRef currentState in
+    let l1 s = s.c1 in
+      let l2 s = s.c2 in
+      let l3 s = s.c3 in
+      let l5 s = s.c5 in
+      let l6 s = s.c6 in*)
+  (*let noteDurs =
+      stt |> map (fun s -> s.c4 |> float_of_int |> ( *. ) (0.01 /. 4.) |> seci)
+    in*)
+  let noteDurs = st 1000 in
+  let patts =
+    Array.map List.to_seq
+      [| [100; 20; 100; 100; 0]
+       ; [100; 50; 0; 0; 0]
+       ; [100; 20; 50; 10; 0]
+       ; [100; 0; 0]
+       ; [100; 0; 100; 0]
+       ; [100; 0; 10; 0]
+       ; [100; 80; 40; 80; 0] |]
   in
-  let combinedWalks =
-    wlkr stt [|0; 7; 14; 21; 28|] 4.0 l1
-    +~ wlkr stt [|0; 5; 10; 7; 12; 17|] 4.0 l2
-    +~ wlkr stt [|-12; 0; 12; 0; -12|] 4.0 l3
-    +~ (stt |> map l5 |> map (fun x -> (x * 5) - 60))
-  in
-  let compare x y = if x < y then 1 else -1 in
-  let arpSq =
-    combinedWalks
-    |> batcher (stt |> map l6 |> ( +~ ) (st 1))
-    |> map (fun sq -> sq |> List.of_seq |> List.sort compare |> List.to_seq)
-    |> map2 (fun entry score -> mkScore (st (seci entry)) score) entryDelays
-    |> map Option.some
-  in
-  weavePattern trig arpSq (st None)
+  let arr = [|0; 1; 2|] in
+  let idx () = count |> map (fun x -> x mod Array.length arr) in
+  let value = map2 rvi (st 0) (st (Array.length patts)) in
+  let clock = metre (st 30) in
+  let writeHead = syncOverClock clock (zip value (idx ())) in
+  let mutantCtrl = makeMutateArray (idx ()) writeHead in
+  let mutant = mutateArrayi mutantCtrl arr in
+  let indexed = index patts mutant in
+  let catted = indexed |> concat in
+  let pitches = seq [36; 39; 41] |> hold (seq [1; 5; 1; 3; 1; 4; 2]) in
+  let notesSq = st toNote <*> noteDurs <*> pitches <*> catted in
+  weavePattern trig notesSq (st SilenceEvent)
 
 (* this maps midi input msg to an output msg (raw midi) *)
 let midiInputTestFun input =
@@ -105,7 +109,7 @@ let midiInputTestFun input =
   |> map (Reader.run pitchControl3)
   (* run a bunch of readers to extract properties *)
   |> ofTrigger
-  |> playArp |> serializeBundles |> map toRaw
+  |> serialize |> map toRaw
 
 (* turn back into raw midi
 let testIn =

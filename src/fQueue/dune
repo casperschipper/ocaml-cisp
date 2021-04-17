@@ -1,6 +1,0 @@
-(library
- (name            fQueue)
- (ocamlopt_flags -O3)	
-)
-
-

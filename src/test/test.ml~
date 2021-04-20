@@ -1,0 +1,49 @@
+open OUnit2
+open Midi
+open Cisp
+
+(*open Midi*)
+(* 
+let empty_list = []
+
+let list_a = [1; 2; 3]
+
+let test_list_length _ =
+  (* Check if the list is empty. *)
+  assert_equal 0 (List.length empty_list) ;
+  (* Check if a given list contains 3 elements. *)
+  assert_equal 3 (List.length list_a)
+
+let test_list_append _ =
+  let list_b = List.append empty_list [1; 2; 3] in
+  assert_equal list_b list_a
+
+let suite =
+  "ExampleTestList"
+  >::: [ "test_list_length" >:: test_list_length
+       ; "test_list_append" >:: test_list_append ] *)
+
+let noteA = mkDelayedNote 3 c3
+
+let noteB = mkDelayedNote 5 (transP 2 c3)
+
+let myC4 = transP 36 c3
+
+let noteC = mkDelayedNote 0 myC4
+
+let myArp = List.fold_left insertNoteInScore emptyScore [noteB; noteA; noteC]
+
+let test_arp _ =
+  let sqArp () = Seq.Cons (Some myArp, st None) in
+  let played = playArp (sqArp |> take 30) in
+  let first = Cisp.head played |> Option.map getFirstOfBundle in
+  let _ =
+    let f opt = print_string "playing: " ; opt |> printBundle in
+    Seq.iter f played ; flush stdout
+  in
+  let opt = match first with Some _ -> true | _ -> false in
+  assert_equal true opt
+
+let suite = "test delNote" >::: ["test_arp" >:: test_arp]
+
+let () = run_test_tt_main suite

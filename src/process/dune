@@ -1,0 +1,4 @@
+(library
+ (name            process)
+ (libraries bigarray)
+ (ocamlopt_flags -O3))

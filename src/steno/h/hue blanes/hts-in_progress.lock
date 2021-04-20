@@ -1,0 +1,7 @@
+Mirror in progress since Mon, 15 Feb 2021 11:37:20 .. please wait!
+winhttrack https://www.researchcatalogue.net/view/393791/588232 -W -O ""h/hue blanes"" -%v 
+To pause the engine: create an empty file named 'hts-stop.lock'
+PID=12295
+UID=501
+GID=501
+START=1613385440

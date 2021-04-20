@@ -1,0 +1,2 @@
+* create midi history analysis	
+* last played pitch 

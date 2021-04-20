@@ -1,0 +1,5 @@
+let xs = List.init 128 (fun x -> float_of_int x / 3)
+
+let ys = List.map (fun x acc -> x mod 128) xs
+
+let () = List.iter print_int ys

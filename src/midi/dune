@@ -1,0 +1,7 @@
+(library
+ (libraries bigarray cisp fqueue jackMidi)
+ (name            midi)
+ (ocamlopt_flags -O3)	
+)
+
+ 

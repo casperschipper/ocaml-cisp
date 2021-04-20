@@ -1,0 +1,5 @@
+(library
+ (name oscStream)
+ (libraries cisp osc osc_lwt lwt lwt.unix lwt_ppx)
+ (ocamlopt_flags -O3)
+ )

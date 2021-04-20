@@ -1,0 +1,4 @@
+(test
+(name test)
+(libraries midi cisp ounit2)
+)

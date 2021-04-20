@@ -1,0 +1,9 @@
+  /Users/casperschipper/devel/ocaml/processes/src:
+  total used in directory 16 available 9223372036851850861
+  drwxr-xr-x   7 casperschipper  staff   224 Jul  2 19:57 .
+  drwxr-xr-x  16 casperschipper  staff   512 Jul  3 13:47 ..
+  -rw-r--r--@  1 casperschipper  staff  6148 Jul  3 10:42 .DS_Store
+  drwxr-xr-x   9 casperschipper  staff   288 Jul  3 23:00 jack
+  drwxr-xr-x  13 casperschipper  staff   416 Jul  3 23:21 jackMidi
+  drwxr-xr-x   5 casperschipper  staff   160 Jul  3 13:47 process
+  drwxr-xr-x   7 casperschipper  staff   224 Jul  3 13:47 sndfile

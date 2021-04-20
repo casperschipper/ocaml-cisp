@@ -6,9 +6,6 @@ The central datatype used is ocaml's Seq.t, which is a "lazy" sequence which can
 I took the JACK bindings and some other basic elements from doebereiners "processes".
 The main functions can be found in cisp.ml, examples cisp1 cisp2 etc.. are the current experiments.
 
-Has been used for the piece "decoherence" performed in Klangraum:
-<https://klangraum-dumpf.com/>
-
-And for various jams together with Olaf Kerkhaert, mainly using the midi functionality.
+Has been used for the interactive piece "decoherence" (see <https://klangraum-dumpf.com/>) and for various jams together with Olaf Kerkhaert, mainly using the midi functionality.
 
 

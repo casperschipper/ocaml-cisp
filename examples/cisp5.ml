@@ -1,49 +1,51 @@
 open Cisp
 open Midi
-open Seq
-open Reader.Ops
-
-(* simple mod of controller 1 onto pitch *)
-
-let sr = ref 44100.0
-
-let pitchControl =
-  MidiState.getControlR (MidiCh 0) (MidiCtrl 0) 
-  >>= (fun (MidiVal ctrl1) ->
-    MidiState.getControlR (MidiCh 0) (MidiCtrl 1) >>=
-      (fun (MidiVal ctrl2) ->
-        MidiState.triggerR 3000 >>= (fun evt ->
-         (ctrl1,ctrl2, evt) |> Reader.return)))
-       
-let offsetPitch offset evt =
-  mapOverPitch ((+) offset) evt
 
 
+let simpleWalk  =
+  wander 0
+    (seq [6;0;6;0;6;1;5;2;4;3;4;6;4;6;5;6;0] |> Infseq.cycleSq) |> Infseq.toSeq
+    
+let intervArr = [|60;60;60;60;60;60|]
 
+let writer =
+  let index = wrappedCount intervArr in
+  let generator = walki 74 ((st (-1)) *~ ch [|7;7;4;5;-7;4;12;-12|]) |> take 14 |> st |> concat in
+  let wrf (i,v) = writeOne intervArr i v in
+  zip index generator |> Seq.map wrf |> syncEffectClock (interval (seq [4;5;3;6;7;3;3;5;11;17]))
+
+
+let oneWalk = 
+  let idx = simpleWalk in
+  index intervArr idx |> take 30
   
-(* let overwritePitch newPitch evt =
-  mapOverPitch (fun _ -> newPitch) evt *)
 
-(* zipWith is awesome! it allows to combine two seqs into one! *)
+(*type walkmind direction is state *)
+(* a walk that updates boundaries only when hit *)
 
- 
-let ofTuple tup =
-  let (c1,_,evt) = unzip3 tup in (* a seq of (x,y) make it (seq x, seq y) *)
-  let ctl1 = ref 0 in
-  let write = map (fun x -> ctl1 := x) c1 in
-  let mywalk = walki 0 (ofRef ctl1) in
-  let arr = [|0;2;4;5;7;12;4|] in
-  let indexed = index arr mywalk in
-  effectSync write evt |> overwritePitch (indexed +~ (st 60))
-  
-(* this maps midi input msg to an output msg (raw midi) *)
-let midiInputTestFun input =
-  input
-  |> MidiState.makeSeq (* take msg, make it a state *)
-  |> map (Reader.run pitchControl) (* run a bunch of readers to extract properties *)
-  |> ofTuple (* the result is then used to contruct streams *)
-  |> serialize |> map toRaw (* turn back into raw midi *)
 
-  
-let () = Midi.playMidi midiInputTestFun sr 
-           
+
+let simplePitch =
+  effectSync writer (st oneWalk |> concat)
+
+let ofOpt optEvt = match optEvt with Some evt -> evt | None -> SilenceEvent
+
+let bpm = 30.0
+
+let hz = (bpm /. 60.0) *. 4.0
+
+let notes =
+  st makeNoteOfInts
+  <*> simplePitch
+  <*> (st 80)
+  <*> (st (seci (1.0 /. hz)) *~ (seq [1;1;1;1;1;5]))
+  <*> (st 1)
+
+let midiFun _ =
+  let map = Seq.map in
+  notes
+  |> syncOverClock (clockGen (seq [hz]) )
+  |> map ofOpt |> serialize |> map toRaw
+
+
+let () = Midi.playMidi midiFun Process.sample_rate 

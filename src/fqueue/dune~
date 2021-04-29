@@ -1,6 +1,0 @@
-(library
- (name1 fqueue)
- (ocamlopt_flags -O3)	
-)
-
-

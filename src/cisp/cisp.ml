@@ -30,6 +30,8 @@ let fst (x, _) = x
 let snd (_, x) = x
 
 let mapFst f (a, b) = (f a, b)
+let mapBoth f (a,b) = (f a,f b)
+let mapSnd f (a, b) = (a, f b)
 
 (** f (a -> b) -> f a -> f b *)
 
@@ -52,6 +54,8 @@ let rdRef rf () = Cons (!rf, ofRef rf)
 let wrRef rf valueSq = map (fun x -> rf := x) valueSq
 
 let singleton a = [a]
+
+
 
 let rec takeLst n lst =
   match n with
@@ -87,12 +91,14 @@ let effectSync effectSq sq =
 
 let effect = effectSync
 
+(* this is used to keep time, for lines and time based sync *)
 let currentSampleCounter = ref 0
 
 let updateCurrentSample () = currentSampleCounter := !currentSampleCounter + 1
 
 let rec masterClock () = Cons (updateCurrentSample (), masterClock)
 
+(* sync this effect with a list (this is handy with multichannel streams *)
 let inTime lst =
   match lst with h :: ts -> syncEffect h masterClock :: ts | [] -> []
 
@@ -102,12 +108,11 @@ let withEffect effect lst =
 let test sq = map print_float sq
 
 (* applicative functor for seq.t 
-   can be used to map functions with more than two arguments to take seqs as arguments
-   for example:
+   Note this is treating the seq as a ZipList not as a list.
+   the streams are consumed in parallel instead of cartesian
    
     map (fun a b c = a * b * c) seq1 |> andMap seq2 |> andMap seq3 
 
-   This applicative applies in parrelel, it is not the cartesian product.
  *)
 let andMap seq seqOfFuns =
   let zipped = zip seq seqOfFuns in
@@ -267,10 +272,12 @@ let bind ma f = map f ma |> concat
 
 let andThen f ma = map f ma |> concat
 
+(* should do same as cartesian, but using the bind operator *)
 let caspersion f sqa sqb =
   let ( >>= ) x f = bind x f in
   sqa >>= fun x -> sqb >>= fun y -> Seq.return (f x y)
 
+(* split a list into two parts *)
 let mozes f lst =
   let rec aux lsta lstb lst =
     match lst with
@@ -280,6 +287,7 @@ let mozes f lst =
   in
   aux [] [] lst
 
+(* this is a sorted list type, to insert more efficientely, useful for time based score *)
 type 'a sorted = Sorted of 'a list
 
 let sortedAsList (Sorted lst) = lst
@@ -349,6 +357,12 @@ let foldTails x acc =
 
 let tailsOfStreams sq () = fold_right foldTails sq Nil
 
+(* essential function from cisp! This allows you to take a bunch of streams and weave them together 1 by 1
+a = 1,2,3
+b = 11,12,13
+c = 100,200,300
+
+transpose a,b,c > 1,11,100 2,12,200 3,13,300 *)
 let rec transpose sq () =
   match sq () with
   | Nil -> Nil
@@ -391,6 +405,7 @@ let normalizeNumberOfChannels channelsA channelsB =
     let n = maximum (List.length channelsA) (List.length channelsB) in
     (fillMissing n channelsA, fillMissing n channelsB)
 
+(* hmm. implicitely infinite! *)
 let rec countFrom n () = Cons (n, countFrom (n + 1))
 
 let count = countFrom 0
@@ -465,7 +480,7 @@ let rec zipWith4 f a b c d () =
         | Nil -> Nil
         | Cons (d, dtl) -> Cons (f a b c d, zipWith4 f atl btl ctl dtl) ) ) )
 
-(* static versions, so you do not have to use st *)
+(* static versions, so you do not have to use st, useful for gain*)
 
 let ( *.- ) x sq = map (( *. ) x) sq
 
@@ -493,10 +508,12 @@ let ( /~ ) = zipWith (fun a b -> a / b)
 
 let ( -~ ) = zipWith (fun a b -> a - b)
 
+(* sum multichannel *)
 let addChannelLsts channelAList channelBList =
   let aChs, bChs = normalizeNumberOfChannels channelAList channelBList in
   List.map2 ( +.~ ) aChs bChs
 
+(* linlin from sc *)
 let linlin inA inB outA outB input =
   let a = minimum inA inB in
   let b = maximum inA inB in
@@ -507,6 +524,7 @@ let linlin inA inB outA outB input =
 let mapLinlin inA inB outA outB input =
   map linlin inA |> andMap inB |> andMap outA |> andMap outB |> andMap input
 
+(* nice little function that produces a summed set of clones *)
 let rec mkLots n thing =
   let sum = if n > 1 then thing () +.~ mkLots (n - 1) thing else thing () in
   let attenuate = 0.71 /. Float.of_int n in
@@ -528,7 +546,9 @@ let wrap low high x =
   let modded = (x - low) mod range in
   if modded < 0 then high + x else low + x
 
-(* return evaluated state, update then
+(* Similar to unfold, but control is a parameter, instead of 
+ * stored in the state. 
+ * return evaluated state, update then
  * this can also be done as an unfold
  *)
 let rec recursive control init update evaluate () =
@@ -546,11 +566,14 @@ let rec recursive1 control init update evaluate () =
       let next = update x init in
       Cons (evaluate next, recursive1 xs next update evaluate)
 
-(* recursive no control seq. Allows for non-trivial control update *)
+(* recursive no control seq. Allows for non-trivial control update 
+ * this is almost the same as unfold
+ *)
 let rec simpleRecursive init update evaluate () =
   let nextState = update init in
   Cons (evaluate init, simpleRecursive nextState update evaluate)
 
+(* lots of different walks *)
 let walki start steps = recursive1 steps start (fun x start -> x + start) id
 
 let walki2 start stepsSq =
@@ -606,6 +629,8 @@ let boundedWalkf start steps wrapfunc =
   in
   aux start steps
 
+
+(* dealing with arrays / buffers *)
 let cap arr = Array.length arr
 
 let safeIdx len idx =
@@ -673,6 +698,7 @@ let weights weightLst () =
   in
   aux weightLst sumWeights ()
 
+(* return mostly x, but 1 in P events y *)
 let rec sometimes x y p () =
   let head () =
     let rnd = Random.int p in
@@ -755,7 +781,8 @@ let hold repeats source =
   let ctrl = zip repeats source in
   map (fun (n, src) -> repeat n src) ctrl |> concat
 
-let embed str () = Cons (str, thunk Nil) (* create a singleton stream *)
+
+let embed str () = Cons (str, thunk Nil) (* create a singleton stream -> Seq.return *)
 
 (* returnes the loops and the tail of the source
    preferably source is infinite *)
@@ -811,6 +838,7 @@ let ftom freq = (12.0 *. log (freq /. 440.0)) +. 69.0
 
 (* input -> state -> (state, value) *)
 
+(* one of my favorate math sequences ! *)
 let rec collatz n () =
   if n = 1 then Nil (* lets end it here, normally loops 1 4 2 1 4 2.. *)
   else
@@ -1429,3 +1457,146 @@ let maskTriggerList triggerSq lst = zipWith ( && ) (seq lst) triggerSq
 let maskTrigger trigger mask = zipWith ( && ) mask trigger
 
 let metre nSq = nSq |> map (fun n () -> Cons (true, repeat n false)) |> concat
+
+
+type direction =
+  Up
+| Down
+
+
+type posInt =
+  Posi of int
+
+let positive x =
+  if x == Int.min_int then Posi 0 else
+  Posi (abs x)
+    
+let sortArgs x y =
+  if x > y then
+    (y,x)
+  else
+    (x,y)
+
+let sortArgsBy f x y =
+  if f x y then
+    (x,y)
+  else
+    (y,x)
+
+type limits = Limits of (int * (int Infseq.t)) * (int * (int Infseq.t))
+  
+type breakoutWalkState =
+  { out : int
+  ; limits : limits
+  ; dir : direction
+  }
+
+let breakoutWalk start steps minInfSq maxInfSq =
+  let bounceLimits limits curDir x  =
+    let Limits (b1,b2) = limits in 
+    let ((min,minTl),(max,maxTl)) = sortArgsBy (fun a b -> fst a < fst b) b1 b2 in
+    if x <= min then
+      (Limits (Infseq.uncons minTl,(max,maxTl)),Up)
+    else
+      if x >= max then
+        (Limits ((min,minTl),Infseq.uncons maxTl),Down)
+      else
+        (Limits (b1,b2), curDir)
+  in
+  let safeSteps = Seq.map positive steps in 
+  let init =
+    { out = start
+    ; limits = (mapBoth Infseq.uncons (minInfSq,maxInfSq)) |> (fun (l1,l2) -> Limits (l1,l2))
+    ; dir = Up 
+    }
+  in
+  let update (Posi step) { out; limits ; dir } =
+    let (newLimits,newDir) = bounceLimits limits dir out in
+    let operator = match newDir with Up -> ( + ) | Down -> ( - ) in
+    ({ out = (operator out step); limits = newLimits ; dir = newDir })
+  in
+  let eval state =
+    state.out
+  in
+  recursive safeSteps init update eval
+
+
+type wanderDir =
+  Dec
+| Inc
+| Static
+
+type wanderState =
+  { out : int
+  ; vector : int * wanderDir
+  ; targets : int Infseq.t
+  ; target : int
+  }
+ 
+
+let wander start (targets: int Infseq.t) =
+  let chooseDirection current target =
+    if current = target then
+      Static
+    else
+      if current > target then
+        Dec
+      else
+        Inc
+      
+  in
+  let init =
+    { vector = (1,Static)
+    ; out = start
+    ; targets = targets
+    ; target = start
+    }
+  in
+  let move (step,dir) prev =
+    match dir with Inc -> prev + step | Dec -> prev - step | Static -> prev
+  in
+  let f state =
+    if state.out = state.target then
+      let (newTarget, tail) = Infseq.uncons state.targets in
+      let newDir = (1,chooseDirection state.out newTarget) in
+      (state.out,
+      { out = move newDir state.out
+      ; targets = tail
+      ; vector = newDir
+      ; target = newTarget
+      })
+    else
+      (state.out,{ state with out = move state.vector state.out })
+  in
+  Infseq.unfold f init
+  
+
+type dwalkState = {
+    out : int
+   ;dir : direction
+  }
+
+let dwalk start steps boundary1 boundary2 =
+  let safeSteps = Seq.map positive steps in
+  let ctrlSq = zip3 safeSteps boundary1 boundary2 in
+  let init = { out = start; dir = Up } in
+  let update (Posi step,x,y) state =
+    let prev = state.out in
+    let (min,max) = sortArgs x y in
+   
+    let newDir =
+      if state.out <= min then
+        Up
+      else
+        if state.out >= max then
+          Down
+        else
+          state.dir
+    in
+    let operator = match newDir with Up -> ( + ) | Down -> ( - ) in
+    ({ out = operator prev step ; dir = newDir })
+  in
+  let eval state =
+    state.out
+  in  
+  recursive ctrlSq init update eval

@@ -1,5 +1,4 @@
 (library
- (libraries seq)
  (name infseq)
  (ocamlopt_flags -O3)	
 )

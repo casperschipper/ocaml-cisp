@@ -1,6 +1,6 @@
 type 'a parser = Parser of (char list -> ('a * string) list)
 
-val parse : 'a parser -> char Seq.t -> ('a * char list) Seq.t
+val parse : 'a parser -> char Seq.t -> ('a * char Seq.t) Seq.t
 
 val item : char parser
 

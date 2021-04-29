@@ -1,4 +1,0 @@
-(library
- (name            steno)
- (ocamlopt_flags -O3)	
-)

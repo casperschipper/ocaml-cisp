@@ -1,6 +1,0 @@
-(library
- (name            sndfile)
- (libraries bigarray ctypes.foreign process)
- (ocamlopt_flags -O3)	
- (foreign_stubs (language c) (names sndfile_stubs))
- (flags (-cclib -lsndfile)))

@@ -1,8 +1,0 @@
-module type Queue = sig
-  val empty : 'a t     
-  val is_empty : 'a t -> bool
-  val norm : 'a t -> 'a t
-  val enqueue : 'a t -> 'a -> 'a t
-  val peek : 'a t ->  'a option
-  val dequeue : 'a t -> 'a option
-                           

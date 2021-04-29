@@ -1,6 +1,0 @@
-(library
- (name infseq)
- (ocamlopt_flags -O3)	
-)
-
-

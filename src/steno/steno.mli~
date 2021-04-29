@@ -1,3 +1,0 @@
-type parser a =
-  Parser of (string -> [a, string])
-  

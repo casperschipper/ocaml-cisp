@@ -1,6 +1,0 @@
-(library
-  (name osc_lwt)
-  (public_name osc-lwt)
-  (wrapped false)
-  (modules osc_lwt)
-  (libraries lwt lwt.unix osc))

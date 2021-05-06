@@ -1,51 +1,64 @@
 open Cisp
 open Midi
-
-
-let simpleWalk  =
-  wander 0
-    (seq [6;1;5;2;4;3;4;6;4;6;5;6;0] |> Infseq.cycleSq) |> Infseq.toSeq
     
-let intervArr = [|7;4;4;7;3;7|]
+let intervArr = [|40;45;50;55;60;65;70;65;60;55;50;45|]
+let copy = Array.copy intervArr
+
+let maxidx = Array.length intervArr 
 
 let writer =
-  let index = wrappedCount intervArr in
-  let generator = ch [|7;4;3;5|] in
-  let wrf (i,v) = writeOne intervArr i v in
-  zip index generator |> Seq.map wrf |> syncEffectClock (interval (lift rv 1 10))
+  let idx = rv (st 0) (st maxidx) in
+  let f old original =
+    let nw = old + (pickOne [|-7;7|]) in
+    pickOne [|nw;original|] 
+  in
+  idx |> Seq.map (fun i -> intervArr.(i) <- f intervArr.(i) copy.(i)) |> syncEffectClock (interval (st 10))
+  
+
+let midiReader =
+  let ( let* ) x f = Reader.bind f x in
+  let* trigger = MidiState.boolFromNote in
+  Reader.return trigger
+
+let simpleWalk =
+  let loopy = seq [2;3] |> hold (seq [11;5;7]) |> Seq.map countTill in
+  let holdn = seq (shuffle [11;7;5]) in
+  let offset = walki 2 (ch [|(-1);1|]) |> Seq.map (wrap 0 maxidx) |> hold holdn in
+  let zipper l off = l +~ (st off |> take 3) in
+  zipWith zipper loopy offset |> concat 
 
 
-let oneWalk start = 
+let oneWalk = 
   let idx = simpleWalk in
-  let steps = (index intervArr idx |> take 25) *~ (st (-1)) in
-  walki start steps
+  index intervArr idx
+
+
 
 (*type walkmind direction is state *)
 (* a walk that updates boundaries only when hit *)
 
+let bpm = 170.0
 
-let manyWalks =
-  (st 76) |> Seq.map oneWalk |> concat
-
-
-let simplePitch =
-  effectSync writer manyWalks 
-
-let ofOpt optEvt = match optEvt with Some evt -> evt | None -> SilenceEvent
-
-
+let hz = (bpm /. 60.0) *. 4.0
+ 
 let notes =
   st makeNoteOfInts
-  <*> simplePitch
+  <*> (effectSync writer oneWalk)
   <*> (st 80)
-  <*> (st (seci 0.1))
-  <*> (st 1)
+  <*> (st (seci (1.0 /. hz)))
+  <*> (st 2)
 
-let midiFun _ =
+let ofTrigger trig =
+  weavePattern trig notes (st SilenceEvent)
+
+let midiFun input =
   let map = Seq.map in
-  notes
-  |> syncOverClock (clockGen (seq [9.0]) )
-  |> map ofOpt |> serialize |> map toRaw
+  input
+  |> MidiState.makeSeq
+  |> map (Reader.run midiReader)
+  |> pulseDivider (st 2)
+  |> ofTrigger
+  |> serialize |> map toRaw
 
 
 let () = Midi.playMidi midiFun Process.sample_rate 

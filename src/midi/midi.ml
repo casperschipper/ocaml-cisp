@@ -56,6 +56,14 @@ let soloBundle note = Bundle (note, Seq.empty)
 
 let silenceBundle = Bundle (SilenceEvent, Seq.empty)
 
+let explicitSilence optEvents =
+  let fromOpt opt =
+    match opt with
+    | Some x -> x
+    | None -> SilenceEvent
+  in
+  Seq.map fromOpt optEvents
+
 let getFirstOfBundle (Bundle (fst, _)) = fst
 
 let addToBundle (Bundle (fst, rest)) note =
@@ -662,7 +670,13 @@ type midiEventSeq = midiEvent Seq.t
 
 let emptyBundle = Bundle (SilenceEvent, Seq.empty)
 
-let polyphoneBundles (seqLst : midiEvent Seq.t list) =
+let polyphoneBundlesSq (seq : midiEvent Seq.t Seq.t) =
+  let soloBundle = 
+    Seq.map (fun midiEvtSq -> Seq.map soloBundle midiEvtSq) seq
+  in
+  Seq.fold_left mergeBundlesSq (st emptyBundle) soloBundle
+
+let polyphoneBundlesLst (seqLst : midiEvent Seq.t list) =
   let mapIntoBundle =
     List.map (fun midiEvtSq -> Seq.map soloBundle midiEvtSq) seqLst
   in

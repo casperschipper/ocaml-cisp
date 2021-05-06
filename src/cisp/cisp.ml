@@ -29,6 +29,11 @@ let fst (x, _) = x
 
 let snd (_, x) = x
 
+let uncons sq =
+  match sq () with
+  | Seq.Cons(x,xs) -> Some (x,xs)
+  | Seq.Nil -> None
+
 let mapFst f (a, b) = (f a, b)
 let mapBoth f (a,b) = (f a,f b)
 let mapSnd f (a, b) = (a, f b)
@@ -64,6 +69,11 @@ let rec takeLst n lst =
 
 let rec listRepeat n x =
   if n < 0 then [] else match n with 0 -> [] | n -> x :: listRepeat (n - 1) x
+
+let shuffle d =
+    let nd = List.map (fun c -> (Random.bits (), c)) d in
+    let sond = List.sort compare nd in
+    List.map snd sond
 
 (* List a -> (List a -> b) -> List b *)
 
@@ -170,7 +180,7 @@ let rangei a b =
 (* not sure about these *)
 let head ll = match ll () with Nil -> None | Cons (h, _) -> Some h
 
-let tail ll = match ll () with Nil -> None | Cons (_, tl) -> Some (tl ())
+let tail ll = match ll () with Nil -> None | Cons (_, tl) -> Some tl 
 
 (* this is not the same as ofList, but should be! 
 let from_list list () =
@@ -373,6 +383,22 @@ let rec transpose sq () =
           ( (fun () -> Cons (x, headsOfStreams sqss))
           , transpose <| thunk (Cons (xs, tailsOfStreams sqss)) )
     | Nil -> transpose sqss () )
+
+(*
+  [[a]] -> [a] .. [[1;2;3];[1;2];[11;12];[99]] -> [1;1;11;99]  *)
+let list_fold_heads_with (emptyThing: 'a) (f: 'b -> 'a -> 'a) (lst: 'b Seq.t list) =
+  let rec aux ls () =
+    let heads = List.filter_map head ls in
+    let folded = List.fold_right f heads emptyThing in 
+    let tails = List.filter_map tail ls in
+    Seq.Cons( folded, aux tails)
+  in
+  aux lst
+
+              
+
+     
+            
 
 let transcat sq = sq |> transpose |> concat
 
@@ -1119,6 +1145,8 @@ let ofOpt default optSq =
     (fun x state -> match x with Some value -> value | None -> state)
     id
 
+
+
 type tLineState =
   { oldT: float
   ; oldX: float
@@ -1534,6 +1562,11 @@ type wanderState =
   }
  
 
+(* wander takes a seq of targets and wanders to it, 1 step at a time 
+   so for example, you could have the targets 0 5 2 4:
+0 1 2 3 4 5 4 3 2 3 4
+-         -     -   - 
+ *)
 let wander start (targets: int Infseq.t) =
   let chooseDirection current target =
     if current = target then

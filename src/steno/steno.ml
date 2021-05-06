@@ -1,5 +1,5 @@
 (* super tiny parser ! *)
-open Format
+
 
 type 'a parser = Parser of (char Seq.t -> ('a * char Seq.t) Seq.t)
 
@@ -82,8 +82,9 @@ let rec concat sq () =
     | Nil -> concat ls () )*)
 
 let rec append a b () =
-  let open Seq in
-  match a () with Seq.Nil -> b () | Cons (h, ls) -> Cons (h, append ls b)
+  match a () with
+  | Seq.Nil -> b ()
+  | Seq.Cons (h, ls) -> Seq.Cons (h, append ls b)
 
 let combine p q =
   Parser
@@ -150,8 +151,6 @@ let chainl1 p op =
   let rec rest a = op >>= (fun f -> p >>= fun b -> rest (f a b)) <|> return a in
   p >>= fun a -> rest a
 
-let chainl p op a = chainl1 p op <|> return a
-
 let opt_int_of_string str =
   try Option.Some (int_of_string str) with Failure _ -> None
 
@@ -200,7 +199,7 @@ let slist = between (char '(') (char ')') (sepBy natural spaces)
 
 let singletonP = (fun x -> [x]) <$> natural
 
-let rec string str =
+let string str =
   let rec aux sq =
     match sq () with
     | Seq.Nil -> return []
@@ -242,9 +241,6 @@ type sect =
   | Repeat of int * int
   | Pattern of int
 
-let test = "x..x."
-
-let test = "1..2 1!2 1 2 3 "
 
 let range a b =
   let op = if a > b then fun x -> x - 1 else ( + ) 1 in

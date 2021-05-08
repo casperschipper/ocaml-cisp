@@ -12,7 +12,7 @@ let writer =
     let nw = old + (pickOne [|-2;2|]) in
     pickOne [|nw;original|] 
   in
-  idx |> Seq.map (fun i -> intervArr.(i) <- f intervArr.(i) copy.(i)) |> syncEffectClock (interval (st 10)) 
+  idx |> Seq.map (fun i -> intervArr.(i) <- f intervArr.(i) copy.(i)) |> syncEffectClock (interval (st 1)) 
   
 
 let midiReader =
@@ -51,24 +51,163 @@ let notes channel =
 let ofTrigger channel trig =
   weavePattern trig (map Option.some (notes channel)) (st None)
 
-
+(* this clock only produces integer on the trigger 
+t f f f t f f f t f f f 
+[Some 0;None;None;None;None;Some 1;None;None;None;None;Some 2]
+ *)
 let countClock clickTrack =
-  recursive
-    clickTrack
-    (0,true)
-    (fun click (state,_) -> if click then (state + 1,true) else (state,false))
-    (fun tup -> match tup with
-                  (state,true) -> Some state
-                | (_,false) -> None)
+   weavePattern clickTrack (Seq.map Option.some count) (st None)
     
+let withDefault default opt =
+  match opt with
+  | Some x -> x
+  | None -> default
+
+(* this takes an optSq and a test (f), returns false unless test is true 
+   interesting in combination with testClock
+*)
+let mapOverOpt f optSq =
+  let g x = x |> Option.map f |> withDefault false in
+  optSq |> Seq.map g
+
+(* checks if equal *)
+let modPulse n optSq =
+  let f x = x mod n = 0 in
+  mapOverOpt f optSq
+
+type boolSieve =
+  BoolSieve of bool Seq.t
+
+let mkBoolSieve sq =
+  BoolSieve sq
     
+
+type sieveType =
+  | Union
+  | Difference
+  | Intersection
+  | Exclusive
+
+let rec gcd a b =
+  if b = 0 then
+    a
+  else
+    gcd b (a mod b)
+
+let divrem a b =
+  let x = a / b in
+  (x,a-(b*x))
+
+let rec repeatValue n a =
+  if n = 0 then
+    []
+  else
+    List.cons a (repeatValue (n - 1) a)
+
+let list_return a =
+  [a]
+
+let rec merge (result,lsta,lstb) =
+  match lsta with
+  | [] -> (result,[],lstb)
+  | x :: xs -> 
+    match lstb with
+    | [] -> (result,[],lsta)
+    |  y::ys -> (merge (List.append x y :: result,xs,ys))
+
+type beat =
+  | X
+  | R  
+
+let euclidRhythm a b =
+  if a > b then
+    []
+  else
+    let (xs,ys) = (repeatValue a X |> List.map list_return,repeatValue (b-a) R |> List.map list_return) in
+    let rec compute merged remain =
+      match merge ([],merged,remain) with
+      | (result,[],[]) -> result
+      | (result,[],rest) -> compute result rest
+      | (result,_,_) -> result 
+    in
+    compute xs ys |> List.flatten
+
+let printEuclid lst =
+  List.fold_right (fun x acc -> match x with
+                               | X -> "x" ^ acc
+                               | R -> "." ^ acc) lst ""
+
+let toBool x =
+  x = X
+
+let euclidTrigger a b =
+  euclidRhythm a b |> List.map toBool |> List.to_seq |> cycle
+
+(*
+[]    [[1];[1];[1];[1];[1];[1];[1]] [[0];[0];[0];[0];[0];[0];[0];[0];[0]]
+
+[[10]] [[1];...] [[0];[0];]
+
+
+[1;1;1;1;1;1;1] [0;0;0;0;0;0;0;0;0;0;0;0]
+
+[10;10;10;10;10] [0;0;0;0]
+
+[100;100;100;100] [10]
+
+[100;100;100;100] []
+
+      [10;10;10;10;10;10;10] [0;0]
+
+      [10;10;10;0] [10;10;10;0] []
+
+
+      [1;1;1;1;1] [0;0;0] 5 * 1 + 3
+
+      [10;10;10] [1;1] 3 * 2 + 2
+
+      [101;101] [10] 2 * 3 + 1
+
+      [101;101;10]
+
+    [1;1;1;1;1;1] [0;0]
+
+      [1;1;0] [1;1;0] [1;1]
+   [1;1;0;1] [1;1;0;1] []
+
+    [1;1;1;1;1] [0;0;0]
+
+      [10;10;10] [1;1]
+
+      [101;101] [10]
+
+      [101;101;10] []
+
+
+[1;1;1;1;1;1;1] [
+
+   
+5 / 8
+
+5 + 3
+3 + 2
+2 + 1
+
+*)
+
+let sieve sieveCombinator (BoolSieve a) (BoolSieve b) =
+  match sieveCombinator with
+  | Union -> zipWith (||) a b
+  | Difference -> zipWith (<>) a b
+  | Intersection -> zipWith (&&) a b
+  | Exclusive -> zipWith (fun x y -> match (x,y) with (true,false) -> true | (_,_) -> false) a b
 
 let makeBundles (trigSq : bool Seq.t ) =
   let cnt = trigSq |> countClock in
-  let ns = [1;2;3] in
+  let ns = [4;5;6;7;11;17] in
   let aSq n =
     cnt
-    |> map (fun x -> match x with Some x -> x mod n = 0 | None -> false)
+    |> modPulse n
     |> ofTrigger 1
   in
   let addOptToBundle opt bundle =
@@ -84,7 +223,9 @@ let midiFun input =
   |> MidiState.makeSeq
   |> map (Reader.run midiReader)
   |> makeBundles
-  |> serializeBundles |> map toRaw
+  |> effectSync writer
+  |> serializeBundles
+  |> map toRaw
 
 
 let () = Midi.playMidi midiFun Process.sample_rate 

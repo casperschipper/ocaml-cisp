@@ -60,15 +60,18 @@ let wrRef rf valueSq = map (fun x -> rf := x) valueSq
 
 let singleton a = [a]
 
-
-
 let rec takeLst n lst =
-  match n with
-  | 0 -> []
-  | n -> ( match lst with h :: tl -> h :: takeLst (n - 1) tl | [] -> [] )
+  if n <= 0 then
+    []
+  else 
+    match lst with
+    | h :: tl -> h :: takeLst (n - 1) tl
+    | [] -> [] 
 
 let rec listRepeat n x =
-  if n < 0 then [] else match n with 0 -> [] | n -> x :: listRepeat (n - 1) x
+  if n <= 0
+  then []
+  else n -> x :: listRepeat (n - 1) x
 
 let shuffle d =
     let nd = List.map (fun c -> (Random.bits (), c)) d in

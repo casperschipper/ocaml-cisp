@@ -1,5 +1,7 @@
 open Cisp
 open Midi
+
+let euclidTrigger = Euclid.euclidTrigger 
     
 let intervArr = [|50;53;55;57;60;62;64;67;69|]
 let copy = Array.copy intervArr
@@ -42,10 +44,20 @@ let oneWalk =
 let map = Seq.map
  
 let notes channel =
+  let shortdur =
+    st 0.4
+  in
+  let longdur =
+    st 0.8
+  in
+  let durs =
+    [shortdur |> hold (seq [3;5;7])
+    ;longdur |> hold (st 1)] |> List.to_seq |> transpose |> concat
+  in
   st makeNoteOfInts
   <*> (oneWalk)
   <*> (st 80)
-  <*> (st (seci (0.1)))
+  <*> (durs |> Seq.map seci)
   <*> (st channel)
 
 let ofTrigger channel trig =
@@ -75,138 +87,12 @@ let modPulse n optSq =
   let f x = x mod n = 0 in
   mapOverOpt f optSq
 
-type boolSieve =
-  BoolSieve of bool Seq.t
-
-let mkBoolSieve sq =
-  BoolSieve sq
-    
-
-type sieveType =
-  | Union
-  | Difference
-  | Intersection
-  | Exclusive
-
-let rec gcd a b =
-  if b = 0 then
-    a
-  else
-    gcd b (a mod b)
-
-let divrem a b =
-  let x = a / b in
-  (x,a-(b*x))
-
-let rec repeatValue n a =
-  if n = 0 then
-    []
-  else
-    List.cons a (repeatValue (n - 1) a)
-
-let list_return a =
-  [a]
-
-let rec merge (result,lsta,lstb) =
-  match lsta with
-  | [] -> (result,[],lstb)
-  | x :: xs -> 
-    match lstb with
-    | [] -> (result,[],lsta)
-    |  y::ys -> (merge (List.append x y :: result,xs,ys))
-
-type beat =
-  | X
-  | R  
-
-let euclidRhythm a b =
-  if a > b then
-    []
-  else
-    let (xs,ys) = (repeatValue a X |> List.map list_return,repeatValue (b-a) R |> List.map list_return) in
-    let rec compute merged remain =
-      match merge ([],merged,remain) with
-      | (result,[],[]) -> result
-      | (result,[],rest) -> compute result rest
-      | (result,_,_) -> result 
-    in
-    compute xs ys |> List.flatten
-
-let printEuclid lst =
-  List.fold_right (fun x acc -> match x with
-                               | X -> "x" ^ acc
-                               | R -> "." ^ acc) lst ""
-
-let toBool x =
-  x = X
-
-let euclidTrigger a b =
-  euclidRhythm a b |> List.map toBool |> List.to_seq |> cycle
-
-(*
-[]    [[1];[1];[1];[1];[1];[1];[1]] [[0];[0];[0];[0];[0];[0];[0];[0];[0]]
-
-[[10]] [[1];...] [[0];[0];]
-
-
-[1;1;1;1;1;1;1] [0;0;0;0;0;0;0;0;0;0;0;0]
-
-[10;10;10;10;10] [0;0;0;0]
-
-[100;100;100;100] [10]
-
-[100;100;100;100] []
-
-      [10;10;10;10;10;10;10] [0;0]
-
-      [10;10;10;0] [10;10;10;0] []
-
-
-      [1;1;1;1;1] [0;0;0] 5 * 1 + 3
-
-      [10;10;10] [1;1] 3 * 2 + 2
-
-      [101;101] [10] 2 * 3 + 1
-
-      [101;101;10]
-
-    [1;1;1;1;1;1] [0;0]
-
-      [1;1;0] [1;1;0] [1;1]
-   [1;1;0;1] [1;1;0;1] []
-
-    [1;1;1;1;1] [0;0;0]
-
-      [10;10;10] [1;1]
-
-      [101;101] [10]
-
-      [101;101;10] []
-
-
-[1;1;1;1;1;1;1] [
-
-   
-5 / 8
-
-5 + 3
-3 + 2
-2 + 1
-
-*)
-
-let sieve sieveCombinator (BoolSieve a) (BoolSieve b) =
-  match sieveCombinator with
-  | Union -> zipWith (||) a b
-  | Difference -> zipWith (<>) a b
-  | Intersection -> zipWith (&&) a b
-  | Exclusive -> zipWith (fun x y -> match (x,y) with (true,false) -> true | (_,_) -> false) a b
 
 let makeBundles (trigSq : bool Seq.t ) =
-  let ns = [4;5;6;7;11;17] in
-  let aSq =
-    weave
-    |> euclidTrigger
+  let ns = [(3,5);(5,8);(4,9)] in
+  let aSq (num,div) =
+    trigSq 
+    |> (fun t -> weavePattern t (euclidTrigger num div) (st false))
     |> ofTrigger 1
   in
   let addOptToBundle opt bundle =

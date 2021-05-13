@@ -42,6 +42,12 @@ let mapSnd f (a, b) = (a, f b)
 
 let flip f a b = f b a
 
+let rec gcd a b =
+  if b = 0 then
+    a
+  else
+    gcd b (a mod b)
+
 let minimum a b = if a > b then b else a
 
 let maximum a b = if a > b then a else b
@@ -71,7 +77,7 @@ let rec takeLst n lst =
 let rec listRepeat n x =
   if n <= 0
   then []
-  else n -> x :: listRepeat (n - 1) x
+  else x :: listRepeat (n - 1) x
 
 let shuffle d =
     let nd = List.map (fun c -> (Random.bits (), c)) d in
@@ -239,13 +245,14 @@ let batcher batchSizeSq sq =
 
 let rec nth n sq = if n = 0 then head sq else nth (n - 1) sq
 
-let reverse lst =
+(* does not finish on infinite sequences *)
+let reverse sq =
   let rec aux acc arg () =
     match arg () with
     | Nil -> acc
     | Cons (h, ts) -> aux (Cons (h, thunk acc)) ts ()
   in
-  aux Nil lst
+  aux Nil sq
 
 let rec filter f lst =
   match lst () with
@@ -360,15 +367,15 @@ let is_empty sq = match sq () with Nil -> true | _ -> false
 
 let has_more sq = is_empty sq |> not
 
-let foldHeads x acc =
+let foldHeads acc x =
   match x () with Nil -> acc | Cons (h, _) -> Cons (h, fun () -> acc)
 
-let headsOfStreams sq () = fold_right foldHeads sq Nil
+let headsOfStreams sq () = Seq.fold_left foldHeads Nil sq
 
-let foldTails x acc =
+let foldTail acc x =
   match x () with Nil -> acc | Cons (_, ts) -> Cons (ts, fun () -> acc)
 
-let tailsOfStreams sq () = fold_right foldTails sq Nil
+let tailsOfStreams sq () = Seq.fold_left foldTail Nil sq
 
 (* essential function from cisp! This allows you to take a bunch of streams and weave them together 1 by 1
 a = 1,2,3

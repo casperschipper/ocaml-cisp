@@ -99,21 +99,21 @@
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp1)
-  (libraries infseq lwt.unix oscStream midi cisp bigarray ctypes jack jackMidi sndfile ))
+  (libraries infseq lwt.unix oscStream midi cisp bigarray ctypes jack jackMidi euclid))
 
 (executable
   (name cisp2)
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp2)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue))
+  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
 
 (executable
   (name cisp3)
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp3)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue)
+  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid)
 )
 
 (executable
@@ -121,7 +121,7 @@
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp4)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue))
+  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
 
 
 (executable
@@ -129,26 +129,26 @@
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp5)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue))
+  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
 
 (executable
   (name cisp6)
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp6)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue))
+  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
 
 (executable
   (name cisp7)
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp7)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue))
+  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
 
   (executable
   (name cisp8)
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp8)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue))
+  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
   

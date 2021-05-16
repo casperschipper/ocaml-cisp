@@ -405,10 +405,8 @@ let list_fold_heads_with (emptyThing: 'a) (f: 'b -> 'a -> 'a) (lst: 'b Seq.t lis
   in
   aux lst
 
-              
-
-     
-            
+let sq_lst_transcat lstOfSq =
+  list_fold_heads_with Seq.empty (fun x y -> fun () -> Seq.Cons (x,y)) lstOfSq |> concat
 
 let transcat sq = sq |> transpose |> concat
 

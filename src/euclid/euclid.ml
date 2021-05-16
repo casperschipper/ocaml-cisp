@@ -3,7 +3,7 @@ open Cisp
 type boolSieve =
   BoolSieve of bool Seq.t
 
-let mkBoolSieve sq =
+let boolSieve sq =
   BoolSieve sq
     
 type sieveType =
@@ -62,9 +62,21 @@ let toBool x =
 let euclidTrigger a b =
   euclidRhythm a b |> List.map toBool |> List.to_seq |> cycle
 
+let toBinary bt =
+  match bt with
+  | X -> 1
+  | R -> 0
+
+let euclid01 a b =
+  euclidRhythm a b |> List.map toBinary
+
+let encode sqn =
+  let f n () = Seq.Cons(1,repeat n 0) in
+  sqn |> Infseq.map f |> Infseq.concatSq |> Infseq.map
 
 
-(*
+
+(* 
 []    [[1];[1];[1];[1];[1];[1];[1]] [[0];[0];[0];[0];[0];[0];[0];[0];[0]]
 
 [[10]] [[1];...] [[0];[0];]

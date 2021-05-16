@@ -1,3 +1,3 @@
 (library
  (name euclid)
- (libraries cisp))
+ (libraries cisp infseq))

@@ -155,6 +155,35 @@ let fromBinary b =
   in
   aux b 1
 
+let toBinary x =
+  let divMod2 x = (* use bitshift *)
+    let q = x lsr 1 in
+    (q,(x - (q lsl 1)))
+  in
+  let rec aux n =
+    match n with
+    | 0 -> []
+    | 1 -> [1]
+    | x -> divMod2 x |> (fun (q,r) -> r :: aux q)
+  in
+  aux x |> List.rev
+
+let toBinary0 x =
+  let divMod2 x = (* use bitshift *)
+    let q = x lsr 1 in
+    (q,(x - (q lsl 1)))
+  in
+  let rec aux n =
+    match n with
+    | 0 -> [0]
+    | 1 -> [1]
+    | x -> divMod2 x |> (fun (q,r) -> r :: aux q)
+  in
+  aux x |> List.rev
+  
+           
+      
+
 let rec append a b () =
   match a () with Nil -> b () | Cons (h, ls) -> Cons (h, append ls b)
 
@@ -461,9 +490,30 @@ let countTill n =
   aux 0 n
 
 let rec zipList a b =
-  match a with
-  | [] -> []
-  | x :: xs -> ( match b with [] -> [] | y :: ys -> (x, y) :: zipList xs ys )
+  match (a,b) with
+  | (x::xs,y::ys) ->
+       (x,y) :: zipList xs ys
+  | (_,_) -> []
+           
+let rec zipListWith f a b =
+  match (a,b) with
+  | (x::xs,y::ys) ->
+     f x y :: zipListWith f xs ys
+  | (_,_) -> []
+
+let joinLst a lst =
+  let insertA lst =
+    a :: lst
+  in
+  lst |> List.rev |> List.map insertA |> List.rev |> List.concat
+
+let joinB lst bridge =
+  let insertB lst =
+    bridge @ lst
+  in
+  lst |> List.rev |> List.map insertB |> List.rev |> List.concat
+           
+  
 
 let unzip sq = (map fst sq, map snd sq)
 

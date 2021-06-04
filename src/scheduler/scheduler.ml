@@ -1,4 +1,18 @@
-(* should move this into its own module *)
+
+(* schedular allows to schedule parallel streams of any type.
+The unit is a timedsection, which has a timedsection that defines its content and a starting sample.
+
+Schedular's schedule to an internal sample clock.
+
+To play back any type, one has to provide the monoid functions:
+
+- empty 
+- merge two into one stream
+
+These have been provided for float streams and midi event streams.
+
+ *)
+ 
 
 (* section has a start point and a sequence of sounds *)
 
@@ -61,6 +75,12 @@ let mappend_midi (bundle, tails) (PlayingSection midiEvtSq) =
   | Seq.Cons (midiEvt, tail) ->
      (Midi.addToBundle bundle midiEvt, PlayingSection { seq= tail } :: tails)
 
+let merge mergefunc (merged, tails) (PlayingSection sq) =
+  match sq.seq () with
+  | Seq.Nil -> (merged, tails)
+  | Seq.Cons (head, tail) ->
+     (mergefunc merged head, PlayingSection { seq= tail} :: tails)
+
 let updateScheduler (SectionScheduler scheduler) merge empty =
   let newCurrentSecs, future =
     scheduler.playingScore
@@ -69,7 +89,6 @@ let updateScheduler (SectionScheduler scheduler) merge empty =
            List.map toPlay playableEvts)
   in
   let currentSects = newCurrentSecs @ scheduler.currentSecs in
-  
   let out, newPlayingSecs = List.fold_left merge (empty, []) currentSects in
   match (future, newPlayingSecs) with
   (* to deal with reset, if there is no future, then we reset the score *)

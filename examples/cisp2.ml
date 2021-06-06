@@ -1,61 +1,89 @@
 open Cisp
 open Midi
-let euclidTrigger = Euclid.euclidTrigger
 
- 
-let map = Seq.map 
+let map = Seq.map
 
-(* extract properties from input *)
 let midiReader =
   let ( let* ) x f = Reader.bind f x in
   let* trigger = MidiState.boolFromNote in
   Reader.return trigger
 
-let lookup x =
-  match x with 0 -> (-1) | 1 -> 1 | _ -> 0
+let from01 x =
+  match x with
+    1 -> true | _ -> false
+  
+let rhythm () =
+  let ps = lift rv 1 15 |> take 3 in
+  let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
+  seq mapped |> map from01
     
+  
+let onePitchLoop () =
+  let a = rvi 36 48 in
+  let b = rvi 36 48 in
+  let ps = lift rv 1 15 |> take 3 in
+  let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
+  seq mapped |> index [|a;b|] 
+          
 
-let notes channel nt veloArr =
-  let arrMax = Array.length veloArr in
-  let velo =
-    Euclid.euclid01 5 8 |> seq |> hold (seq [2;3])  |> map lookup |> walki 0 |> map (wrap 0 arrMax) |> (index veloArr) 
-  in
-  let pitchArray = [0;12;0;12;0;7;2;0;2;0] in
-  let pitch =
-    seq pitchArray 
-    |> hold (Euclid.euclid01 2 3 |> seq |> map (fun x -> match x with 0 -> 2 | _ -> 5 ))
-  in
-  st makeNoteOfInts
-  <*> (st nt +~ pitch)
-  <*> velo
-  <*> (0.1 |> seci |> st)
+               
+  
+let notes channel =
+  st makeNoteOfInts 
+  <*> onePitchLoop ()
+  <*> (st 80)
+  <*> (seci 0.1 |> st)
   <*> (st channel)
 
-let ofTrigger channel nt arr trig =
-  weavePattern trig (map Option.some (notes channel nt arr)) (st None)
+let ofTrigger trig channel =
+  let s = syncOverClock (rhythm ()) (notes channel) in
+  weavePattern trig s (st None)
 
-let makeBundles (trigSq : bool Seq.t ) =
-  let ns = [(10,16,4,36, [|100;80;120;60|])] in
-  let aSq (num,div,chan,nt,arr) =
-    trigSq 
-    |> (fun t -> weavePattern t (euclidTrigger num div) (st false))
-    |> ofTrigger chan nt arr
-  in
+let mkBundles t =
   let addOptToBundle opt bundle =
     match opt with
     | Some evt -> addToBundle bundle evt
     | None -> bundle
   in
-  ns |> List.map aSq |> list_fold_heads_with silenceBundle addOptToBundle
+  let chs = rangei 1 10 |> List.of_seq in
+  chs |> List.map (fun channel -> ofTrigger t channel) |>  list_fold_heads_with silenceBundle addOptToBundle
   
 
+  
 let midiFun input =
-  input 
+  input
   |> MidiState.makeSeq
   |> map (Reader.run midiReader)
-  |> makeBundles
+  |> mkBundles
   |> serializeBundles
   |> map toRaw
+       
+  
+let () =
+  let f () =
+    Midi.playMidi midiFun Process.sample_rate
+    ; while true
+      do
+        Unix.sleep 60
+      done
+  in
+  let _ = Thread.create f () in
+  let _ = Sys.command "jack_disconnect system_midi:capture_2 ocaml_midi:ocaml_midi_in" in
+  let _ = Sys.command "jack_disconnect ocaml_midi:ocaml_midi_out system_midi:playback_1" in
+  let _ = Sys.command "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_5" in
+  let _ = Sys.command "jack_connect system_midi:capture_1 ocaml_midi:ocaml_midi_in" in
+  while true
+  do
+    Unix.sleep 60
+  done
+
+   
+
+    
+    
 
 
-let () = Midi.playMidi midiFun Process.sample_rate 
+  
+  
+            
+ 

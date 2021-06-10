@@ -75,6 +75,26 @@ let playSeqs in_channels sample_rate seq_lst =
     (out_channels, in_channels)
     (fun sr -> sample_rate := float_of_int sr)
 
+type jackAlias = JackAlias of string * string
+
+let getAliases =
+  let jack_channel = Unix.open_process_in "jack_lsp -A" in
+  let aliass = ref [] in
+  while true; do
+    try 
+      let line1 = input_line jack_channel in (* read line, discard \n *)
+      let line2 = input_line jack_channel in
+      aliass := JackAlias (line1,line2) :: !aliass
+    with
+    | End_of_file -> close_in jack_channel              
+    | e -> close_in_noerr jack_channel;
+           raise e
+  done
+  ; !aliass
+    
+     
+  
+
 (*
 let play_cisp sample_rate cisp_lst =
   let streams = Array.of_list proc_lst in

@@ -15,3 +15,7 @@
 * pallets, things that work well with the other things in the set
 * a typeface are gliffs that work well together.
 * perceptual, often non-linear
+
+# concurrent OSC handling
+
+https://ocaml.github.io/ocamlunix/threads.html

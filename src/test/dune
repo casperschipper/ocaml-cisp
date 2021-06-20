@@ -2,3 +2,7 @@
 (name test)
 (libraries midi cisp ounit2)
 )
+
+(test
+  (name test_understand)
+  (libraries oUnit lwt lwt.unix))

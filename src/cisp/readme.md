@@ -19,3 +19,12 @@
 # concurrent OSC handling
 
 https://ocaml.github.io/ocamlunix/threads.html
+
+## constants for doing conversion of clocks
+
+const int32 kSECONDS_FROM_1900_to_1970 = (int32)2208988800UL; /* 17 leap years */
+const double kOSCtoSecs = 2.328306436538696e-10;
+
+const double kSecondsToOSCunits = 4294967296.; // pow(2,32)
+const double kMicrosToOSCunits = 4294.967296; // pow(2,32)/1e6
+const double kNanosToOSCunits = 4.294967296; // pow(2,32)/1e9

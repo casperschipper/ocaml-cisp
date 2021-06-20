@@ -20,6 +20,8 @@ type 'a timedSection =
   | Section of { startSample: int
                ; seq: 'a Seq.t } (* finite, has an end *)
 
+fromTimeStamp 
+
 
 let mkSectionOfInf start duration (sq : 'a Infseq.t) =
   let truncated = Infseq.take duration sq in

@@ -75,6 +75,42 @@ let playSeqs in_channels sample_rate seq_lst =
     (out_channels, in_channels)
     (fun sr -> sample_rate := float_of_int sr)
 
+let playSeqs in_channels sample_rate seq_lst =
+  let streams = Array.of_list seq_lst in
+  let out_channels = Array.length streams in
+  let ar_out =
+    Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout
+      (1024 * out_channels)
+  in
+  let ar_in =
+    Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout
+      (1024 * in_channels)
+  in
+  open_stream ar_out ar_in
+    (fun nframes ->
+      Process.input_channels := in_channels ; (* just the number of channels *)
+      for i = 0 to nframes - 1 do
+        for k = 0 to in_channels - 1 do
+          (*Process.input_array.(k) <- float_of_int i /. float_of_int nframes ;*)
+          Process.input_array.(k) <- ar_in.{(i * in_channels) + k}
+        done;
+        Array.iteri
+          (fun c mySeq ->
+            let buf_i = (i * out_channels) + c in
+            let rec zeros () = Cons (0.0, zeros) in
+            let (head, tail) =
+              match mySeq () with
+                  | Cons (h,tl) -> (h, tl)
+                  | Nil -> (0.0,zeros) (* zero forever *)
+            in
+            streams.(c) <- tail;
+            ar_out.{buf_i} <- head)
+          (* that's were I plug in *)
+          streams
+      done)
+    (out_channels, in_channels)
+    (fun sr -> sample_rate := float_of_int sr)
+
 type jackAlias = JackAlias of string * string
 
 let getAliases =

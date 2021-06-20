@@ -2,6 +2,13 @@ open OUnit2
 open Midi
 open Cisp
 
+(* 
+let rec foo () =
+let* fish = Lwt_unix.sleep 3.0 in
+let* boo = Lwt_io.printl "tick" in
+foo ();;
+ *)
+
 (*open Midi*)
 (* 
 let empty_list = []

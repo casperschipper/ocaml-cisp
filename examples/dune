@@ -158,5 +158,5 @@
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cispOsc)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
+  (libraries threads infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid osc_unix))
   

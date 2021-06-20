@@ -111,6 +111,7 @@ let playSeqs in_channels sample_rate seq_lst =
     (out_channels, in_channels)
     (fun sr -> sample_rate := float_of_int sr)
 
+(*
 type jackAlias = JackAlias of string * string
 
 let getAliases =
@@ -127,7 +128,7 @@ let getAliases =
            raise e
   done
   ; !aliass
-    
+ *)
      
   
 

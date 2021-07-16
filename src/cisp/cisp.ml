@@ -950,6 +950,8 @@ let lift f a b = f (st a) (st b)
 
 let pair a b = (a, b)
 
+let triple a b c = (a,b,c)
+
 let lineSegment curr target n () =
   let rate = (target -. curr) /. n in
   let reachedEnd =
@@ -1557,6 +1559,8 @@ let pulseDivider divider sq =
 
 let maskTriggerList triggerSq lst = zipWith ( && ) (seq lst) triggerSq
 
+(* this works with booleans *)
+(* because we are using zipwith, this will consume even if trigger is false *)
 let maskTrigger trigger mask = zipWith ( && ) mask trigger
 
 let metre nSq = nSq |> map (fun n () -> Cons (true, repeat n false)) |> concat

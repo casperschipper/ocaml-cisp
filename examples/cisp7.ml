@@ -1,115 +1,86 @@
 open Cisp
 open Midi
-let euclidTrigger = Euclid.euclidTrigger 
-    
-let intervArr = [|50;53;55;57;60;62;64;67;69|]
-let copy = Array.copy intervArr
 
-let maxidx = Array.length intervArr 
-
-let writer =
-  let idx = rv (st 0) (st maxidx) in
-  let f old original =
-    let nw = old + (pickOne [|-7;7|]) in
-    pickOne [|nw;original|] 
-  in
-  idx |> Seq.map (fun i -> intervArr.(i) <- f intervArr.(i) copy.(i)) |> syncEffectClock (interval (st 1)) 
-  
+let map = Seq.map
 
 let midiReader =
   let ( let* ) x f = Reader.bind f x in
   let* trigger = MidiState.boolFromNote in
   Reader.return trigger
 
-let simpleWalk = 
-  let ( +~- ) a b = Seq.map ( ( + ) a ) b in 
-  let loopy = seq [0;3;6;9] |> Seq.map (fun x -> x +~- (seq [0;1;0;2]))  in
-  let holdn = seq (shuffle [11;7;5]) in
-  let offset = walki 2 (ch [|(-1);1|]) |> Seq.map (wrap 0 maxidx) |> hold holdn in
-  let zipper l off = l +~ (st off |> take 3) in
-  zipWith zipper loopy offset |> concat 
+let from01 x =
+  match x with
+    1 -> true | _ -> false
+  
+let rhythm () =
+  ch [|true;false|] |> loop (st 4) (st 20)
 
+let loop () =
+  walki 40 (ch [|-7;2;0;7|]) |> take 4
 
-let oneWalk = 
-  let idx = simpleWalk in
-  index intervArr idx
+let onePitchLoop () =
+  let l = loop () in
+  seq (List.of_seq l)
+          
 
-
-
-
-(*type walkmind direction is state *)
-(* a walk that updates boundaries only when hit *)
-
-let map = Seq.map
- 
-let notes channel =
-  let shortdur =
-    st 0.1
-  in
-  let longdur =
-    st 0.3
-  in
-  let durs =
-    [shortdur |> hold (seq [3;5;7])
-    ;longdur |> hold (st 1)] |> List.to_seq |> transpose |> concat
-  in
-  st makeNoteOfInts
-  <*> (oneWalk)
-  <*> (seq [100;90;50;80;50;75;40])
-  <*> (durs |> Seq.map seci)
+               
+  
+let notes channel () =
+  st makeNoteOfInts 
+  <*> (onePitchLoop ())
+  <*> (st 80)
+  <*> (seci 0.2 |> st)
   <*> (st channel)
 
-let ofTrigger channel trig =
-  weavePattern trig (map Option.some (notes channel)) (st None)
+let ofTrigger trig channel =
+  let s = syncOverClock (rhythm ()) (notes channel ()) in
+  weavePattern trig s (st None)
 
-(* this clock only produces integer on the trigger 
-t f f f t f f f t f f f 
-[Some 0;None;None;None;None;Some 1;None;None;None;None;Some 2]
- *)
-let countClock clickTrack =
-   weavePattern clickTrack (Seq.map Option.some count) (st None)
-    
-let withDefault default opt =
-  match opt with
-  | Some x -> x
-  | None -> default
-
-(* this takes an optSq and a test (f), returns false unless test is true 
-   interesting in combination with testClock
-*)
-let mapOverOpt f optSq =
-  let g x = x |> Option.map f |> withDefault false in
-  optSq |> Seq.map g
-
-(* checks if equal *)
-let modPulse n optSq =
-  let f x = x mod n = 0 in
-  mapOverOpt f optSq
-
-
-let makeBundles (trigSq : bool Seq.t ) =
-  let ns = [(7,12);(9,16)] in
-  let aSq (num,div) =
-    trigSq 
-    |> (fun t -> weavePattern t (euclidTrigger num div) (st false))
-    |> ofTrigger 1
-  in
+let mkBundles t =
   let addOptToBundle opt bundle =
     match opt with
     | Some evt -> addToBundle bundle evt
     | None -> bundle
   in
-  ns |> List.map aSq |> list_fold_heads_with silenceBundle addOptToBundle
+  let chs = rangei 1 3 |> List.of_seq in
+  chs |> List.map (fun channel -> ofTrigger t channel ) |>  list_fold_heads_with silenceBundle addOptToBundle
   
 
+  
 let midiFun input =
   input
   |> MidiState.makeSeq
   |> map (Reader.run midiReader)
-  |> makeBundles
-  |> effectSync writer
+  |> mkBundles
   |> serializeBundles
   |> map toRaw
+       
+  
+let () =
+  let f () =
+    Midi.playMidi midiFun Process.sample_rate
+    ; while true
+      do
+        Unix.sleep 60
+      done
+  in
+  let _ = Thread.create f () in
+  let _ = Sys.command "jack_disconnect system_midi:capture_2 ocaml_midi:ocaml_midi_in" in
+  let _ = Sys.command "jack_disconnect ocaml_midi:ocaml_midi_out system_midi:playback_1" in
+  let _ = Sys.command "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_5" in
+  let _ = Sys.command "jack_connect system_midi:capture_1 ocaml_midi:ocaml_midi_in" in
+  while true
+  do
+    Unix.sleep 60
+  done
+
+   
+
+    
+    
 
 
-let () = Midi.playMidi midiFun Process.sample_rate 
+  
+  
+            
+ 

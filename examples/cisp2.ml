@@ -19,8 +19,8 @@ let rhythm () =
     
   
 let onePitchLoop () =
-  let a = rvi 36 48 in
-  let b = rvi 36 48 in
+  let a = choice [|0;2;4;5;7;9;11;12|] |>   in
+  let b = choice [|0;2;4;5;7;9;11;12|] |> in
   let ps = lift rv 1 15 |> take 3 in
   let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
   seq mapped |> index [|a;b|] 
@@ -45,7 +45,7 @@ let mkBundles t =
     | Some evt -> addToBundle bundle evt
     | None -> bundle
   in
-  let chs = rangei 1 10 |> List.of_seq in
+  let chs = rangei 1 3 |> List.of_seq in
   chs |> List.map (fun channel -> ofTrigger t channel) |>  list_fold_heads_with silenceBundle addOptToBundle
   
 

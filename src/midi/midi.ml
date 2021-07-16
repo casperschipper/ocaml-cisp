@@ -51,6 +51,8 @@ type pitch = Pitch of int
 
 type midiChannel = MidiCh of int
 
+let isChannel (MidiCh a) (MidiCh b) = a == b 
+
 type controller = MidiCtrl of int
 
 type deltaT = Samps of int
@@ -432,6 +434,11 @@ module MidiState = struct
     Reader.ask ()
     >>= fun env -> triggerFromCurrent duration env |> Reader.return
 
+  let getDepressedR channel =
+    let open Reader.Ops in
+    Reader.ask ()
+    >>= fun env -> getDepressedKeysChannel channel env |> Reader.return
+
   let triggerOptionR value =
     let open Reader.Ops in
     Reader.ask ()
@@ -458,6 +465,16 @@ module MidiState = struct
   let getPitchR =
     let open Reader.Ops in
     Reader.ask () >>= fun state -> Reader.return state.currentPitch
+
+  let triggerFromChannelR channel =
+    let open Reader.Ops in
+    Reader.ask () >>= (fun state ->
+    let bool =
+      match state.currentNote with
+      | Some (c,_,_) -> isChannel c channel
+      | _ -> false
+    in
+    Reader.return bool)
 
   let getCurrentOfChannel channel state =
     let curr = state.currentNote in
@@ -1098,6 +1115,9 @@ let midiInputTestFun input =
   |> withVelo (st 100)
   |> serialize |> map toRaw
  *)
+
+let overTrigger events trigger =
+  weavePattern trigger events (st SilenceEvent)
 
 let trigger event midiIn =
   let t = map isNoteOn midiIn in

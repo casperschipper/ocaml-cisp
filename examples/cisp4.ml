@@ -4,40 +4,36 @@ open Midi
 let map = Seq.map
 
 let midiReader =
-  let ( let* ) x f = Reader.bind f x in
-  let* trigger = MidiState.boolFromNote in
-  Reader.return trigger
+  MidiState.boolFromNote
 
-let from01 x =
-  match x with
-    1 -> true | _ -> false
-  
-let rhythm () =
-  let ps = lift rv 1 15 |> take 3 in
-  let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
-  seq mapped |> map from01
+(*
+    .
+    1 2 3 4
+
+    1 3 4
+      .
     
-  
-let onePitchLoop () =
-  let a = rvi 36 52 in
-  let b = rvi 36 52 in
-  let ps = lift rv 1 15 |> take 3 in
-  let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
-  seq mapped |> index [|a;b|]
+    1 4
+    .
+    1
+    .
+    1
+    .
+    1 2 
+      .
+    1 3
+    .
+    1 4
+      .
+ *)
 
-let velo () =
-  let a = 50 in
-  let b = 80 in
-  let ps = lift rv 1 15 |> take 3 in
-  let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
-  seq mapped |> index [|a;b|] 
-          
+
 let notes channel =
   st makeNoteOfInts 
-  <*> onePitchLoop ()
-  <*> velo ()
+  <*> (st 60)
+  <*> (st 60)
   <*> (seci 0.1 |> st)
-  <*> (st channel)
+  <*> (st 0)
 
 (* syncOverClock *)
 let ofTrigger trig channel =

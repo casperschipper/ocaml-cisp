@@ -11,11 +11,31 @@ let rec handleMess rf () =
 
 let osc_in = ref false
 
+type event =
+  | NoteOn { offset : int
+           ; duration : int
+           ; speed }
+  | NoteOff 
+
+let noteOn m =
+  match m.arguments with
+    
+  
+
+let message m =
+  match m.address with
+  "/noteOn" -> 
+
+let handlePacket packet =
+  match packet with
+  | Message msg -> message msg
+  | Bundle bundle ->
+
 let oscReceiver =
   let open Osc_unix.Udp in
   let open Result in
   let localhost = Unix.inet_addr_of_string "127.0.0.1" in
-  let port = 58000 in
+  let port = 4568 in
   let addr = Unix.ADDR_INET (localhost, port) in
   let buffer_length = 1024 in
   let server = Server.create addr buffer_length in
@@ -23,7 +43,7 @@ let oscReceiver =
     let rec loop () =
       let result = Server.recv server in
       match result with
-      | Ok (_,_) -> osc_in := true; loop ()
+      | Ok (packet,socketAddr) -> osc_in := true; loop ()
       | Error `Missing_typetag_string ->
          failwith "Missing typetag string"
       | Error (`Unsupported_typetag tag) ->

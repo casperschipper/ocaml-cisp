@@ -32,9 +32,6 @@ let velo () =
   let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
   seq mapped |> index [|a;b|] 
           
-
-               
-  
 let notes channel =
   st makeNoteOfInts 
   <*> onePitchLoop ()
@@ -42,6 +39,7 @@ let notes channel =
   <*> (seci 0.1 |> st)
   <*> (st channel)
 
+(* syncOverClock *)
 let ofTrigger trig channel =
   let p = pickOne [|2;3|] in
   let s = syncOverClock (rhythm () |> pulseDivider (st p)) (notes channel) in

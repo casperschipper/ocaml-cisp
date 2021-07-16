@@ -20,8 +20,26 @@ module Reader = struct
 
   let local f m = Reader (fun env -> run m (f env))
 
+  let apply fp ap =
+    fp >>= (fun f ->
+      ap >>= (fun a ->
+              return (f a)))
+
+  let ( <*> ) fp ap =
+    apply fp ap
+
+  let map2 f ap bp =
+    apply (map f ap) bp
+
+  let map3 f ap bp cp =
+    map f ap <*> bp <*> cp
+
+  let map4 f ap bp cp dp =
+    map f ap <*> bp <*> cp <*> dp 
+
   module Ops = struct
     let ( >>= ) m f = bind f m
+    let ( <*> ) fapp bapp = apply fapp bapp 
   end
 end
 

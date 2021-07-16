@@ -5,6 +5,8 @@ open Reader.Ops
 
 (* simple mod of controller 1 onto pitch *)
 
+(* raw midi seq.t -> parsed midi state seq.t *)
+
 let sr = ref 44100.0
 
 let pitchControl =

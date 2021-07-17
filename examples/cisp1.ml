@@ -4,16 +4,9 @@ open Midi
 let map = Seq.map
 
 let midiReader =
-  MidiState.boolFromChannelR (mkChannelClip 1) 
-    (* let chan1 = mkChannelClip 1 in *)
-  (* 
-  let chan2 = mkChannelClip 2 in
-  let depreader = (MidiState.getDepressedR chan2 |> Reader.map (List.map fst)) in
-  Reader.map2
-    pair
-    (MidiState.boolFromNote)
-    depreader*)
-  
+  let boolR = MidiState.boolFromChannelR (mkChannelClip 1) in
+  let depReaderR = (MidiState.getDepressedR (mkChannelClip 2) |> Reader.map (List.map fst)) in
+  Reader.map2 pair boolR depReaderR
   
 let currentChord = ref [60;64;67]
 
@@ -33,21 +26,32 @@ let arpeggiator notesListSq =
   recursive1 notesListSq { ix = 0; value = None } f eval
  
 let notes =
+  let chords =
+    ofRef currentChord
+  in
   st makeNoteOfInts 
-  <*> (st 60) 
+  <*> (arpeggiator chords |> map (Option.value ~default:60))
   <*> (st 60) 
   <*> (seci 0.1 |> st)
   <*> (st 0)
 
 let ofTrigger trigger =
-  weavePattern trigger notes (st SilenceEvent)
+  let handleInput (trig, chord) =
+    currentChord := chord
+    ;trig
+  in
+  weavePattern (map handleInput trigger) notes (st SilenceEvent)
 
+let printChord =
+  print_int (!currentChord |> List.length);
+  print_string "--chord\n"
+  
 
 let midiFun input =
   input 
   |> MidiState.makeSeq
   |> map (Reader.run midiReader)
-  |> ofTrigger 
+  |> (fun trigger -> effectSync (st printChord) (ofTrigger trigger))
   |> serialize 
   |> map toRaw 
   

@@ -355,6 +355,8 @@ module MidiState = struct
 
   let keyToChanCtrl key = (key / 128, key mod 128)
 
+  let justTheKey mapKey = (mapKey mod 128)
+
   let empty =
     { depressedNotes= KeyPitchMap.empty
     ; controlValues= ControllerMap.empty
@@ -400,10 +402,10 @@ module MidiState = struct
     KeyPitchMap.filter p keyPitchMap
 
   let getDepressedKeysAnyChannel state =
-    KeyPitchMap.bindings state.depressedNotes
+    KeyPitchMap.bindings state.depressedNotes |> List.map (mapFst justTheKey)
 
   let getDepressedKeysChannel channel state =
-    state.depressedNotes |> filterChannel channel |> KeyPitchMap.bindings
+    state.depressedNotes |> filterChannel channel |> KeyPitchMap.bindings |> List.map (mapFst justTheKey)
 
   let getFirstNote channel state =
     let lst = getDepressedKeysChannel channel state in

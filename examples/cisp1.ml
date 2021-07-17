@@ -4,15 +4,15 @@ open Midi
 let map = Seq.map
 
 let midiReader =
-  MidiState.triggerFromChannelR (mkChannelClip 1) 
-(*
-
-  let chan1 = mkChannelClip 1 in
-  let chan2 = mkChannelClip 2 in 
+  MidiState.boolFromNote 
+    (* let chan1 = mkChannelClip 1 in *)
+  (* 
+  let chan2 = mkChannelClip 2 in
+  let depreader = (MidiState.getDepressedR chan2 |> Reader.map (List.map fst)) in
   Reader.map2
     pair
-    (MidiState.triggerFromChannelR chan1)
-    (MidiState.getDepressedR chan2 |> Reader.map (List.map fst)) *)
+    (MidiState.boolFromNote)
+    depreader*)
   
   
 let currentChord = ref [60;64;67]
@@ -25,43 +25,35 @@ let arpeggiator notesListSq =
   let f lst { ix; _ } =
     match List.nth_opt lst ix  with
     | Some v -> { value = Some v ; ix = ix + 1 }
-    | None -> { value = List.nth_opt lst 0 ; ix = 0 }
+    | None -> { value = List.nth_opt lst 0 ; ix = 1 }
   in
   let eval { value; _ }  =
     value
   in
-  recursive notesListSq { ix = 0; value = None } f eval
+  recursive1 notesListSq { ix = 0; value = None } f eval
  
 let notes =
   st makeNoteOfInts 
-  <*> (st 60) (* ((ofRef currentChord |> arpeggiator) |> map (Option.value ~default:60)) *)
+  <*> (st 60) 
   <*> (st 60) 
   <*> (seci 0.1 |> st)
   <*> (st 0)
 
-let ofTrigger parsedMidi =
-  (* let trigger =
-    Seq.map (fun (trigger,_) ->    
-    trigger) parsedMidi
-  in*)
-  weavePattern parsedMidi (st c4) (st SilenceEvent)
+let ofTrigger trigger =
+  weavePattern trigger notes (st SilenceEvent)
 
 
-
-
-
-  
 let midiFun input =
-  input
+  input 
   |> MidiState.makeSeq
   |> map (Reader.run midiReader)
   |> ofTrigger 
-  |> serialize
-  |> map toRaw
+  |> serialize 
+  |> map toRaw 
   
 let () =
   let f () =
-    Midi.playMidi midiFun Process.sample_rate
+    Midi.playMidi midiFun Process.sample_rate 
     ; while true
       do
         Unix.sleep 60

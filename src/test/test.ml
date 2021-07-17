@@ -91,4 +91,8 @@ let suite =
   "test delNote"
   >::: ["test_arp" >:: test_arp; "test_mutate" >:: test_mutate_effect]
 
+
+let rawMidi =
+  
+
 let () = run_test_tt_main suite

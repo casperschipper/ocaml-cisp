@@ -4,7 +4,7 @@ open Midi
 let map = Seq.map
 
 let midiReader =
-  MidiState.boolFromNote 
+  MidiState.boolFromChannelR (mkChannelClip 1) 
     (* let chan1 = mkChannelClip 1 in *)
   (* 
   let chan2 = mkChannelClip 2 in

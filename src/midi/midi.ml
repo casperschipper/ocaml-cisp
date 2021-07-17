@@ -466,7 +466,7 @@ module MidiState = struct
     let open Reader.Ops in
     Reader.ask () >>= fun state -> Reader.return state.currentPitch
 
-  let triggerFromChannelR channel =
+  let boolFromChannelR channel =
     let open Reader.Ops in
     Reader.ask () >>= (fun state ->
     let bool =

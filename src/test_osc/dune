@@ -1,0 +1,3 @@
+(test
+  (name osc_understand)
+  (libraries ounit2 lwt lwt.unix osc_lwt osc cisp))

@@ -1,0 +1,5 @@
+(library
+  (name osc_unix)
+  (wrapped false)
+  (modules osc_unix)
+  (libraries osc unix))

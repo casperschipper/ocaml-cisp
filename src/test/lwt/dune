@@ -1,0 +1,4 @@
+(executable
+(name lwt_test)
+(libraries lwt.unix)
+)

@@ -1,6 +1,30 @@
 open Cisp
 open Midi
 
+(*
+control
+
+ <pre><code>
+----------begin_max5_patcher----------
+593.3ocuWtsiaBCDF9Z3ovhqSW4CbHouJUUqLAqTuELQFy1TsZe2q8XftsgP
+HD1bCVdvw+9yy3eSdKLHJu9jnIB8Uz2PAAuEFD.gbAB55GDUwOsuj2.CKRI9
+Uc9KQa7uxHNY7gqMh5VCJGQ6e2QtY+OjpCOqE6MdIXwrmvaPzcacMo6fNzmv
+nu28aTsURUov.Zw5BJK.Irx9ExvraGoUu9ghcAeOLz8XyLI4mMkxBgteB8yl
+42GE90ZjTYh13aFVeiwDEXhPhcMLVpqIg8AnppKf4jLFjzygb2e2A07JgQne
+Vn34kvjfGke5B3uRzzvOHNKURnaQoXDAiu3VyjaHz3LHuRnyIIOB+YimiIKf
+wKTs1HJsKWjExKhXNWcvk96amDYRLj7IY.4o3attNdbjYK.YS8gCkhIqpmFE
+e4LCHhN7bbTHmiB81qdWTlssJehCuCotIqTIP9JCfL4JYsQPc6i4f5EJhqjE
+R6LOgcKIIA7jHfca2wxaAvz0ys8tKKA2D1tEVUl7XpJunmZb7c4o1YvrbOU1
+mtmpcSUWiHzjosTmi2CFJaSY2LkjqSILWQkR0++YOv5wE+eQuotUuumftamQ
+jgUTgnwHUbirV8gw39LE2fFc28VDBOGgv2oPamiPq.PYyPmzUfmjYxy8pS7L
+pDxVIctFOrUPG1CJ+PmgNwqfNjYny4me7FD7iGeUna5FLHg0E7kZsq61MPWo
+x2EttIRKdU1OdhODWac3LV6sVMrthNk5+PO3uDnUsxN2IKcVMAKVk81olibO
+HfSb36g+ATfzf3I
+-----------end_max5_patcher-----------
+</code></pre>
+ 
+*)
+
 let map = Seq.map
 
 let midiReader =
@@ -36,15 +60,17 @@ let notes =
   <*> (st 0)
 
 let ofTrigger trigger =
-  let handleInput (trig, chord) =
-    currentChord := chord
+  let handleInput (trig,chrd) =
+    currentChord := chrd
     ;trig
   in
   weavePattern (map handleInput trigger) notes (st SilenceEvent)
 
 let printChord =
   print_int (!currentChord |> List.length);
-  print_string "--chord\n"
+  print_string "--chord\n";
+  flush stdout
+  
   
 
 let midiFun input =
@@ -66,8 +92,8 @@ let () =
   let _ = Thread.create f () in
   let _ = Sys.command "jack_disconnect system_midi:capture_2 ocaml_midi:ocaml_midi_in" in
   let _ = Sys.command "jack_disconnect ocaml_midi:ocaml_midi_out system_midi:playback_1" in
-  let _ = Sys.command "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_5" in
-  let _ = Sys.command "jack_connect system_midi:capture_1 ocaml_midi:ocaml_midi_in" in
+  let _ = Sys.command "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1" in
+  let _ = Sys.command "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in" in
   while true
   do
     Unix.sleep 60

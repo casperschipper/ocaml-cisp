@@ -15,8 +15,10 @@ module Reader = struct
   let return x = Reader (fun _ -> x)
 
   let ask () = Reader (fun env -> env)
+  (* return the complete reader env *)
 
   let asks f () = map f (ask ())
+  (*  can be used to return something within the reader environment , like a record field *)
 
   let local f m = Reader (fun env -> run m (f env))
 

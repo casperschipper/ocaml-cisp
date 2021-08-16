@@ -337,7 +337,7 @@ let hasHigherPitch msga msgb =
 let isNoteOn midiMsg =
   match midiMsg with NoteOn (_, _, _) -> true | _ -> false
 
-module ControllerMap = Map.Make (Int)
+module ControllerMap = Map.Make (Int) 
 module KeyPitchMap = Map.Make (Int)
 
 module MidiState = struct
@@ -347,17 +347,26 @@ module MidiState = struct
     ; currentNote: (midiChannel * pitch * velocity) option
     ; currentPitch: pitch }
 
+  (* these types are for safety, so we do not mix up things *)
+  type pitchMapKey =
+    PitchMapKey of int 
+
+  type ctrlMapKey =
+    CtrlMapKey of int
+  
+ 
+  
   (* this is the note that was played just now, for triggering, default is none *)
 
-  let chanPitchToKey (MidiCh ch) p = p + (ch * 128)
+  let chanPitchToKey (MidiCh ch) (Pitch p) = PitchMapKey (p + (ch * 128))
 
-  let keyToChanPitch key = (MidiCh (key / 128), key mod 128)
+  let keyToChanPitch (PitchMapKey key) = (MidiCh (key / 128), key mod 128)
 
-  let chanCtrlToKey (MidiCh ch) (MidiCtrl c) = c + (ch * 128)
+  let chanCtrlToKey (MidiCh ch) (MidiCtrl c) = CtrlMapKey (c + (ch * 128))
 
-  let keyToChanCtrl key = (key / 128, key mod 128)
+  let keyToChanCtrl (CtrlMapKey key) = (key / 128, key mod 128)
 
-  let justTheKey mapKey = (mapKey mod 128)
+  let justTheKey (PitchMapKey mapKey) = Pitch (mapKey mod 128)
 
   let empty =
     { depressedNotes= KeyPitchMap.empty
@@ -368,23 +377,25 @@ module MidiState = struct
   let update midiMsg state =
     (* map.add = x y m = item key map *)
     match midiMsg with
-    | NoteOn (midiCh, Pitch p, v) ->
+    | NoteOn (midiCh, pitch, v) ->
+       let PitchMapKey key = chanPitchToKey midiCh pitch in
         { state with
           depressedNotes=
-            KeyPitchMap.add (chanPitchToKey midiCh p) v state.depressedNotes
-        ; currentNote= Some (midiCh, Pitch p, v)
-        ; currentPitch= Pitch p }
-    | NoteOff (midiCh, Pitch p, Velo _) ->
+            KeyPitchMap.add key v state.depressedNotes
+        ; currentNote= Some (midiCh, pitch, v)
+        ; currentPitch=  pitch }
+    | NoteOff (midiCh, pitch, Velo _) ->
+       let PitchMapKey key = chanPitchToKey midiCh pitch in
         { state with
           depressedNotes=
-            KeyPitchMap.remove (chanPitchToKey midiCh p) state.depressedNotes
+            KeyPitchMap.remove key state.depressedNotes
         ; currentNote= None }
     | Control (midiCh, ctrl, value) ->
+       let (CtrlMapKey key) = chanCtrlToKey midiCh ctrl in
         { state with
           controlValues=
             ControllerMap.add
-              (chanCtrlToKey midiCh ctrl)
-              value state.controlValues
+              key value state.controlValues
         ; currentNote= None }
     | _ -> {state with currentNote= None}
 
@@ -394,28 +405,31 @@ module MidiState = struct
 
   let getVeloOfKey key keyPitchMap =
     let mvalue = KeyPitchMap.find_opt key keyPitchMap in
-    match mvalue with None -> 0 | Some v -> v
+    match mvalue with None -> Velo 0 | Some v -> Velo v
 
-  let keyIsOfChannel channel key _ =
-    match channel with MidiCh ch -> key / 128 == ch
+  let filterChannel (MidiCh channel) keyPitchMap =
+    KeyPitchMap.filter (fun key _ -> key / 128 == channel) keyPitchMap 
 
-  let filterChannel channel keyPitchMap =
-    let p = keyIsOfChannel channel in
-    KeyPitchMap.filter p keyPitchMap
+  let getPitchMapKeys state =
+    state.depressedNotes |> KeyPitchMap.bindings |> List.map (mapFst (fun key -> PitchMapKey key))
+
+  let getControlMapKeys state =
+    state.controlValues |> ControllerMap.bindings |> List.map (mapFst (fun key -> CtrlMapKey key))
 
   let getDepressedKeysAnyChannel state =
-    KeyPitchMap.bindings state.depressedNotes |> List.map (mapFst justTheKey)
+    state
+    |> getPitchMapKeys |> List.map (mapFst justTheKey)
 
   let getDepressedKeysChannel channel state =
-    state.depressedNotes |> filterChannel channel |> KeyPitchMap.bindings |> List.map (mapFst justTheKey)
+    state.depressedNotes |> filterChannel channel |> KeyPitchMap.bindings |> List.map (mapFst (fun k -> PitchMapKey k |> justTheKey))
 
   let getFirstNote channel state =
     let lst = getDepressedKeysChannel channel state in
-    match lst with [] -> (Pitch 0, Velo 0) | (p, v) :: _ -> (Pitch p, v)
+    match lst with [] -> (Pitch 0, Velo 0) | (p, v) :: _ -> (p, v)
 
   (* zero if there is no controller *)
   let getControllerValue channel ctrlNumber state =
-    let key = chanCtrlToKey channel ctrlNumber in
+    let (CtrlMapKey key) = chanCtrlToKey channel ctrlNumber in
     state.controlValues |> ControllerMap.find_opt key
     |> Option.value ~default:(MidiVal 0)
 

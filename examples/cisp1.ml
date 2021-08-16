@@ -29,7 +29,7 @@ let map = Seq.map
 
 let midiReader =
   let boolR = MidiState.boolFromChannelR (mkChannelClip 1) in
-  let depReaderR = (MidiState.getDepressedR (mkChannelClip 2) |> Reader.map (List.map fst)) in
+  let depReaderR = MidiState.getDepressedR (mkChannelClip 2) |> Reader.map (List.map (fun (Midi.Pitch p,_)->  p)) in
   Reader.map2 pair boolR depReaderR
   
 let currentChord = ref [60;64;67]

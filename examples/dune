@@ -159,4 +159,11 @@
   (ocamlopt_flags -O3)
   (modules cispOsc)
   (libraries threads infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid osc_unix))
+
+(executable
+  (name sendOsc)
+  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (ocamlopt_flags -O3)
+  (modules sendOsc)
+  (libraries threads infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid osc_unix))
   

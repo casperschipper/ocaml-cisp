@@ -121,6 +121,8 @@ int main(int narg, char **args)
 	input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 	output_port = jack_port_register (client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
 
+	caml_enter_blocking_section();
+	
 	if (jack_activate (client))
 	{
 		fprintf(stderr, "cannot activate client");
@@ -132,7 +134,10 @@ int main(int narg, char **args)
 	{
 		sleep(1);
 	}
+
+	caml_leave_blocking_section();
+	
 	jack_client_close(client);
-	exit (0);
+	CAMLreturn(Val_unit);
 }
 

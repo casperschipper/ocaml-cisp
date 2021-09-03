@@ -60,7 +60,7 @@ bool isMessage(unsigned char *bytes) {
 
 static int process(jack_nframes_t nframes, void *arg)
 {
-  unsigned int i,midi_frame;
+  unsigned int i, midi_frame;
   void* port_buf = jack_port_get_buffer(output_port, nframes);
   void* in_port_buf = jack_port_get_buffer(input_port, nframes); // midi in port buf
 
@@ -247,7 +247,7 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
 	
 
         
-	
+    
 	if (ports == NULL) {
 	  fprintf(stderr, "no physical ports\n");
 	  exit(1);

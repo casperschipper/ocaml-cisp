@@ -933,6 +933,8 @@ let ch arr =
 
 let mtof midi = 440.0 *. (2.0 ** ((midi -. 69.0) /. 12.0))
 
+let mtor midi = 2.0 ** (( midi -. 69.0) /. 12.0)
+
 let ftom freq = (12.0 *. log (freq /. 440.0)) +. 69.0
 
 (* input -> state -> (state, value) *)

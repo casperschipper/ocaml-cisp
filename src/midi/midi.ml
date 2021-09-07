@@ -287,6 +287,21 @@ type midiMessage =
 
 (* open questino: should midiMessage be used with midiMessage option, so to avoid MidiSilence ? *)
 
+type noteMsg =
+  | On of midiChannel * pitch * velocity
+  | Off of midiChannel * pitch * velocity
+
+let onlyNotes midiMessageSq =
+  let f msg =
+    match msg with
+    | NoteOn (ch,pi,ve) -> Some (On (ch,pi,ve))
+    | NoteOff (ch,pi,ve) -> Some (Off (ch,pi,ve))
+    | _ -> None
+  in
+  Seq.map f midiMessageSq
+  
+    
+
 let mapOverMidiPitch f msg =
   match msg with
   | NoteOn (ch, Pitch p, v) -> NoteOn (ch, Pitch (f p |> clip 0 127), v)

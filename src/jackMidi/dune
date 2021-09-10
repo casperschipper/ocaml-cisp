@@ -1,6 +1,6 @@
 (library
  (name            jackMidi)
- (libraries bigarray ctypes.foreign process)
+ (libraries threads bigarray ctypes.foreign process)
  (ocamlopt_flags -O3)	
  (foreign_stubs (language c) (names caml_jack_midi))
  (flags (-cclib -ljack)))

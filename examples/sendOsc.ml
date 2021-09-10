@@ -207,7 +207,7 @@ let playFrom addr input =
   |> fun inp -> Cisp.recursive inp init update eval
                 |> Seq.map (fun () -> Midi.SilenceEvent)
 
-    
+
 let midiFun addr input =
   let map = Seq.map in
   let open Midi in

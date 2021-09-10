@@ -166,4 +166,11 @@
   (ocamlopt_flags -O3)
   (modules sendOsc)
   (libraries lo threads infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid osc_unix))
-  
+
+
+(executable
+ (name receiveOsc)
+ (link_flags (-cclib -ljack))
+ (ocamlopt_flags -O3)	    
+ (modules receiveOsc)
+ (libraries threads lo midi cisp jackMidi))

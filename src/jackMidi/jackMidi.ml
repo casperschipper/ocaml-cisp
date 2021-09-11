@@ -8,10 +8,10 @@ external open_midi_stream :
 let playMidi midiInToOutFunction sample_rate =
   let open Seq in
   let ar_out =
-    Bigarray.Array1.create Bigarray.Int8_unsigned Bigarray.c_layout 4096
+    Bigarray.Array1.create Bigarray.Int8_unsigned Bigarray.c_layout 16384
   in
   let ar_in =
-    Bigarray.Array1.create Bigarray.Int8_unsigned Bigarray.c_layout 4096
+    Bigarray.Array1.create Bigarray.Int8_unsigned Bigarray.c_layout 16384
   in
   open_midi_stream ar_out ar_in
     (fun nframes ->

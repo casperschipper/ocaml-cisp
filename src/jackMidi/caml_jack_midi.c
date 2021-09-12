@@ -53,7 +53,7 @@ static void signal_handler(int sig)
 {
 	jack_client_close(client);
 	fprintf(stderr, "signal received, exiting ...\n");
-	exit(0);
+        exit(0);
 }
 
 // some helpers
@@ -112,11 +112,12 @@ void print_failure(jack_status_t status) {
 // this procedure is called from Jackd, whenever new midi is needed/has arrived.
 static int process(jack_nframes_t nframes, void *arg)
 {
-  caml_c_thread_register();
+  // to protect against over-ambitious GC:
+  caml_c_thread_register(); 
 
   unsigned int i, midi_frame;
   void* port_buf = jack_port_get_buffer(output_port, nframes);
-  void* in_port_buf = jack_port_get_buffer(input_port, nframes); // midi in port buf
+  void* in_port_buf = jack_port_get_buffer(input_port, nframes);
 
   jack_midi_event_t in_event; // midi event in.
 
@@ -125,12 +126,11 @@ static int process(jack_nframes_t nframes, void *arg)
 
   unsigned char *currentMidiMsg;
     
-  jack_midi_clear_buffer(port_buf);
+  jack_midi_clear_buffer(port_buf); // clear the output
 
-  value closure; // midi callback to ocaml
   value* closurePt = (value*) arg;
-  closure = *closurePt;
-  unsigned char* buffer; // buffer for midi
+  value closure = *closurePt;
+  unsigned char* buffer; 
 
   // get the first event (if there is one)
   if (event_count > 0) {
@@ -138,36 +138,29 @@ static int process(jack_nframes_t nframes, void *arg)
   };
 
   caml_acquire_runtime_system ();
-
   caml_callback(closure, Val_int((int) nframes)); /* a callback fills the output buffer with raw midi */
 
-  // copy midi data from ocaml to jack and back
   for (i = 0; i<nframes; i++) {
-    midi_frame = i * 3;
-      
+    midi_frame = i * 3; // midi message consists of 3 bytes: channel/status value1 value2
+
+    // Input. All events of the vector are already here, so we have to schedule them based on timing:
     if ((in_event.time == i) && event_index < event_count) {
-      /* fprintf(stderr,"c code: in_event.buffer[0] = %i @ midiFrame %i\n",in_event.buffer[0],midi_frame); */
       midi_input_buffer[midi_frame] = *in_event.buffer;
       midi_input_buffer[midi_frame+1] = (in_event.buffer[1]);
       midi_input_buffer[midi_frame+2] = (in_event.buffer[2]);
-	
-      // get next event (if there is one)
-
+       
       event_index++;
       if (event_index < event_count) {
 	jack_midi_event_get(&in_event,in_port_buf,event_index);
       }
-      
-     
-    } else { // Midisilence (represented by zeros) 
+    } else { // no event at this t, so silence = zeros
       midi_input_buffer[midi_frame] = 0;
       midi_input_buffer[midi_frame+1] = 0;
       midi_input_buffer[midi_frame+2] = 0;
 	
     }
 
-    //output to jackd
-    
+    //output to jackd:
     currentMidiMsg = &midi_output_buffer[midi_frame];
       
     if (isMessage(currentMidiMsg)) {
@@ -178,12 +171,6 @@ static int process(jack_nframes_t nframes, void *arg)
       }
     }
   }
-
-  //leep(1);
-  
-  /*if (countZeros != 512) {
-    fprintf(stderr,"zero count is %i\n",countZeros);
-    }*/
 
   caml_release_runtime_system ();
 
@@ -203,9 +190,10 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
   const char **ports; // to store names of ports in
   const char **in_ports; // to store names of input ports in
 
-  caml_c_thread_register();
-
-  midi_output_buffer = Caml_ba_data_val(midi_msg_array_out); 
+  //caml_c_thread_register(); 
+  //I do not think call above is necessary
+  
+  midi_output_buffer = Caml_ba_data_val(midi_msg_array_out);
   midi_input_buffer = Caml_ba_data_val(midi_msg_array_in);
 
   caml_register_global_root(&midi_msg_array_out); // protect this pointer from the Ocaml garbage collector
@@ -213,24 +201,19 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
 
   if ((client = jack_client_open ("ocaml_midi", JackNullOption, &status, NULL)) == 0) {
     fprintf (stderr, "JACK server not running?\n");
+    // Failure states, print some useful errors.
+    print_failure(status);
     CAMLreturn(Val_unit);
   }
 
-  // Failure states, print some useful errors.
-  print_failure(status);
-
-  // we assume jack is running from this point
-
-  //caml_release_runtime_system ();
-
+  // this is the main callback registration:
   jack_set_process_callback (client, process, &closure);
   sample_rate = jack_get_sample_rate(client);
 
-  // OCAML 
-
+  // this is a single callback to let caml know of current sample rate:
   caml_callback(set_sr_closure, Val_int((int) sample_rate));
 
-  // C a
+  // create io ports for our jack client:
   output_port = jack_port_register (client, "ocaml_midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
   input_port = jack_port_register (client, "ocaml_midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 
@@ -245,20 +228,20 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
   } else {
     fprintf(stderr, "caml_jack_midi: midi port success!\n");
   }
- 	
+
   nframes = jack_get_buffer_size(client);
   fprintf(stderr, "nframes is set %i\n",nframes);
 
   caml_release_runtime_system ();  
-  
+
   if (jack_activate(client)) {
     fprintf (stderr, "cannot activate client");
-    return 1;
+    return 1; // todo: maybe CAMLreturn unit () here, or is it too late ?
   }
-	
+  
+  // below is optional, it just connecting some midi ports for ease of use:	
   ports = jack_get_ports(client, NULL,"midi", JackPortIsInput);
 	
-    
   if (ports == NULL) {
     fprintf(stderr, "no physical ports\n");
     exit(1);
@@ -283,14 +266,13 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
     fprintf(stderr, "connected to system_midi:capture_2");
   }
 
-
-
   // run until interrupted 
-  while (1) {
+  while (true) {
     sleep(1);
   };
 
-  //caml_acquire_runtime_system();
+  // this part is never reached:
+  caml_acquire_runtime_system();
   caml_c_thread_unregister();
   jack_client_close(client);
   CAMLreturn(Val_unit);

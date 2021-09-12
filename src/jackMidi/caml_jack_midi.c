@@ -202,6 +202,8 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
   const char **ports; // to store names of ports in
   const char **in_ports; // to store names of input ports in
 
+  caml_c_thread_register();
+
   midi_output_buffer = Caml_ba_data_val(midi_msg_array_out); 
   midi_input_buffer = Caml_ba_data_val(midi_msg_array_in);
 
@@ -288,6 +290,7 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
   };
 
   caml_acquire_runtime_system();
+  caml_c_thread_unregister();
   jack_client_close(client);
   CAMLreturn(Val_unit);
 }

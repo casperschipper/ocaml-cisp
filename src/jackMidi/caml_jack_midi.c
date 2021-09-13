@@ -174,9 +174,6 @@ static int process(jack_nframes_t nframes, void *arg)
       }
     }
   }
-
-  
-
   return 0;
 }
 
@@ -199,7 +196,7 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
   midi_output_buffer = Caml_ba_data_val(midi_msg_array_out);
   midi_input_buffer = Caml_ba_data_val(midi_msg_array_in);
 
-  //caml_register_global_root(&midi_msg_array_out); // protect this pointer from the Ocaml garbage collector
+  //caml_register_global_root(&midi_msg_array_out); 
   //caml_register_global_root(&midi_msg_array_in);
 
   if ((client = jack_client_open ("ocaml_midi", JackNullOption, &status, NULL)) == 0) {

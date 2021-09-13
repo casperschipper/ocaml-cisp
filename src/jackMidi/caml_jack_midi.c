@@ -139,6 +139,7 @@ static int process(jack_nframes_t nframes, void *arg)
 
   caml_acquire_runtime_system ();
   caml_callback(closure, Val_int((int) nframes)); /* a callback fills the output buffer with raw midi */
+  caml_release_runtime_system ();
 
   for (i = 0; i<nframes; i++) {
     midi_frame = i * 3; // midi message consists of 3 bytes: channel/status value1 value2
@@ -172,7 +173,7 @@ static int process(jack_nframes_t nframes, void *arg)
     }
   }
 
-  caml_release_runtime_system ();
+  
 
   return 0;
 }

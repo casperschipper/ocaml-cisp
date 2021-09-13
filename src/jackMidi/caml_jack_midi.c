@@ -113,7 +113,7 @@ void print_failure(jack_status_t status) {
 static int process(jack_nframes_t nframes, void *arg)
 {
   // to protect against over-ambitious GC:
-  caml_c_thread_register(); 
+  
 
   unsigned int i, midi_frame;
   void* port_buf = jack_port_get_buffer(output_port, nframes);
@@ -137,9 +137,11 @@ static int process(jack_nframes_t nframes, void *arg)
     jack_midi_event_get(&in_event, in_port_buf, 0);
   };
 
+  caml_c_thread_register(); 
   caml_acquire_runtime_system ();
   caml_callback(closure, Val_int((int) nframes)); /* a callback fills the output buffer with raw midi */
   caml_release_runtime_system ();
+  caml_c_thread_unregister();
 
   for (i = 0; i<nframes; i++) {
     midi_frame = i * 3; // midi message consists of 3 bytes: channel/status value1 value2
@@ -197,8 +199,8 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
   midi_output_buffer = Caml_ba_data_val(midi_msg_array_out);
   midi_input_buffer = Caml_ba_data_val(midi_msg_array_in);
 
-  caml_register_global_root(&midi_msg_array_out); // protect this pointer from the Ocaml garbage collector
-  caml_register_global_root(&midi_msg_array_in);
+  //caml_register_global_root(&midi_msg_array_out); // protect this pointer from the Ocaml garbage collector
+  //caml_register_global_root(&midi_msg_array_in);
 
   if ((client = jack_client_open ("ocaml_midi", JackNullOption, &status, NULL)) == 0) {
     fprintf (stderr, "JACK server not running?\n");
@@ -274,7 +276,7 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
 
   // this part is never reached:
   caml_acquire_runtime_system();
-  caml_c_thread_unregister();
+  
   jack_client_close(client);
   CAMLreturn(Val_unit);
 }

@@ -59,7 +59,12 @@ int process (jack_nframes_t nframes, void *arg)
 	value* closurePt = (value*) arg;
 
 	closure = *closurePt;
+
+	caml_c_thread_register();
+	caml_acquire_runtime_system();
 	caml_callback(closure, Val_int((int) nframes));
+	caml_release_runtime_system();
+	caml_c_thread_unregister();
 
 	for (int i = 0; i<n_out_channels; i++) {
 	  outputs[i] = (jack_default_audio_sample_t*)jack_port_get_buffer(output_ports[i], nframes);
@@ -123,12 +128,6 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 	// output_buffer & input buffer is a float pointer
 	output_buffer = Caml_ba_data_val(output_array);
 	input_buffer = Caml_ba_data_val(input_array);
-
-	// register globals so they don't get eaten up by the garbage collector!
-	caml_register_global_root(&output_array);
-	caml_register_global_root(&input_array);
-	//	caml_register_generational_global_root(&output_array);
-	//	caml_register_generational_global_root(&input_array);
 
 	// n_channels is a tuple, so we fetch the ints in this way:
 	n_out_channels = Int_val(Field(n_channels, 0));

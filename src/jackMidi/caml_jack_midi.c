@@ -48,6 +48,8 @@ jack_port_t *input_port;
 unsigned char *midi_output_buffer;
 unsigned char *midi_input_buffer;
 
+bool registered_thread = false;
+
 
 static void signal_handler(int sig)
 {
@@ -137,11 +139,14 @@ static int process(jack_nframes_t nframes, void *arg)
     jack_midi_event_get(&in_event, in_port_buf, 0);
   };
 
-  caml_c_thread_register(); 
-  caml_acquire_runtime_system ();
-  caml_callback(closure, Val_int((int) nframes)); /* a callback fills the output buffer with raw midi */
-  caml_release_runtime_system ();
-  caml_c_thread_unregister();
+  if (!registered_thread) {
+    registered_thread = caml_c_thread_register() == 1;
+  }
+  if (registered_thread) {
+    caml_acquire_runtime_system ();
+    caml_callback(closure, Val_int((int) nframes)); /* a callback fills the output buffer with raw midi */
+    caml_release_runtime_system ();
+  }
 
   for (i = 0; i<nframes; i++) {
     midi_frame = i * 3; // midi message consists of 3 bytes: channel/status value1 value2
@@ -273,7 +278,8 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
 
   // this part is never reached:
   caml_acquire_runtime_system();
-  
+
+  caml_c_thread_unregister();
   jack_client_close(client);
   CAMLreturn(Val_unit);
 }

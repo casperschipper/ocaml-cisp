@@ -130,7 +130,7 @@
   (link_flags (-cclib -ljack -cclib -lsndfile))
   (ocamlopt_flags -O3)
   (modules cisp5)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
+  (libraries lo infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
 
 (executable
   (name cisp6)
@@ -174,3 +174,10 @@
  (ocamlopt_flags -O3)	    
  (modules receiveOsc)
  (libraries threads lo midi cisp jackMidi))
+
+(executable
+  (name osc_to_audio_example_using_threads)
+  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (ocamlopt_flags -O3)
+  (modules osc_to_audio_example_using_threads)
+  (libraries threads lo infseq midi cisp bigarray ctypes jack jackMidi))

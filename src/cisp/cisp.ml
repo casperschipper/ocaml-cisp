@@ -99,18 +99,23 @@ let pureSq = Seq.return
 let ( <*> ) = applySq
 
 let syncEffect sq effectSq =
-  (* just update an effect stream in sync with sq, but don't use its return value *)
+  (* This is a way to synchronize effects with a stream of values:
+     an "effectSq" is a Seq.t of unit, that (may) mutate some state.
+     sq is the actual result stream, effect the side effect.
+   *)
   let both = zip sq effectSq in
   map (fun (signal, effect) -> effect ; signal) both
 
 let effectSync effectSq sq =
-  (* just update an effect stream in sync with sq, but don't use its return value *)
-  let both = zip effectSq sq in
-  map (fun (effect, signal) -> effect ; signal) both
+  (* same as syncEffect but flipped *)
+  syncEffect sq effectSq
 
 let effect = effectSync
 
-(* this is used to keep time, for lines and time based sync *)
+(* this is a global ref used to keep time, for lines and time based sync 
+   You have to sync this clock with yout output stream, for example by syncing it with the input seqs of Jack.playSeq
+   see inTime
+*)
 let currentSampleCounter = ref 0
 
 let updateCurrentSample () = currentSampleCounter := !currentSampleCounter + 1
@@ -199,6 +204,8 @@ let rec appendAlt a b () =
   | Cons (h, tl) -> fun () -> Cons(h, appendAlt tl b)
 *)
 
+
+(* When the seq reaches Nil, restart from the beginning. This is an implicit infinite stream, may be better use InfSeq if you want this *)
 let rec cycle a () =
   let rec cycle_append current_a () =
     match current_a () with
@@ -313,12 +320,15 @@ let rec concat str () =
 let listCartesian f xs ys =
   List.concat (List.map (fun x -> List.map (fun y -> f x y) ys) xs)
 
+(* similar to >>= for lists in Haskell *)
 let cartesian f sqa sqb = concat (map (fun x -> map (fun y -> f x y) sqb) sqa)
 
+(* same thing different name *)
 let concatMap f sq = map f sq |> concat
 
 let bind ma f = map f ma |> concat
 
+(* flipped arguments, make it easier to pipe *)
 let andThen f ma = map f ma |> concat
 
 (* should do same as cartesian, but using the bind operator *)
@@ -326,7 +336,7 @@ let caspersion f sqa sqb =
   let ( >>= ) x f = bind x f in
   sqa >>= fun x -> sqb >>= fun y -> Seq.return (f x y)
 
-(* split a list into two parts *)
+(* split a list into two parts, using f -> bool as the splitter *)
 let mozes f lst =
   let rec aux lsta lstb lst =
     match lst with
@@ -336,7 +346,8 @@ let mozes f lst =
   in
   aux [] [] lst
 
-(* this is a sorted list type, to insert more efficientely, useful for time based score *)
+(* this is a sorted list type, to insert more efficientely, useful for time based score 
+   The idea is that you only update it using non-order breaking functions, meaning you do not have to sort it all the time *)
 type 'a sorted = Sorted of 'a list
 
 let sortedAsList (Sorted lst) = lst
@@ -373,17 +384,6 @@ let mozesSorted f sortedLst =
   in
   aux [] sortedLst
 
-(* UNSAFE
-let hd lst =
-  match lst () with
-  | Nil -> raise (Invalid_argument "empty list has no head")
-  | Cons (h, _) -> h
-
-let tl lst =
-  match lst () with
-  | Nil -> raise (Invalid_argument "empty list has no tail")
-  | Cons (_, tl) -> tl *)
-
 let for_all f sq =
   let rec aux sq start =
     match sq () with
@@ -392,6 +392,7 @@ let for_all f sq =
   in
   aux sq true
 
+(* a little look ahead *)
 let is_empty sq = match sq () with Nil -> true | _ -> false
 
 let has_more sq = is_empty sq |> not
@@ -416,6 +417,8 @@ c = 100,200,300
 transpose a,b,c > 1,11,100 2,12,200 3,13,300
 
 sq may not be infinite, but the sqs within sq can be (!)
+
+There is also an explicit InfSeq version of this function.
  *)
 let rec transpose sq () =
   match sq () with
@@ -572,7 +575,7 @@ let rec zipWith4 f a b c d () =
         | Nil -> Nil
         | Cons (d, dtl) -> Cons (f a b c d, zipWith4 f atl btl ctl dtl) ) ) )
 
-(* static versions, so you do not have to use st, useful for gain*)
+(* static versions, so you do not have to use st, useful for gain and offsets*)
 
 let ( *.- ) x sq = map (( *. ) x) sq
 
@@ -638,10 +641,18 @@ let wrap low high x =
   let modded = (x - low) mod range in
   if modded < 0 then high + x else low + x
 
-(* Similar to unfold, but control is a parameter, instead of 
- * stored in the state. This enforces that control is updated/consumed on each tick
- * return evaluated state, update then
- * this can also be done as an unfold
+(* Inspired by the Elm architecture. I guess this is some distant form of Functional Reactive Programming.
+ *
+ * You start with a state (init).
+ * This state is updated through the control stream using the update function.
+ * init : state (you define whatever you need)
+ * control : Seq.t msg
+ * update : msg -> state -> state
+ * evaluate : state -> output (this allows you to ignore some part of the state, or interperet it
+ *
+ * In fact, this is similar to Seq.unfold, but control is a parameter, instead of 
+ * stored in the state. This garantees that control is updated/consumed on each tick (useful when it is a live input!) 
+ * 
  *)
 let rec recursive control init update evaluate () =
   match control () with
@@ -658,8 +669,8 @@ let rec recursive1 control init update evaluate () =
       let next = update x init in
       Cons (evaluate next, recursive1 xs next update evaluate)
 
-(* recursive no control seq. Allows for non-trivial control update 
- * this is almost the same as unfold.
+(* recursive no control seq. Allows for non-trivial control update (you have to take care of the update of control in update function yourself)
+ * this is almost the same as unfold, except it may never end.
  *)
 let rec simpleRecursive init update evaluate () =
   let nextState = update init in

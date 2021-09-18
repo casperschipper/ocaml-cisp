@@ -209,7 +209,7 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 	/* if ((output_port1 == NULL) || (output_port2 == NULL)) { */
 	/* 	fprintf(stderr, "no more JACK ports available\n"); */
 	/* 	exit (1); */
-	/* } */
+ 	/* } */
 
 	/* Tell the JACK server that we are ready to roll.  Our
 	 * process() callback will start running now. */

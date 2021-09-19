@@ -872,7 +872,9 @@ let indexCub arr indexer =
   in
   map f indexer
 
-(* segmod like: a (finite) full phase cycle of a sinewave *)
+(* segmod like: a (finite) full phase cycle of a sinewave 
+   https://github.com/lucdoebereiner/segmod
+*)
 let sineseg wavesamps =
   let incr = 1.0 /. Float.of_int wavesamps in
   let f x = 2.0 *. Float.pi *. x |> sin in

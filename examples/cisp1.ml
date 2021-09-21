@@ -1,85 +1,62 @@
 open Cisp
 open Midi
 
-(*
-control
-
- <pre><code>
-----------begin_max5_patcher----------
-593.3ocuWtsiaBCDF9Z3ovhqSW4CbHouJUUqLAqTuELQFy1TsZe2q8XftsgP
-HD1bCVdvw+9yy3eSdKLHJu9jnIB8Uz2PAAuEFD.gbAB55GDUwOsuj2.CKRI9
-Uc9KQa7uxHNY7gqMh5VCJGQ6e2QtY+OjpCOqE6MdIXwrmvaPzcacMo6fNzmv
-nu28aTsURUov.Zw5BJK.Irx9ExvraGoUu9ghcAeOLz8XyLI4mMkxBgteB8yl
-42GE90ZjTYh13aFVeiwDEXhPhcMLVpqIg8AnppKf4jLFjzygb2e2A07JgQne
-Vn34kvjfGke5B3uRzzvOHNKURnaQoXDAiu3VyjaHz3LHuRnyIIOB+YimiIKf
-wKTs1HJsKWjExKhXNWcvk96amDYRLj7IY.4o3attNdbjYK.YS8gCkhIqpmFE
-e4LCHhN7bbTHmiB81qdWTlssJehCuCotIqTIP9JCfL4JYsQPc6i4f5EJhqjE
-R6LOgcKIIA7jHfca2wxaAvz0ys8tKKA2D1tEVUl7XpJunmZb7c4o1YvrbOU1
-mtmpcSUWiHzjosTmi2CFJaSY2LkjqSILWQkR0++YOv5wE+eQuotUuumftamQ
-jgUTgnwHUbirV8gw39LE2fFc28VDBOGgv2oPamiPq.PYyPmzUfmjYxy8pS7L
-pDxVIctFOrUPG1CJ+PmgNwqfNjYny4me7FD7iGeUna5FLHg0E7kZsq61MPWo
-x2EttIRKdU1OdhODWac3LV6sVMrthNk5+PO3uDnUsxN2IKcVMAKVk81olibO
-HfSb36g+ATfzf3I
------------end_max5_patcher-----------
-</code></pre>
- 
-*)
-
 let map = Seq.map
 
-let midiReader =
-  let boolR = MidiState.boolFromChannelR (mkChannelClip 1) in
-  let depReaderR = MidiState.getDepressedR (mkChannelClip 2) |> Reader.map (List.map (fun (Midi.Pitch p,_)->  p)) in
-  Reader.map2 pair boolR depReaderR
+let ofTrigger lst trigger =
+  let notes =
+    seq lst
+    |> floatify
+    |> ( ( +.- ) 48.0 )
+    |> map (fun p -> p |> Int.of_float |> mkPitchClip)
+    |> map (fun p -> c3 |> withPitch p |> withDur (seconds 0.1))
+  in
+  Cisp.weave trigger (notes) (SilenceEvent |> st) 
   
-let currentChord = ref [60;64;67]
 
-type arpy =
-  { ix : int
-  ; value : int option }
+let thread lst z d trig =
+  let zeros = st 0 |> take z in
+  let ds = st 1 |> take d in
+  let n = [zeros;ds] |> List.to_seq |> transpose |> cycle |> concat in
+  trig
+  |> pulseDivider n
+  |> ofTrigger lst
 
-let arpeggiator notesListSq =
-  let f lst { ix; _ } =
-    match List.nth_opt lst ix  with
-    | Some v -> { value = Some v ; ix = ix + 1 }
-    | None -> { value = List.nth_opt lst 0 ; ix = 1 }
-  in
-  let eval { value; _ }  =
-    value
-  in
-  recursive1 notesListSq { ix = 0; value = None } f eval
- 
-let notes =
-  let chords =
-    ofRef currentChord
-  in
-  st makeNoteOfInts 
-  <*> (arpeggiator chords |> map (Option.value ~default:60))
-  <*> (st 60) 
-  <*> (seci 0.1 |> st)
-  <*> (st 0)
+let toTrigger =
+  map Midi.isNoteOn
 
-let ofTrigger trigger =
-  let handleInput (trig,chrd) =
-    currentChord := chrd
-    ;trig
+let mergeMidiStreams sqa sqb =
+  (* this merges streams of midi events, so it becomes one stream of events. When two events "collide", it pushes one onto the stack.
+     events on the stack have priority on newer events
+   *)
+  let module Q = Fqueue in
+  let handleEvents (a,b) (overflow,_) =
+    let optFlow =
+      Q.peekdeq overflow
+    in
+    match (a,b,optFlow) with
+    | (SilenceEvent, SilenceEvent, None) -> (Q.empty,SilenceEvent)
+    | (SilenceEvent, SilenceEvent, Some (evt,rest)) -> (rest, evt) 
+    | (SilenceEvent, evtb, Some (evt,rest)) -> (Q.enqueue evtb rest,evt)
+    | (evta, SilenceEvent, Some (evt,rest)) -> (Q.enqueue evta rest,evt)
+    | (evta, SilenceEvent, None) -> (Q.empty,evta)
+    | (SilenceEvent, evtb, None) -> (Q.empty,evtb)
+    | (evta, evtb, None) -> (Q.enqueue evtb Q.empty, evta)
+    | (evta, evtb, Some(evt, rest)) ->
+       (rest |> Q.enqueue evta |> Q.enqueue evtb, evt) 
+       
   in
-  weavePattern (map handleInput trigger) notes (st SilenceEvent)
-
-let printChord =
-  print_int (!currentChord |> List.length);
-  print_string "--chord\n";
-  flush stdout
-  
-  
+  let zipped = Cisp.zip sqa sqb in
+  recursive zipped (Q.empty, SilenceEvent) handleEvents (fun (_,evt) -> evt)
 
 let midiFun input =
-  input 
-  |> MidiState.makeSeq
-  |> map (Reader.run midiReader)
-  |> (fun trigger -> effectSync (st printChord) (ofTrigger trigger))
+  let sqa = input |> toTrigger |> thread [0;5;10;15;0;7;14;21] 3 1 in
+  let sqb = input |> toTrigger |> thread [0;5;10;15;0;7;14;21] 3 2 in
+  let sqc = input |> toTrigger |> thread [0;12;(-12);0;7;(-7);(-14)] 3 3 in
+  mergeMidiStreams sqa sqb |> mergeMidiStreams sqc
   |> serialize 
-  |> map toRaw 
+  |> map toRaw
+
   
 let () =
   let f () =

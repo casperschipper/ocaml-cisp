@@ -205,6 +205,7 @@ let mkVelocity v =
 let mkSamps s =
   if s < 0 then Error "deltaT cannot be negative" else Ok (Samps s)
 
+(*
 let mapResult4 f a b c d =
   match (a, b, c, d) with
   | Ok a', Ok b', Ok c', Ok d' -> Ok (f a' b' c' d')
@@ -212,6 +213,18 @@ let mapResult4 f a b c d =
   | _, Error b', _, _ -> Error b'
   | _, _, Error c', _ -> Error c'
   | _, _, _, Error d' -> Error d'
+*)
+
+let applyResult fRes res =
+  (* applicative =  m (a -> b) -> m a -> m b *)
+  let (>>=) ma f = Result.bind ma f in
+  fRes >>= fun fa ->
+  res >>= fun r ->
+  Result.ok (fa r)
+
+let mapResult4 f4 a b c d =
+  let (<*>) f ma = applyResult f ma in
+  Result.ok (f4) <*> a <*> b <*> c <*> d
 
 let mkNote c p v d =
   mapResult4

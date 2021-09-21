@@ -17,6 +17,15 @@ let dequeue = function
   | {front= []; _} -> empty
   | {front= _ :: xs; back} -> norm {front= xs; back}
 
+let dequeue = function
+    | {front=[]; _} -> None
+    | {front=_::xs; back} -> Some (norm {front=xs; back})
+
 let rec to_list q =
   let front = peek q in
   match front with None -> [] | Some v -> v :: to_list (dequeue q)
+
+let peekdeq q =
+  match peek q with
+  | Some x -> Some (x, dequeue q)
+  | None -> None 

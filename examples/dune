@@ -180,7 +180,7 @@
  (link_flags (-cclib -ljack))
  (ocamlopt_flags -O3)	    
  (modules ivo)
- (libraries threads lo midi cisp jackMidi))
+ (libraries lo midi cisp jackMidi))
 
 (executable
   (name osc_to_audio_example_using_threads)

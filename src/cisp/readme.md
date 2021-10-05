@@ -1,5 +1,10 @@
 # Ideas
 
+* live buffer / compile buffer
+* linalab * tidal cycles
+* one pattern driving multiple variants
+* builder pattern 
+* 
 * simple read and write to arrays (state)
 * simple parser
 * merge multiple streams of events into bundles

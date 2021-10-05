@@ -1,6 +1,5 @@
 (* super tiny parser ! *)
 
-
 type 'a parser = Parser of (char Seq.t -> ('a * char Seq.t) Seq.t)
 
 let parse (Parser p) s = p s
@@ -16,7 +15,7 @@ let parse_string (Parser p) s =
  *)
 
 let bind p f =
-  let step = Seq.flat_map (fun (a, ss) -> parse (f a) ss) in
+  let step xs = xs |> Seq.flat_map (fun (a, ss) -> parse (f a) ss) in
   Parser (fun s -> step (parse p s))
 
 let ( >>= ) = bind
@@ -34,7 +33,7 @@ let item =
     (fun charSq ->
       match charSq () with
       | Seq.Nil -> Seq.empty
-      | Seq.Cons (c, cs) -> Seq.return (c, cs))
+      | Seq.Cons (c, cs) -> Seq.return (c, cs) )
 
 (*
            
@@ -53,7 +52,7 @@ let product l1 l2 =
   List.rev
     (List.fold_left
        (fun x a -> List.fold_left (fun y b -> b :: a :: y) x l2)
-       [] l1)
+       [] l1 )
 
 let applyP fP xP = fP >>= fun f -> xP >>= fun x -> return (f x)
 
@@ -67,7 +66,7 @@ let failure = Parser (fun _ -> Seq.empty)
 
 (* combine
    combine p q = Parser (\s -> parse p s ++ parse q s)
- *)
+*)
 
 (*
 let rec concat sq () =
@@ -91,7 +90,7 @@ let combine p q =
     (fun s ->
       let res1 = parse p s in
       let res2 = parse q s in
-      append res1 res2)
+      append res1 res2 )
 
 (*
    option :: Parser a -> Parser a -> Parser a
@@ -104,7 +103,7 @@ let option p q =
   Parser
     (fun s ->
       let res = parse p s in
-      match res () with Seq.Nil -> parse q s | _ -> res)
+      match res () with Seq.Nil -> parse q s | _ -> res )
 
 let ( <|> ) = option
 
@@ -240,7 +239,6 @@ type sect =
   | Value of int
   | Repeat of int * int
   | Pattern of int
-
 
 let range a b =
   let op = if a > b then fun x -> x - 1 else ( + ) 1 in

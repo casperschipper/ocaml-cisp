@@ -1,2 +1,2 @@
 profile = ocamlformat
-break-cases = fit
+break-cases = all

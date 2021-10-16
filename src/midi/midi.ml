@@ -4,7 +4,8 @@ open Seq
 module Reader = struct
   type ('e, 'a) t = Reader of ('e -> 'a)
 
-  let run = function Reader r -> r
+  let run = function
+    | Reader r -> r
 
   let map f m = Reader (fun env -> f (run m env))
 
@@ -22,26 +23,20 @@ module Reader = struct
 
   let local f m = Reader (fun env -> run m (f env))
 
-  let apply fp ap =
-    fp >>= (fun f ->
-      ap >>= (fun a ->
-              return (f a)))
+  let apply fp ap = fp >>= fun f -> ap >>= fun a -> return (f a)
 
-  let ( <*> ) fp ap =
-    apply fp ap
+  let ( <*> ) fp ap = apply fp ap
 
-  let map2 f ap bp =
-    apply (map f ap) bp
+  let map2 f ap bp = apply (map f ap) bp
 
-  let map3 f ap bp cp =
-    map f ap <*> bp <*> cp
+  let map3 f ap bp cp = map f ap <*> bp <*> cp
 
-  let map4 f ap bp cp dp =
-    map f ap <*> bp <*> cp <*> dp 
+  let map4 f ap bp cp dp = map f ap <*> bp <*> cp <*> dp
 
   module Ops = struct
     let ( >>= ) m f = bind f m
-    let ( <*> ) fapp bapp = apply fapp bapp 
+
+    let ( <*> ) fapp bapp = apply fapp bapp
   end
 end
 
@@ -53,7 +48,7 @@ type pitch = Pitch of int
 
 type midiChannel = MidiCh of int
 
-let isChannel (MidiCh a) (MidiCh b) = a == b 
+let isChannel (MidiCh a) (MidiCh b) = a == b
 
 type controller = MidiCtrl of int
 
@@ -134,13 +129,15 @@ let filterControl midiEvt =
 
 (* let getPitch (Note (_,p,_,_)) = p
 
-let getChannel (Note (c,_,_,_)) = c
+   let getChannel (Note (c,_,_,_)) = c
 
-let getVelo (Note (_,_,v,_)) = v
+   let getVelo (Note (_,_,v,_)) = v
 
-let getDur (Note (_,_,_,d)) = d *)
+   let getDur (Note (_,_,_,d)) = d *)
 
-let optionToEvent = function Some evt -> evt | None -> SilenceEvent
+let optionToEvent = function
+  | Some evt -> evt
+  | None -> SilenceEvent
 
 let midiEventToString evt =
   match evt with
@@ -157,7 +154,9 @@ let midiEventToString evt =
   | SilenceEvent -> Some "---\n"
 
 let printMidiEvent evt =
-  match midiEventToString evt with None -> () | Some str -> print_endline str
+  match midiEventToString evt with
+  | None -> ()
+  | Some str -> print_endline str
 
 let printBundle (Bundle (fst, rest)) =
   printMidiEvent fst ;
@@ -202,8 +201,7 @@ let mkPitch p =
 let mkVelocity v =
   if v < 0 || v > 127 then Error "velocity out of range" else Ok (Velo v)
 
-let mkSamps s =
-  if s < 0 then Error "deltaT cannot be negative" else Ok (Samps s)
+let mkSamps s = if s < 0 then Error "deltaT cannot be negative" else Ok (Samps s)
 
 (*
 let mapResult4 f a b c d =
@@ -217,14 +215,12 @@ let mapResult4 f a b c d =
 
 let applyResult fRes res =
   (* applicative =  m (a -> b) -> m a -> m b *)
-  let (>>=) ma f = Result.bind ma f in
-  fRes >>= fun fa ->
-  res >>= fun r ->
-  Result.ok (fa r)
+  let ( >>= ) ma f = Result.bind ma f in
+  fRes >>= fun fa -> res >>= fun r -> Result.ok (fa r)
 
 let mapResult4 f4 a b c d =
-  let (<*>) f ma = applyResult f ma in
-  Result.ok (f4) <*> a <*> b <*> c <*> d
+  let ( <*> ) f ma = applyResult f ma in
+  Result.ok f4 <*> a <*> b <*> c <*> d
 
 let mkNote c p v d =
   mapResult4
@@ -265,21 +261,29 @@ let mapOverDuration f evt =
   | NoteEvent (c, p, v, Samps d) -> NoteEvent (c, p, v, Samps (f d))
   | other -> other
 
-(* applicative 
-(a -> b -> c) -> Seq.t a -> Seq.t b -> Seq.t c  
- *)
+(* applicative
+   (a -> b -> c) -> Seq.t a -> Seq.t b -> Seq.t c
+*)
 
 let withChannel c evt =
-  match evt with NoteEvent (_, p, v, d) -> NoteEvent (c, p, v, d) | any -> any
+  match evt with
+  | NoteEvent (_, p, v, d) -> NoteEvent (c, p, v, d)
+  | any -> any
 
 let withPitch p evt =
-  match evt with NoteEvent (c, _, v, d) -> NoteEvent (c, p, v, d) | any -> any
+  match evt with
+  | NoteEvent (c, _, v, d) -> NoteEvent (c, p, v, d)
+  | any -> any
 
 let withVelo v evt =
-  match evt with NoteEvent (c, p, _, d) -> NoteEvent (c, p, v, d) | any -> any
+  match evt with
+  | NoteEvent (c, p, _, d) -> NoteEvent (c, p, v, d)
+  | any -> any
 
 let withDur d evt =
-  match evt with NoteEvent (c, p, v, _) -> NoteEvent (c, p, v, d) | any -> any
+  match evt with
+  | NoteEvent (c, p, v, _) -> NoteEvent (c, p, v, d)
+  | any -> any
 
 let withPitchSq = map2 withPitch
 
@@ -307,13 +311,11 @@ type noteMsg =
 let onlyNotes midiMessageSq =
   let f msg =
     match msg with
-    | NoteOn (ch,pi,ve) -> Some (On (ch,pi,ve))
-    | NoteOff (ch,pi,ve) -> Some (Off (ch,pi,ve))
+    | NoteOn (ch, pi, ve) -> Some (On (ch, pi, ve))
+    | NoteOff (ch, pi, ve) -> Some (Off (ch, pi, ve))
     | _ -> None
   in
   Seq.map f midiMessageSq
-  
-    
 
 let mapOverMidiPitch f msg =
   match msg with
@@ -339,7 +341,7 @@ let mapOverNotes f midiMsgs ctrlSq =
     (fun input state ->
       match (input, (snd state) ()) with
       | NoteOn (_, _, _), Cons (ctrl, ctrlTail) -> (f input ctrl, ctrlTail)
-      | otherMsg, state -> (otherMsg, fun () -> state))
+      | otherMsg, state -> (otherMsg, fun () -> state) )
     (fun state -> fst state)
 
 let mapOverEvents f midiEvts ctrlSq =
@@ -347,7 +349,7 @@ let mapOverEvents f midiEvts ctrlSq =
     (fun input state ->
       match (input, (snd state) ()) with
       | NoteEvent _, Cons (ctrl, ctrlTail) -> (f input ctrl, ctrlTail)
-      | otherEvent, state -> (otherEvent, fun () -> state))
+      | otherEvent, state -> (otherEvent, fun () -> state) )
     (fun state -> fst state)
 
 let mapSeqOverPitch f inputMidiMsg pitchSq =
@@ -363,9 +365,11 @@ let hasHigherPitch msga msgb =
   getPitch msga |> Option.map ( > ) |> optionAndMap (getPitch msgb)
 
 let isNoteOn midiMsg =
-  match midiMsg with NoteOn (_, _, _) -> true | _ -> false
+  match midiMsg with
+  | NoteOn (_, _, _) -> true
+  | _ -> false
 
-module ControllerMap = Map.Make (Int) 
+module ControllerMap = Map.Make (Int)
 module KeyPitchMap = Map.Make (Int)
 
 module MidiState = struct
@@ -376,14 +380,10 @@ module MidiState = struct
     ; currentPitch: pitch }
 
   (* these types are for safety, so we do not mix up things *)
-  type pitchMapKey =
-    PitchMapKey of int 
+  type pitchMapKey = PitchMapKey of int
 
-  type ctrlMapKey =
-    CtrlMapKey of int
-  
- 
-  
+  type ctrlMapKey = CtrlMapKey of int
+
   (* this is the note that was played just now, for triggering, default is none *)
 
   let chanPitchToKey (MidiCh ch) (Pitch p) = PitchMapKey (p + (ch * 128))
@@ -406,24 +406,20 @@ module MidiState = struct
     (* map.add = x y m = item key map *)
     match midiMsg with
     | NoteOn (midiCh, pitch, v) ->
-       let PitchMapKey key = chanPitchToKey midiCh pitch in
+        let (PitchMapKey key) = chanPitchToKey midiCh pitch in
         { state with
-          depressedNotes=
-            KeyPitchMap.add key v state.depressedNotes
+          depressedNotes= KeyPitchMap.add key v state.depressedNotes
         ; currentNote= Some (midiCh, pitch, v)
-        ; currentPitch=  pitch }
+        ; currentPitch= pitch }
     | NoteOff (midiCh, pitch, Velo _) ->
-       let PitchMapKey key = chanPitchToKey midiCh pitch in
+        let (PitchMapKey key) = chanPitchToKey midiCh pitch in
         { state with
-          depressedNotes=
-            KeyPitchMap.remove key state.depressedNotes
+          depressedNotes= KeyPitchMap.remove key state.depressedNotes
         ; currentNote= None }
     | Control (midiCh, ctrl, value) ->
-       let (CtrlMapKey key) = chanCtrlToKey midiCh ctrl in
+        let (CtrlMapKey key) = chanCtrlToKey midiCh ctrl in
         { state with
-          controlValues=
-            ControllerMap.add
-              key value state.controlValues
+          controlValues= ControllerMap.add key value state.controlValues
         ; currentNote= None }
     | _ -> {state with currentNote= None}
 
@@ -433,27 +429,33 @@ module MidiState = struct
 
   let getVeloOfKey key keyPitchMap =
     let mvalue = KeyPitchMap.find_opt key keyPitchMap in
-    match mvalue with None -> Velo 0 | Some v -> Velo v
+    match mvalue with
+    | None -> Velo 0
+    | Some v -> Velo v
 
   let filterChannel (MidiCh channel) keyPitchMap =
-    KeyPitchMap.filter (fun key _ -> key / 128 == channel) keyPitchMap 
+    KeyPitchMap.filter (fun key _ -> key / 128 == channel) keyPitchMap
 
   let getPitchMapKeys state =
-    state.depressedNotes |> KeyPitchMap.bindings |> List.map (mapFst (fun key -> PitchMapKey key))
+    state.depressedNotes |> KeyPitchMap.bindings
+    |> List.map (mapFst (fun key -> PitchMapKey key))
 
   let getControlMapKeys state =
-    state.controlValues |> ControllerMap.bindings |> List.map (mapFst (fun key -> CtrlMapKey key))
+    state.controlValues |> ControllerMap.bindings
+    |> List.map (mapFst (fun key -> CtrlMapKey key))
 
   let getDepressedKeysAnyChannel state =
-    state
-    |> getPitchMapKeys |> List.map (mapFst justTheKey)
+    state |> getPitchMapKeys |> List.map (mapFst justTheKey)
 
   let getDepressedKeysChannel channel state =
-    state.depressedNotes |> filterChannel channel |> KeyPitchMap.bindings |> List.map (mapFst (fun k -> PitchMapKey k |> justTheKey))
+    state.depressedNotes |> filterChannel channel |> KeyPitchMap.bindings
+    |> List.map (mapFst (fun k -> PitchMapKey k |> justTheKey))
 
   let getFirstNote channel state =
     let lst = getDepressedKeysChannel channel state in
-    match lst with [] -> (Pitch 0, Velo 0) | (p, v) :: _ -> (p, v)
+    match lst with
+    | [] -> (Pitch 0, Velo 0)
+    | (p, v) :: _ -> (p, v)
 
   (* zero if there is no controller *)
   let getControllerValue channel ctrlNumber state =
@@ -489,7 +491,11 @@ module MidiState = struct
     let open Reader.Ops in
     Reader.ask ()
     >>= fun state ->
-    let opt = match state.currentNote with Some _ -> Some value | _ -> None in
+    let opt =
+      match state.currentNote with
+      | Some _ -> Some value
+      | _ -> None
+    in
     Reader.return opt
 
   let triggerFromNoteR f =
@@ -514,13 +520,14 @@ module MidiState = struct
 
   let boolFromChannelR channel =
     let open Reader.Ops in
-    Reader.ask () >>= (fun state ->
+    Reader.ask ()
+    >>= fun state ->
     let bool =
       match state.currentNote with
-      | Some (c,_,_) -> isChannel c channel
+      | Some (c, _, _) -> isChannel c channel
       | _ -> false
     in
-    Reader.return bool)
+    Reader.return bool
 
   let getCurrentOfChannel channel state =
     let curr = state.currentNote in
@@ -570,10 +577,11 @@ let chFromByte byte = MidiCh (byte land 0x0f)
 let fromRaw (status, data1, data2) =
   let statusByte = status land 0xf0 in
   match statusByte with
-  | 0x90 ->
-      if data2 > 0 (* Zero velocity note on, lets not *) then
-        NoteOn (chFromByte status, Pitch data1, Velo data2)
-      else NoteOff (chFromByte status, Pitch data1, Velo data2)
+  | 0x90 -> (
+    match data2 with
+    (* Zero velocity note on, lets not *)
+    | 0 -> NoteOff (chFromByte status, Pitch data1, Velo data2)
+    | velo -> NoteOn (chFromByte status, Pitch data1, Velo velo) )
   | 0x80 -> NoteOff (chFromByte status, Pitch data1, Velo data2)
   | 0xb0 -> Control (chFromByte status, MidiCtrl data1, MidiVal data2)
   | 0xf8 -> ClockTick
@@ -615,25 +623,25 @@ let withInt interval fillerEvent sq =
   concatMap (fun (src, n) () -> Cons (src, repeat n fillerEvent)) ctrl
 
 (* does not work: *
-let intervalNotesOnly interval sq =
-  let rec aux interval sq curr () =
-    if curr < 1 then
-      match interval () with
-      | Nil -> Nil
-      | Cons (newinterval, itl) -> (
-        match sq () with
-        | Cons (NoteEvent (c, p, v, d), tail) ->
-            Cons (NoteEvent (c, p, v, d), aux itl tail newinterval)
-        | any -> any )
-    else
-      match sq () with
-      | Cons (NoteEvent (_, _, _, _), _) ->
-          Cons (SilenceEvent, aux interval sq (curr - 1))
-      | Cons (evt, tail) -> Cons (evt, aux interval tail curr)
-      | Nil -> Nil
-  in
-  aux interval sq 0
-   *)
+   let intervalNotesOnly interval sq =
+     let rec aux interval sq curr () =
+       if curr < 1 then
+         match interval () with
+         | Nil -> Nil
+         | Cons (newinterval, itl) -> (
+           match sq () with
+           | Cons (NoteEvent (c, p, v, d), tail) ->
+               Cons (NoteEvent (c, p, v, d), aux itl tail newinterval)
+           | any -> any )
+       else
+         match sq () with
+         | Cons (NoteEvent (_, _, _, _), _) ->
+             Cons (SilenceEvent, aux interval sq (curr - 1))
+         | Cons (evt, tail) -> Cons (evt, aux interval tail curr)
+         | Nil -> Nil
+     in
+     aux interval sq 0
+*)
 
 type ordering = Greater | Smaller | Equal
 
@@ -648,7 +656,7 @@ let rec insertBy cmp v sq () =
 let insertMidiEvent evt sq =
   insertBy
     (fun (t1, _) (t2, _) ->
-      if t1 > t2 then Greater else if t1 < t2 then Smaller else Equal)
+      if t1 > t2 then Greater else if t1 < t2 then Smaller else Equal )
     evt sq
 
 let rec sequenceRelative start sq () =
@@ -689,7 +697,9 @@ let dequeue = Fqueue.dequeue
 let enqueue = Fqueue.enqueue
 
 let enqueueOnlyNotes v q =
-  match v with MidiSilence -> q | any -> Fqueue.enqueue any q
+  match v with
+  | MidiSilence -> q
+  | any -> Fqueue.enqueue any q
 
 let print_state m label =
   let now = m.now in
@@ -752,7 +762,7 @@ type midiEventSeq = midiEvent Seq.t
 let emptyBundle = Bundle (SilenceEvent, Seq.empty)
 
 let polyphoneBundlesSq (seq : midiEvent Seq.t Seq.t) =
-  let soloBundle = 
+  let soloBundle =
     Seq.map (fun midiEvtSq -> Seq.map soloBundle midiEvtSq) seq
   in
   Seq.fold_left mergeBundlesSq (st emptyBundle) soloBundle
@@ -851,7 +861,7 @@ let scale =
   map
     (fun (i, amp, time) ->
       let step = i mod 12 in
-      mkNote 1 ((step * 7) + 36) amp time)
+      mkNote 1 ((step * 7) + 36) amp time )
     (zip3 count amp timing)
 
 let controller midiRef midiCh midiCtrl =
@@ -1019,7 +1029,9 @@ let insertNoteInScore (MidiScore (Sorted lst)) note =
   MidiScore (Sorted (insertSorted compareDelNote lst note))
 
 let unconsDelNotes (MidiScore (Sorted lst)) =
-  match lst with h :: tl -> Some (h, MidiScore (Sorted tl)) | [] -> None
+  match lst with
+  | h :: tl -> Some (h, MidiScore (Sorted tl))
+  | [] -> None
 
 let scoreOfList lst = List.fold_left insertNoteInScore emptyScore lst
 
@@ -1057,8 +1069,8 @@ let cleanup (PlayState {now; score}) =
       PlayState
         { now
         ; score=
-            MidiScore
-              (Sorted (List.filter (fun n -> isDelNotePassed n now) lst)) }
+            MidiScore (Sorted (List.filter (fun n -> isDelNotePassed n now) lst))
+        }
 
 let addScoreToPlayer (newScore : midiScore) (PlayState {now; score}) =
   let scoreWithOffset = shiftScoreTime now newScore in
@@ -1097,12 +1109,36 @@ type relNote = RelNote of deltaT * midiEvent
 
 let relToScore relScore =
   let seqRev (clock, lst) note =
-    let wait, evt = match note with RelNote (Samps w, e) -> (w, e) in
+    let wait, evt =
+      match note with
+      | RelNote (Samps w, e) -> (w, e)
+    in
     let newClock = clock + wait in
     (newClock, DelayedNote (Samps newClock, evt) :: lst)
   in
   let notes = List.fold_left seqRev (0, []) relScore |> snd in
   MidiScore (Sorted (List.rev notes))
+
+let mergeMidiStreams sqa sqb =
+  (* this merges streams of midi events, so it becomes one stream of events. When two events "collide", it pushes one onto the stack.
+     events on the stack have priority on newer events
+  *)
+  let module Q = Fqueue in
+  let handleEvents (a, b) (overflow, _) =
+    let optFlow = Q.peekdeq overflow in
+    match (a, b, optFlow) with
+    | SilenceEvent, SilenceEvent, None -> (Q.empty, SilenceEvent)
+    | SilenceEvent, SilenceEvent, Some (evt, rest) -> (rest, evt)
+    | SilenceEvent, evtb, Some (evt, rest) -> (Q.enqueue evtb rest, evt)
+    | evta, SilenceEvent, Some (evt, rest) -> (Q.enqueue evta rest, evt)
+    | evta, SilenceEvent, None -> (Q.empty, evta)
+    | SilenceEvent, evtb, None -> (Q.empty, evtb)
+    | evta, evtb, None -> (Q.enqueue evtb Q.empty, evta)
+    | evta, evtb, Some (evt, rest) ->
+        (rest |> Q.enqueue evta |> Q.enqueue evtb, evt)
+  in
+  let zipped = Cisp.zip sqa sqb in
+  recursive zipped (Q.empty, SilenceEvent) handleEvents (fun (_, evt) -> evt)
 
 let mkRhythm sq note rest =
   (* note and rest should be of type int Seq.t 
@@ -1162,8 +1198,7 @@ let midiInputTestFun input =
   |> serialize |> map toRaw
  *)
 
-let overTrigger events trigger =
-  weavePattern trigger events (st SilenceEvent)
+let overTrigger events trigger = weavePattern trigger events (st SilenceEvent)
 
 let trigger event midiIn =
   let t = map isNoteOn midiIn in

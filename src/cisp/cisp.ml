@@ -2,10 +2,10 @@ open Seq
 
 (* Seq is a thunk that when forced returns a value and a thunk to get the tail *)
 
-(* 
-this is the same as 
-let thunk x = fun () -> x 
- *)
+(*
+   this is the same as
+   let thunk x = fun () -> x
+*)
 
 let samplerate = ref !Process.sample_rate
 
@@ -31,22 +31,20 @@ let snd (_, x) = x
 
 let uncons sq =
   match sq () with
-  | Seq.Cons(x,xs) -> Some (x,xs)
+  | Seq.Cons (x, xs) -> Some (x, xs)
   | Seq.Nil -> None
 
 let mapFst f (a, b) = (f a, b)
-let mapBoth f (a,b) = (f a,f b)
+
+let mapBoth f (a, b) = (f a, f b)
+
 let mapSnd f (a, b) = (a, f b)
 
 (** f (a -> b) -> f a -> f b *)
 
 let flip f a b = f b a
 
-let rec gcd a b =
-  if b = 0 then
-    a
-  else
-    gcd b (a mod b)
+let rec gcd a b = if b = 0 then a else gcd b (a mod b)
 
 let minimum a b = if a > b then b else a
 
@@ -67,22 +65,18 @@ let wrRef rf valueSq = map (fun x -> rf := x) valueSq
 let singleton a = [a]
 
 let rec takeLst n lst =
-  if n <= 0 then
-    []
-  else 
+  if n <= 0 then []
+  else
     match lst with
     | h :: tl -> h :: takeLst (n - 1) tl
-    | [] -> [] 
+    | [] -> []
 
-let rec listRepeat n x =
-  if n <= 0
-  then []
-  else x :: listRepeat (n - 1) x
+let rec listRepeat n x = if n <= 0 then [] else x :: listRepeat (n - 1) x
 
 let shuffle d =
-    let nd = List.map (fun c -> (Random.bits (), c)) d in
-    let sond = List.sort compare nd in
-    List.map snd sond
+  let nd = List.map (fun c -> (Random.bits (), c)) d in
+  let sond = List.sort compare nd in
+  List.map snd sond
 
 (* List a -> (List a -> b) -> List b *)
 
@@ -90,7 +84,9 @@ let rec zip a b () =
   match a () with
   | Nil -> Nil
   | Cons (a, atl) -> (
-    match b () with Nil -> Nil | Cons (b, btl) -> Cons ((a, b), zip atl btl) )
+    match b () with
+    | Nil -> Nil
+    | Cons (b, btl) -> Cons ((a, b), zip atl btl) )
 
 let applySq fSq sq = zip fSq sq |> Seq.map (fun (f, x) -> f x)
 
@@ -102,7 +98,7 @@ let syncEffect sq effectSq =
   (* This is a way to synchronize effects with a stream of values:
      an "effectSq" is a Seq.t of unit, that (may) mutate some state.
      sq is the actual result stream, effect the side effect.
-   *)
+  *)
   let both = zip sq effectSq in
   map (fun (signal, effect) -> effect ; signal) both
 
@@ -112,7 +108,7 @@ let effectSync effectSq sq =
 
 let effect = effectSync
 
-(* this is a global ref used to keep time, for lines and time based sync 
+(* this is a global ref used to keep time, for lines and time based sync
    You have to sync this clock with yout output stream, for example by syncing it with the input seqs of Jack.playSeq
    see inTime
 *)
@@ -124,35 +120,45 @@ let rec masterClock () = Cons (updateCurrentSample (), masterClock)
 
 (* sync this effect with a list (this is handy with multichannel streams *)
 let inTime lst =
-  match lst with h :: ts -> syncEffect h masterClock :: ts | [] -> []
+  match lst with
+  | h :: ts -> syncEffect h masterClock :: ts
+  | [] -> []
 
 let withEffect effect lst =
-  match lst with h :: ts -> syncEffect h effect :: ts | [] -> []
+  match lst with
+  | h :: ts -> syncEffect h effect :: ts
+  | [] -> []
 
 let test sq = map print_float sq
 
-(* applicative functor for seq.t 
+(* applicative functor for seq.t
    Note this is treating the seq as a ZipList not as a list.
    the streams are consumed in parallel instead of cartesian
-   
-    map (fun a b c = a * b * c) seq1 |> andMap seq2 |> andMap seq3 
 
- *)
+    map (fun a b c = a * b * c) seq1 |> andMap seq2 |> andMap seq3
+*)
 let andMap seq seqOfFuns =
   let zipped = zip seq seqOfFuns in
   map (fun (x, f) -> f x) zipped
 
 let optionLiftA2 f a b =
-  match (a, b) with Some a, Some b -> Some (f a b) | _, _ -> None
+  match (a, b) with
+  | Some a, Some b -> Some (f a b)
+  | _, _ -> None
 
 let optionAndMap a f =
-  match (f, a) with Some f, Some a -> Some (f a) | _, _ -> None
+  match (f, a) with
+  | Some f, Some a -> Some (f a)
+  | _, _ -> None
 
 let ofInt = Float.of_int
 
 let ofFloat = Int.of_float
 
-let rec length sq = match sq () with Nil -> 0 | Cons (_, tl) -> 1 + length tl
+let rec length sq =
+  match sq () with
+  | Nil -> 0
+  | Cons (_, tl) -> 1 + length tl
 
 let fromBinary b =
   let rec aux b base =
@@ -161,36 +167,37 @@ let fromBinary b =
   aux b 1
 
 let toBinary x =
-  let divMod2 x = (* use bitshift *)
+  let divMod2 x =
+    (* use bitshift *)
     let q = x lsr 1 in
-    (q,(x - (q lsl 1)))
+    (q, x - (q lsl 1))
   in
   let rec aux n =
     match n with
     | 0 -> []
     | 1 -> [1]
-    | x -> divMod2 x |> (fun (q,r) -> r :: aux q)
+    | x -> divMod2 x |> fun (q, r) -> r :: aux q
   in
   aux x |> List.rev
 
 let toBinary0 x =
-  let divMod2 x = (* use bitshift *)
+  let divMod2 x =
+    (* use bitshift *)
     let q = x lsr 1 in
-    (q,(x - (q lsl 1)))
+    (q, x - (q lsl 1))
   in
   let rec aux n =
     match n with
     | 0 -> [0]
     | 1 -> [1]
-    | x -> divMod2 x |> (fun (q,r) -> r :: aux q)
+    | x -> divMod2 x |> fun (q, r) -> r :: aux q
   in
   aux x |> List.rev
-  
-           
-      
 
 let rec append a b () =
-  match a () with Nil -> b () | Cons (h, ls) -> Cons (h, append ls b)
+  match a () with
+  | Nil -> b ()
+  | Cons (h, ls) -> Cons (h, append ls b)
 
 (*
 let rec appendSeq a b =
@@ -203,7 +210,6 @@ let rec appendAlt a b () =
   | Nil -> b ()
   | Cons (h, tl) -> fun () -> Cons(h, appendAlt tl b)
 *)
-
 
 (* When the seq reaches Nil, restart from the beginning. This is an implicit infinite stream, may be better use InfSeq if you want this *)
 let rec cycle a () =
@@ -223,31 +229,49 @@ let rangei a b =
   if b < a then aux b a else aux a b
 
 (* not sure about these *)
-let head ll = match ll () with Nil -> None | Cons (h, _) -> Some h
+let head ll =
+  match ll () with
+  | Nil -> None
+  | Cons (h, _) -> Some h
 
-let tail ll = match ll () with Nil -> None | Cons (_, tl) -> Some tl 
+let tail ll =
+  match ll () with
+  | Nil -> None
+  | Cons (_, tl) -> Some tl
 
-(* this is not the same as ofList, but should be! 
-let from_list list () =
-  List.fold_right (fun x acc -> Cons (x, acc |> thunk)) list Nil
-  *)
+(* this is not the same as ofList, but should be!
+   let from_list list () =
+     List.fold_right (fun x acc -> Cons (x, acc |> thunk)) list Nil
+*)
 
 let ofList l =
-  let rec aux l () = match l with [] -> Nil | x :: l' -> Cons (x, aux l') in
+  let rec aux l () =
+    match l with
+    | [] -> Nil
+    | x :: l' -> Cons (x, aux l')
+  in
   aux l
 
 let rec toList sq =
-  match sq () with Nil -> [] | Cons (h, ts) -> h :: toList ts
+  match sq () with
+  | Nil -> []
+  | Cons (h, ts) -> h :: toList ts
 
 let rec take n sq () =
   if n <= 0 then Nil
-  else match sq () with Nil -> Nil | Cons (h, ts) -> Cons (h, take (n - 1) ts)
+  else
+    match sq () with
+    | Nil -> Nil
+    | Cons (h, ts) -> Cons (h, take (n - 1) ts)
 
 let for_example lst = lst |> take 40 |> toList
 
 let rec drop n lst () =
   if n <= 0 then lst ()
-  else match lst () with Nil -> Nil | Cons (_, tail) -> drop (n - 1) tail ()
+  else
+    match lst () with
+    | Nil -> Nil
+    | Cons (_, tail) -> drop (n - 1) tail ()
 
 let rec group chunkSize sq () =
   match chunkSize () with
@@ -296,16 +320,27 @@ let rec filter f lst =
   | Cons (h, tl) -> if f h then Cons (h, fun () -> filter f tl) else filter f tl
 
 let filterOptions sq =
-  filter (fun opt -> match opt with Some _ -> true | None -> false) sq
+  filter
+    (fun opt ->
+      match opt with
+      | Some _ -> true
+      | None -> false )
+    sq
 
 let list_fold_left1 f lst =
-  match lst with x :: xs -> Some (List.fold_left f x xs) | [] -> None
+  match lst with
+  | x :: xs -> Some (List.fold_left f x xs)
+  | [] -> None
 
 let rec foldr f z ll =
-  match ll () with Nil -> z | Cons (h, tl) -> f h (foldr f z tl)
+  match ll () with
+  | Nil -> z
+  | Cons (h, tl) -> f h (foldr f z tl)
 
 let rec fold_right f s acc =
-  match s () with Nil -> acc | Cons (e, s') -> f e (fold_right f s' acc)
+  match s () with
+  | Nil -> acc
+  | Cons (e, s') -> f e (fold_right f s' acc)
 
 let rec concat str () =
   match str () with
@@ -346,7 +381,7 @@ let mozes f lst =
   in
   aux [] [] lst
 
-(* this is a sorted list type, to insert more efficientely, useful for time based score 
+(* this is a sorted list type, to insert more efficientely, useful for time based score
    The idea is that you only update it using non-order breaking functions, meaning you do not have to sort it all the time *)
 type 'a sorted = Sorted of 'a list
 
@@ -393,33 +428,40 @@ let for_all f sq =
   aux sq true
 
 (* a little look ahead *)
-let is_empty sq = match sq () with Nil -> true | _ -> false
+let is_empty sq =
+  match sq () with
+  | Nil -> true
+  | _ -> false
 
 let has_more sq = is_empty sq |> not
 
 let foldHeads acc x =
-  match x () with Nil -> acc | Cons (h, _) -> Cons (h, fun () -> acc)
+  match x () with
+  | Nil -> acc
+  | Cons (h, _) -> Cons (h, fun () -> acc)
 
 let headsOfStreams sq () = Seq.fold_left foldHeads Nil sq
 
 let foldTail acc x =
-  match x () with Nil -> acc | Cons (_, ts) -> Cons (ts, fun () -> acc)
+  match x () with
+  | Nil -> acc
+  | Cons (_, ts) -> Cons (ts, fun () -> acc)
 
 let tailsOfStreams sq () = Seq.fold_left foldTail Nil sq
 
 (* essential function from cisp! This allows you to take a bunch of streams and weave them together 1 by 1
-A repeating pattern where the sequence of values are generated by streams themselves. 
+   A repeating pattern where the sequence of values are generated by streams themselves.
 
-a = 1,2,3
-b = 11,12,13
-c = 100,200,300
+   a = 1,2,3
+   b = 11,12,13
+   c = 100,200,300
 
-transpose a,b,c > 1,11,100 2,12,200 3,13,300
+   transpose a,b,c > 1,11,100 2,12,200 3,13,300
 
-sq may not be infinite, but the sqs within sq can be (!)
+   sq may not be infinite, but the sqs within sq can be (!)
 
-There is also an explicit InfSeq version of this function.
- *)
+   There is also an explicit InfSeq version of this function.
+*)
 let rec transpose sq () =
   match sq () with
   | Nil -> Nil
@@ -433,28 +475,38 @@ let rec transpose sq () =
 
 (*
   [[a]] -> [a] .. [[1;2;3];[1;2];[11;12];[99]] -> [1;1;11;99]  *)
-let list_fold_heads_with (emptyThing: 'a) (f: 'b -> 'a -> 'a) (lst: 'b Seq.t list) =
+let list_fold_heads_with (emptyThing : 'a) (f : 'b -> 'a -> 'a)
+    (lst : 'b Seq.t list) =
   let rec aux ls () =
     let heads = List.filter_map head ls in
-    let folded = List.fold_right f heads emptyThing in 
+    let folded = List.fold_right f heads emptyThing in
     let tails = List.filter_map tail ls in
-    Seq.Cons( folded, aux tails)
+    Seq.Cons (folded, aux tails)
   in
   aux lst
 
 let sq_lst_transcat lstOfSq =
-  list_fold_heads_with Seq.empty (fun x y -> fun () -> Seq.Cons (x,y)) lstOfSq |> concat
+  list_fold_heads_with Seq.empty (fun x y () -> Seq.Cons (x, y)) lstOfSq
+  |> concat
 
 let sq_lst_tranpose lstOfSq =
-  list_fold_heads_with Seq.empty (fun x y -> fun () -> Seq.Cons (x,y)) lstOfSq
+  list_fold_heads_with Seq.empty (fun x y () -> Seq.Cons (x, y)) lstOfSq
 
 let transcat sq = sq |> transpose |> concat
 
 let transList lst = lst |> ofList |> transcat
 
 let rec transpose_list lst =
-  let foldHeads acc x = match x with [] -> acc | h :: _ -> h :: acc in
-  let foldTails acc x = match x with [] -> acc | _ :: ts -> ts :: acc in
+  let foldHeads acc x =
+    match x with
+    | [] -> acc
+    | h :: _ -> h :: acc
+  in
+  let foldTails acc x =
+    match x with
+    | [] -> acc
+    | _ :: ts -> ts :: acc
+  in
   match lst with
   | [] -> []
   | [] :: xss -> transpose_list xss
@@ -493,30 +545,22 @@ let countTill n =
   aux 0 n
 
 let rec zipList a b =
-  match (a,b) with
-  | (x::xs,y::ys) ->
-       (x,y) :: zipList xs ys
-  | (_,_) -> []
-           
+  match (a, b) with
+  | x :: xs, y :: ys -> (x, y) :: zipList xs ys
+  | _, _ -> []
+
 let rec zipListWith f a b =
-  match (a,b) with
-  | (x::xs,y::ys) ->
-     f x y :: zipListWith f xs ys
-  | (_,_) -> []
+  match (a, b) with
+  | x :: xs, y :: ys -> f x y :: zipListWith f xs ys
+  | _, _ -> []
 
 let joinLst a lst =
-  let insertA lst =
-    a :: lst
-  in
+  let insertA lst = a :: lst in
   lst |> List.rev |> List.map insertA |> List.rev |> List.concat
 
 let joinB lst bridge =
-  let insertB lst =
-    bridge @ lst
-  in
+  let insertB lst = bridge @ lst in
   lst |> List.rev |> List.map insertB |> List.rev |> List.concat
-           
-  
 
 let unzip sq = (map fst sq, map snd sq)
 
@@ -680,24 +724,24 @@ let rec simpleRecursive init update evaluate () =
 let walki start steps = recursive1 steps start (fun x start -> x + start) id
 
 let walki2 start stepsSq =
-  let f (previous,steps) =
+  let f (previous, steps) =
     match steps () with
     | Nil -> None
-    | Cons(step,tail) ->
-       let next = previous + step in
-         Some (next,(next, tail))
+    | Cons (step, tail) ->
+        let next = previous + step in
+        Some (next, (next, tail))
   in
-  Seq.Cons(start,Seq.unfold f (start,stepsSq))
+  Seq.Cons (start, Seq.unfold f (start, stepsSq))
 
 (* float variant *)
-let rec walk start steps () = 
+let rec walk start steps () =
   match steps () with
   | Cons (h, ls) ->
       let next = start +. h in
       Cons (start, walk next ls)
   | Nil -> Nil
 
-(* bring your own function *) 
+(* bring your own function *)
 let rec iterwalk start f steps () =
   match steps () with
   | Cons (h, ls) ->
@@ -705,7 +749,7 @@ let rec iterwalk start f steps () =
       Cons (start, iterwalk next f ls)
   | Nil -> Nil
 
-(* operator is a function 
+(* operator is a function
    to get the next value *)
 let rec boundedFuncWalk start steps operator wrapfunc () =
   match steps () with
@@ -734,7 +778,6 @@ let boundedWalkf start steps wrapfunc =
   in
   aux start steps
 
-
 (* dealing with arrays / buffers *)
 let cap arr = Array.length arr
 
@@ -745,7 +788,9 @@ let safeIdx len idx =
 (* guarentee that we are using a power of two *)
 type powerOfTwo = PowerOfTwo of int
 
-let isPowerOfTwo = function 0 -> false | x -> x land (x - 1) = 0
+let isPowerOfTwo = function
+  | 0 -> false
+  | x -> x land (x - 1) = 0
 
 let rec pow a = function
   | 0 -> 1
@@ -788,7 +833,10 @@ let listWalk arr step () =
 
 type 'a weightList = Weights of (int * 'a) list
 
-let mkWeights lst = match lst with [] -> None | w -> Some (Weights w)
+let mkWeights lst =
+  match lst with
+  | [] -> None
+  | w -> Some (Weights w)
 
 let weights weightLst () =
   let sumWeights = List.fold_left (fun acc (_, w) -> w + acc) 0 weightLst in
@@ -864,7 +912,11 @@ let indexCub arr indexer =
   (* a____b__x__c___d *)
   let f idx =
     let b = idx |> Int.of_float in
-    let a = match b - 1 with -1 -> len | other -> other in
+    let a =
+      match b - 1 with
+      | -1 -> len
+      | other -> other
+    in
     let c = b + 1 in
     let d = b + 2 in
     let y0, y1, y2, y3 = (ifun a, ifun b, ifun c, ifun d) in
@@ -872,7 +924,7 @@ let indexCub arr indexer =
   in
   map f indexer
 
-(* segmod like: a (finite) full phase cycle of a sinewave 
+(* segmod like: a (finite) full phase cycle of a sinewave
    https://github.com/lucdoebereiner/segmod
 *)
 let sineseg wavesamps =
@@ -884,8 +936,8 @@ let sineseg wavesamps =
 let arr_of_seq str = Array.of_seq str
 
 (* TODO
-let rec iterates start fs =
-  match fs () with Nil -> Nil | Cons (h, ls) -> start () fs *)
+   let rec iterates start fs =
+     match fs () with Nil -> Nil | Cons (h, ls) -> start () fs *)
 
 let rec repeat n x () = if n > 0 then Cons (x, repeat (n - 1) x) else Nil
 
@@ -893,8 +945,8 @@ let hold repeats source =
   let ctrl = zip repeats source in
   map (fun (n, src) -> repeat n src) ctrl |> concat
 
-
-let embed str () = Cons (str, thunk Nil) (* create a singleton stream -> Seq.return *)
+let embed str () = Cons (str, thunk Nil)
+(* create a singleton stream -> Seq.return *)
 
 (* returnes the loops and the tail of the source
    preferably source is infinite *)
@@ -946,7 +998,7 @@ let ch arr =
 
 let mtof midi = 440.0 *. (2.0 ** ((midi -. 69.0) /. 12.0))
 
-let mtor midi = 2.0 ** (( midi -. 69.0) /. 12.0)
+let mtor midi = 2.0 ** ((midi -. 69.0) /. 12.0)
 
 let ftom freq = (12.0 *. log (freq /. 440.0)) +. 69.0
 
@@ -965,7 +1017,7 @@ let lift f a b = f (st a) (st b)
 
 let pair a b = (a, b)
 
-let triple a b c = (a,b,c)
+let triple a b c = (a, b, c)
 
 let lineSegment curr target n () =
   let rate = (target -. curr) /. n in
@@ -1014,7 +1066,7 @@ let mkDel max del src () =
       let x1 = delay.{(x0_idx + 1) mod max} in
       let xp = later -. Float.of_int x0_idx in
       let value = linInterp x0 x1 xp in
-      wr ; value)
+      wr ; value )
     readParameters
 
 let genSine size =
@@ -1049,9 +1101,13 @@ let rec interleave xs ys () =
 let interleave xs ys =
   let rec aux startWithX xs ys () =
     if startWithX then
-      match xs () with Nil -> Nil | Cons (x, xtl) -> Cons (x, aux false xtl ys)
+      match xs () with
+      | Nil -> Nil
+      | Cons (x, xtl) -> Cons (x, aux false xtl ys)
     else
-      match ys () with Nil -> Nil | Cons (y, ytl) -> Cons (y, aux true xs ytl)
+      match ys () with
+      | Nil -> Nil
+      | Cons (y, ytl) -> Cons (y, aux true xs ytl)
   in
   aux true xs ys
 
@@ -1064,20 +1120,20 @@ then you will get
 1, 11, 12, 2, 13, 14
 This is different from zipWith3, since there are no values thrown away
  *)
-(* 
-Below is kept as a warning to myself:
-this implementation caused problems, it was peeking ahead in the wrong place causing CPU leak!
-It was evaluating things it was not using. For example ys when the next is a xs.
-let rec weavePattern pattern xs ys () =
-  match (xs (), ys ()) with
-  | Nil, Nil -> Nil
-  | xs, Nil -> xs
-  | Nil, ys -> ys
-  | Cons (x, xtl), Cons (y, ytl) -> (
-    match pattern () with
-    | Cons (true, ptl) -> Cons (x, weavePattern ptl xtl ys)
-    | Cons (false, ptl) -> Cons (y, weavePattern ptl xs ytl)
-    | Nil -> Nil )*)
+(*
+   Below is kept as a warning to myself:
+   this implementation caused problems, it was peeking ahead in the wrong place causing CPU leak!
+   It was evaluating things it was not using. For example ys when the next is a xs.
+   let rec weavePattern pattern xs ys () =
+     match (xs (), ys ()) with
+     | Nil, Nil -> Nil
+     | xs, Nil -> xs
+     | Nil, ys -> ys
+     | Cons (x, xtl), Cons (y, ytl) -> (
+       match pattern () with
+       | Cons (true, ptl) -> Cons (x, weavePattern ptl xtl ys)
+       | Cons (false, ptl) -> Cons (y, weavePattern ptl xs ytl)
+       | Nil -> Nil )*)
 
 let rec weavePattern pattern xs ys () =
   match pattern () with
@@ -1099,7 +1155,9 @@ let weaveArray arr indexer =
   map
     (fun idx ->
       let sq = fIdx idx in
-      match sq () with Cons (h, tail) -> fWr idx tail ; h | Nil -> 0.0)
+      match sq () with
+      | Cons (h, tail) -> fWr idx tail ; h
+      | Nil -> 0.0 )
     indexer
 
 let weaveArrayI arr indexer =
@@ -1108,7 +1166,9 @@ let weaveArrayI arr indexer =
   map
     (fun idx ->
       let sq = fIdx idx in
-      match sq () with Cons (h, tail) -> fWr idx tail ; h | Nil -> 0)
+      match sq () with
+      | Cons (h, tail) -> fWr idx tail ; h
+      | Nil -> 0 )
     indexer
 
 let mkPattern sqA sqB nA nB = seq [sqA; sqB] |> hold (interleave nA nB)
@@ -1125,7 +1185,7 @@ let pulse n sq filler =
   n |> trunc
   |> map (fun n () -> Cons (1.0, repeat (clip 0 441000 (n - 1)) 0.0))
   |> concat
- *)
+*)
 type pulseGenState = {phase: float; out: float}
 
 (* this uses a floating point counter, so will also do non-integer intervals, rounding it off *)
@@ -1139,18 +1199,18 @@ let pulsegen freqSq =
   in
   recursive1 freqSq init update (fun state -> state.out)
 
-type clockGenState = {phase : float; out : bool}
+type clockGenState = {phase: float; out: bool}
 
 let clockGen freqSq =
   let init = {phase= 1.0; out= true} in
   let sr = !Process.sample_rate in
   let update newFreq state =
     let phaseIncr = newFreq /. sr |> clip 0.0 1.0 in
-    if state.phase >= 1.0 then {out= true; phase= state.phase -. 1.0 +. phaseIncr}
+    if state.phase >= 1.0 then
+      {out= true; phase= state.phase -. 1.0 +. phaseIncr}
     else {out= false; phase= state.phase +. phaseIncr}
   in
   recursive1 freqSq init update (fun state -> state.out)
-  
 
 (**  
    * play back a source of boolean triggers 
@@ -1229,11 +1289,17 @@ let getPreciseTime () = (!currentSampleCounter |> Float.of_int) /. 44100.0
 
 (*Mtime_clock.elapsed () |> Mtime.Span.to_uint64_ns |> Int64.to_float |> ( *. ) Mtime.ns_to_s*)
 
-let updateOpt old newOpt = match newOpt with Some value -> value | None -> old
+let updateOpt old newOpt =
+  match newOpt with
+  | Some value -> value
+  | None -> old
 
 let ofOpt default optSq =
   recursive optSq default
-    (fun x state -> match x with Some value -> value | None -> state)
+    (fun x state ->
+      match x with
+      | Some value -> value
+      | None -> state )
     id
 
 (* tlines, may not work well  *)
@@ -1327,7 +1393,7 @@ let bouncyWalk start lower higher stepSq =
     (fun previous control ->
       if previous > higher then previous -. abs_float control
       else if previous < lower then previous +. abs_float control
-      else previous +. control)
+      else previous +. control )
     id
 
 let rec until condition sq () =
@@ -1396,7 +1462,7 @@ let biquad_static a0 a1 a2 b0 b1 b2 x =
         (i *. b0a0) +. (b1a0 *. x1) +. (b2a0 *. x2) -. (a1a0 *. y1)
         -. (a2a0 *. y2)
       in
-      [|i; x1; new_y; y1; new_y|])
+      [|i; x1; new_y; y1; new_y|] )
     (fun s -> s.(4))
 
 let blpf_static f q x =
@@ -1437,14 +1503,14 @@ let bbpf_static f q x =
 
 type dcFilterState = {previousX: float; out: float}
 
-(* TESTED, from supercollider, using 0.995 as factor 
+(* TESTED, from supercollider, using 0.995 as factor
    y[n] = x[n] - x[n-1] + coef * y[n-1] *)
 
 let leakDC coef inputSq =
   recursive inputSq {out= 0.0; previousX= 0.0}
     (fun xIn state ->
       let newOut = xIn -. state.previousX +. (coef *. state.out) in
-      {previousX= xIn; out= newOut})
+      {previousX= xIn; out= newOut} )
     (fun state -> state.out)
 
 (* should move this into its own module *)
@@ -1499,9 +1565,10 @@ let updateScheduler (SectionScheduler scheduler) =
   in
   let newCurrentSecs, future =
     scheduler.playingScore
-    |> Sorted.mozesSorted (fun (TimedSection e) -> e.startSample <= scheduler.now)
+    |> Sorted.mozesSorted (fun (TimedSection e) ->
+           e.startSample <= scheduler.now )
     |> mapFst (fun (Sorted.Sorted playableEvts) ->
-           List.map (toPlay scheduler.now) playableEvts)
+           List.map (toPlay scheduler.now) playableEvts )
   in
   let currentSects = newCurrentSecs @ dropFinished scheduler.currentSecs in
   let f (sum, tails) (PlayingSection playingSeq) =
@@ -1557,7 +1624,7 @@ let decayPulse fb inSq =
     (fun input state -> if input > 0.0 then input else (state +. input) *. fb)
     id
 
-(* takes a clock signal, drops pulses according to control *) 
+(* takes a clock signal, drops pulses according to control *)
 let pulseDivider divider sq =
   let rec aux n divider sq () =
     match sq () with
@@ -1580,154 +1647,108 @@ let maskTrigger trigger mask = zipWith ( && ) mask trigger
 
 let metre nSq = nSq |> map (fun n () -> Cons (true, repeat n false)) |> concat
 
+type direction = Up | Down
 
-type direction =
-  Up
-| Down
+type posInt = Posi of int
 
+let positive x = if x == Int.min_int then Posi 0 else Posi (abs x)
 
-type posInt =
-  Posi of int
+let sortArgs x y = if x > y then (y, x) else (x, y)
 
-let positive x =
-  if x == Int.min_int then Posi 0 else
-  Posi (abs x)
-    
-let sortArgs x y =
-  if x > y then
-    (y,x)
-  else
-    (x,y)
+let sortArgsBy f x y = if f x y then (x, y) else (y, x)
 
-let sortArgsBy f x y =
-  if f x y then
-    (x,y)
-  else
-    (y,x)
+type limits = Limits of (int * int Infseq.t) * (int * int Infseq.t)
 
-type limits = Limits of (int * (int Infseq.t)) * (int * (int Infseq.t))
-  
-type breakoutWalkState =
-  { out : int
-  ; limits : limits
-  ; dir : direction
-  }
+type breakoutWalkState = {out: int; limits: limits; dir: direction}
 
-(* a bouncy walk, if the value hits the boundary, it updates itself *) 
+(* a bouncy walk, if the value hits the boundary, it updates itself *)
 let breakoutWalk start steps minInfSq maxInfSq =
-  let bounceLimits limits curDir x  =
-    let Limits (b1,b2) = limits in 
-    let ((min,minTl),(max,maxTl)) = sortArgsBy (fun a b -> fst a < fst b) b1 b2 in
-    if x <= min then
-      (Limits (Infseq.uncons minTl,(max,maxTl)),Up)
-    else
-      if x >= max then
-        (Limits ((min,minTl),Infseq.uncons maxTl),Down)
-      else
-        (Limits (b1,b2), curDir)
+  let bounceLimits limits curDir x =
+    let (Limits (b1, b2)) = limits in
+    let (min, minTl), (max, maxTl) =
+      sortArgsBy (fun a b -> fst a < fst b) b1 b2
+    in
+    if x <= min then (Limits (Infseq.uncons minTl, (max, maxTl)), Up)
+    else if x >= max then (Limits ((min, minTl), Infseq.uncons maxTl), Down)
+    else (Limits (b1, b2), curDir)
   in
-  let safeSteps = Seq.map positive steps in 
+  let safeSteps = Seq.map positive steps in
   let init =
-    { out = start
-    ; limits = (mapBoth Infseq.uncons (minInfSq,maxInfSq)) |> (fun (l1,l2) -> Limits (l1,l2))
-    ; dir = Up 
-    }
+    { out= start
+    ; limits=
+        ( mapBoth Infseq.uncons (minInfSq, maxInfSq)
+        |> fun (l1, l2) -> Limits (l1, l2) )
+    ; dir= Up }
   in
-  let update (Posi step) { out; limits ; dir } =
-    let (newLimits,newDir) = bounceLimits limits dir out in
-    let operator = match newDir with Up -> ( + ) | Down -> ( - ) in
-    ({ out = (operator out step); limits = newLimits ; dir = newDir })
+  let update (Posi step) {out; limits; dir} =
+    let newLimits, newDir = bounceLimits limits dir out in
+    let operator =
+      match newDir with
+      | Up -> ( + )
+      | Down -> ( - )
+    in
+    {out= operator out step; limits= newLimits; dir= newDir}
   in
-  let eval state =
-    state.out
-  in
+  let eval state = state.out in
   recursive safeSteps init update eval
 
-
-type wanderDir =
-  Dec
-| Inc
-| Static
+type wanderDir = Dec | Inc | Static
 
 type wanderState =
-  { out : int
-  ; vector : int * wanderDir
-  ; targets : int Infseq.t
-  ; target : int
-  }
- 
+  {out: int; vector: int * wanderDir; targets: int Infseq.t; target: int}
 
-(* 
-alternative approach for what I tried to achieve with breakout, instead of crashing out, really dictate the limits evolution over time 
+(*
+   alternative approach for what I tried to achieve with breakout, instead of crashing out, really dictate the limits evolution over time
 
-wander takes a seq of targets and wanders to it, 1 step at a time 
-   so for example, you could have the targets 0 5 2 4:
-0 1 2 3 4 5 4 3 2 3 4
--         -     -   - 
- *)
-let wander start (targets: int Infseq.t) =
+   wander takes a seq of targets and wanders to it, 1 step at a time
+      so for example, you could have the targets 0 5 2 4:
+   0 1 2 3 4 5 4 3 2 3 4
+   -         -     -   -
+*)
+let wander start (targets : int Infseq.t) =
   let chooseDirection current target =
-    if current = target then
-      Static
-    else
-      if current > target then
-        Dec
-      else
-        Inc
-      
+    if current = target then Static else if current > target then Dec else Inc
   in
-  let init =
-    { vector = (1,Static)
-    ; out = start
-    ; targets = targets
-    ; target = start
-    }
-  in
-  let move (step,dir) prev =
-    match dir with Inc -> prev + step | Dec -> prev - step | Static -> prev
+  let init = {vector= (1, Static); out= start; targets; target= start} in
+  let move (step, dir) prev =
+    match dir with
+    | Inc -> prev + step
+    | Dec -> prev - step
+    | Static -> prev
   in
   let f state =
     if state.out = state.target then
-      let (newTarget, tail) = Infseq.uncons state.targets in
-      let newDir = (1,chooseDirection state.out newTarget) in
-      (state.out,
-      { out = move newDir state.out
-      ; targets = tail
-      ; vector = newDir
-      ; target = newTarget
-      })
-    else
-      (state.out,{ state with out = move state.vector state.out })
+      let newTarget, tail = Infseq.uncons state.targets in
+      let newDir = (1, chooseDirection state.out newTarget) in
+      ( state.out
+      , { out= move newDir state.out
+        ; targets= tail
+        ; vector= newDir
+        ; target= newTarget } )
+    else (state.out, {state with out= move state.vector state.out})
   in
   Infseq.unfold f init
-  
 
-type dwalkState = {
-    out : int
-   ;dir : direction
-  }
+type dwalkState = {out: int; dir: direction}
 
 let dwalk start steps boundary1 boundary2 =
   let safeSteps = Seq.map positive steps in
   let ctrlSq = zip3 safeSteps boundary1 boundary2 in
-  let init = { out = start; dir = Up } in
-  let update (Posi step,x,y) state =
+  let init = {out= start; dir= Up} in
+  let update (Posi step, x, y) state =
     let prev = state.out in
-    let (min,max) = sortArgs x y in
-   
+    let min, max = sortArgs x y in
     let newDir =
-      if state.out <= min then
-        Up
-      else
-        if state.out >= max then
-          Down
-        else
-          state.dir
+      if state.out <= min then Up
+      else if state.out >= max then Down
+      else state.dir
     in
-    let operator = match newDir with Up -> ( + ) | Down -> ( - ) in
-    ({ out = operator prev step ; dir = newDir })
+    let operator =
+      match newDir with
+      | Up -> ( + )
+      | Down -> ( - )
+    in
+    {out= operator prev step; dir= newDir}
   in
-  let eval state =
-    state.out
-  in  
+  let eval state = state.out in
   recursive ctrlSq init update eval

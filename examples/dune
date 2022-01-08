@@ -28,10 +28,10 @@
 
 (executable
  (name simplesine)
- (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (link_flags (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules simplesine)
- (libraries bigarray ctypes jack sndfile))
+ (libraries bigarray ctypes jack))
 
 (executable
  (name fmfb)
@@ -75,7 +75,7 @@
  (link_flags (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules nonrt)
- (libraries bigarray ctypes jack sndfile))
+ (libraries bigarray ctypes jack sndfile)) 
 
 
 
@@ -96,7 +96,7 @@
 
 (executable
   (name cisp1)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (link_flags (-cclib -ljack))
   (ocamlopt_flags -O3)
   (modules cisp1)
   (libraries infseq lwt.unix oscStream midi cisp bigarray ctypes jack jackMidi euclid))
@@ -182,9 +182,9 @@
  (modules ivo)
  (libraries lo oscParser midi cisp jackMidi))
 
-(executable
-  (name osc_to_audio_example_using_threads)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
-  (ocamlopt_flags -O3)
-  (modules osc_to_audio_example_using_threads)
-  (libraries threads lo infseq midi cisp bigarray ctypes jack jackMidi))
+;(executable
+ ; (name osc_to_audio_example_using_threads)
+  ;(link_flags (-cclib -ljack -cclib -lsndfile))
+  ;(ocamlopt_flags -O3)
+  ;(modules osc_to_audio_example_using_threads)
+  ;(libraries threads lo infseq midi cisp bigarray ctypes jack jackMidi))

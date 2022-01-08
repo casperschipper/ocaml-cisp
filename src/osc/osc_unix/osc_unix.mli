@@ -21,6 +21,6 @@ module Udp : sig
       (Osc.OscTypes.packet * Unix.sockaddr, [
         | `Missing_typetag_string
         | `Unsupported_typetag of char
-      ]) Result.result
+      ]) Result.t
   end
 end

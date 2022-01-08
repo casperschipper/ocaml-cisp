@@ -122,7 +122,8 @@ end
 module Encode = struct
   let encode_int32 output i =
     let tmp = Bytes.create int32_chars in
-    EndianString.BigEndian.set_int32 tmp 0 i;
+    (* EndianString.BigEndian.set_int32 tmp 0 i; *)
+    EndianBytes.BigEndian.set_int32 tmp 0 i;
     Buffer.add_bytes output tmp
 
   let encode_float32 output f =

@@ -253,7 +253,7 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
   }      
 
   int connect_result;
-	
+	/*
   connect_result = jack_connect(client, jack_port_name(output_port), ports[0]);
   if (connect_result) {
     fprintf (stderr, "cannot connect output ports error: %i\n",connect_result);
@@ -270,6 +270,7 @@ CAMLprim value open_midi_stream (value midi_msg_array_out,value midi_msg_array_i
   } else {
     fprintf(stderr, "connected to system_midi:capture_2");
   }
+  */
 
   // run until interrupted 
   while (true) {

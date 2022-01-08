@@ -54,7 +54,7 @@ let () =
     done
   in
   let _ = Thread.create f () in
-  let _ =
+  (*let _ =
     Sys.command "jack_disconnect system_midi:capture_2 ocaml_midi:ocaml_midi_in"
   in
   let _ =
@@ -66,7 +66,7 @@ let () =
   in
   let _ =
     Sys.command "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in"
-  in
+  in *)
   while true do
     Unix.sleep 60
   done

@@ -101,6 +101,13 @@
   (modules cisp1)
   (libraries infseq lwt.unix oscStream midi cisp bigarray ctypes jack jackMidi euclid))
 
+  (executable
+  (name midiStartFile)
+  (link_flags (-cclib -ljack))
+  (ocamlopt_flags -O3)
+  (modules midiStartFile)
+  (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
+
 (executable
   (name cisp2)
   (link_flags (-cclib -ljack -cclib -lsndfile))

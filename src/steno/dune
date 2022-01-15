@@ -1,5 +1,5 @@
 (library
  (name            steno)
- (libraries seq)
+ (libraries seq parser)
  (ocamlopt_flags -O3)	
 )

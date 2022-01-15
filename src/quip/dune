@@ -1,0 +1,7 @@
+(library
+ (libraries parser)
+ (name            quip)
+ (ocamlopt_flags -O3)	
+)
+
+ 

@@ -12,7 +12,7 @@ foo ();;
 (*open Midi*)
 (* 
 let empty_list = []
-
+ 
 let list_a = [1; 2; 3]
 
 let test_list_length _ =
@@ -92,7 +92,7 @@ let suite =
   >::: ["test_arp" >:: test_arp; "test_mutate" >:: test_mutate_effect]
 
 
-let rawMidi =
+
   
 
 let () = run_test_tt_main suite

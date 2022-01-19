@@ -12,7 +12,7 @@ type generator =
 
 
 let generatorP = 
-    oneOfParsers [ 
+    one_of_parsers [ 
       Parser.string "seq"
       ;Parser.string "rv"
       ;Parser.string "choice"
@@ -28,26 +28,22 @@ let generatorP =
 
  
     
+(* (2 3 4 5 6) *)
+(* (/ 1 2 3 4) *)
 
-type atom =
+type expr =
   | Int of int
   | Float of float 
-  | List of atom list
-  | Symbol of generator * atom list
+  | Symbol of 
+  | List of expr list
 
-(* (2 3 4 5 6) *)
 
 let rec quip = 
-  oneOfParsers [
+  one_of_parsers [
     Parser.float |> fmap (fun x -> Float x)
     ; Parser.natural |> fmap (fun x -> Int x)
     ; generatorP |> 
     ; 
   ]
 
-let test = 
-  let result =
-    parse natural_number_list ("(11 12 13 42)" |> explode) |> getParsed
-  in
-  assert_equal "(seq 1 2 3)" result (Some [11;12;13;42])
  

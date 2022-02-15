@@ -19,11 +19,11 @@ let rhythm () =
     
   
 let onePitchLoop () =
-  let a = choice [|0;2;4;5;7;9;11;12|] |>   in
-  let b = choice [|0;2;4;5;7;9;11;12|] |> in
+  let a = ch [|0;2;4;5;7;9;11;12|] in
+  let b = ch [|0;2;4;5;7;9;11;12|] in
   let ps = lift rv 1 15 |> take 3 in
   let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
-  seq mapped |> index [|a;b|] 
+  seq mapped |> index [|a;b|] |> concat |> Seq.map (fun x -> x + 60 )
           
 
                

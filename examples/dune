@@ -110,15 +110,15 @@
 
 (executable
   (name cisp2)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (link_flags (-cclib -ljack))
   (ocamlopt_flags -O3)
   (modules cisp2)
   (preprocess (pps lwt_ppx))
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
+  (libraries infseq midi cisp bigarray ctypes jack jackMidi fqueue euclid))
 
 (executable
   (name cisp3)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (link_flags -cclib -ljack )
   (ocamlopt_flags -O3)
   (modules cisp3)
   (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid)

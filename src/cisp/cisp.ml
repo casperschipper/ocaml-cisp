@@ -1213,14 +1213,14 @@ let clockGen freqSq =
   recursive1 freqSq init update (fun state -> state.out)
 
 (**  
-   * play back a source of boolean triggers 
-   * for example:
-   * let clock = seq [true;false;false] in
-   * let source = seq [1;2;3] in
-   * syncOverClock clock source |> for_example 30 
-   * [Some 1;None;None;Some 2; None; None; Some 3.. etc 
-   * This is similar to mask, except source is not consumed further if there is no trigger
-   *)
+   play back a source of boolean triggers 
+   for example:
+   let clock = seq [true;false;false] in
+   let source = seq [1;2;3] in
+   syncOverClock clock source |> for_example 30 
+   [Some 1;None;None;Some 2; None; None; Some 3..] etc 
+   This is similar to mask, except source is not consumed further if there is no trigger
+  *)
 let syncOverClock (clock : bool Seq.t) (source : 'a Seq.t) =
   let init = (source, None) in
   let ctrl = clock in
@@ -1242,7 +1242,6 @@ type 'a mutateArrayMsg = MutateArrayMsg of (int * ('a * int) option)
 (** 
     take an optional value and someting that generates indexes and creates a stream out of it.
 *)
-
 let makeMutateArray indexSq optUpdate =
   map2 (fun i upd -> MutateArrayMsg (i, upd)) indexSq optUpdate
 
@@ -1286,7 +1285,6 @@ let mutateArrayi = mutateArray 0
 let mutateArrayf = mutateArray 0.0
 
 let getPreciseTime () = (!currentSampleCounter |> Float.of_int) /. 44100.0
-
 (*Mtime_clock.elapsed () |> Mtime.Span.to_uint64_ns |> Int64.to_float |> ( *. ) Mtime.ns_to_s*)
 
 let updateOpt old newOpt =

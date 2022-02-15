@@ -183,17 +183,16 @@ let lookahead p =
       match result with
       | Good (a, _) ->
           Good (a, input) (* note that we just keep the same position *)
-      | Problem (a, s) -> Problem (a, s)
-    )
-      (* note that we failed, but the position is still updated *) 
+      | Problem (a, s) -> Problem (a, s) )
+(* note that we failed, but the position is still updated *)
 
 let try_parser p =
-  Parser (fun input -> 
-    let result = parse p input in
-    match result with
-    | Good (a,state) -> Good (a, state)
-    | Problem (prob,_) -> Problem (prob, input) 
-  )
+  Parser
+    (fun input ->
+      let result = parse p input in
+      match result with
+      | Good (a, state) -> Good (a, state)
+      | Problem (prob, _) -> Problem (prob, input) )
 
 let some p = List.cons <$> p <*> many p
 
@@ -347,7 +346,11 @@ let parse_while f = many (satisfy f "match")
 
 let parens m = reserved "(" >> m >>= fun n -> reserved ")" >> return n
 
-
 let test () =
-  parse_str (sepBy (some (satisfy is_alpha "") |> fmap (fun crs -> crs |> List.to_seq |> String.of_seq)) spaces) "casper is een vis"
+  parse_str
+    (sepBy
+       ( some (satisfy is_alpha "")
+       |> fmap (fun crs -> crs |> List.to_seq |> String.of_seq) )
+       spaces )
+    "casper is een vis"
   |> getParsed

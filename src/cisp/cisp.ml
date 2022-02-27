@@ -94,6 +94,8 @@ let pureSq = Seq.return
 
 let ( <*> ) = applySq
 
+let ( <$> ) f ma = map f ma 
+
 let syncEffect sq effectSq =
   (* This is a way to synchronize effects with a stream of values:
      an "effectSq" is a Seq.t of unit, that (may) mutate some state.
@@ -280,6 +282,8 @@ let rec group chunkSize sq () =
       let chunk = take n sq in
       let sqTail = drop n sq in
       Cons (chunk, group ntl sqTail)
+
+let chunk = group
 
 let rec split n sq =
   if n <= 0 then (thunk Nil, sq)
@@ -1037,7 +1041,11 @@ let rec selfChain sq () =
     | Nil -> Nil
     | Cons (h2, _) -> Cons ((h, h2), selfChain tail) )
 
+(* this is making it implicitely infinite, use Infseq instead *)
 let seq lst = lst |> ofList |> cycle
+
+(* this is a finite seq constructed of a list, if used as an argument to walk, will be finite as well *)
+let row = ofList
 
 let lin ns targets =
   let targs = selfChain targets in

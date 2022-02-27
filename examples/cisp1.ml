@@ -10,14 +10,28 @@ type midiNoteGenerator =
       ; durInSec: float Seq.t
       ; channel: int Seq.t }
 
+
+
+let walkFromN stepSq startSq numberSq =
+    let chunkedSteps = stepSq |> group numberSq in 
+    walki <$> startSq <*> chunkedSteps |> concat
+
+(* interseting note, the steps are consumed and so should be passed on to the next session 
+
+*)
+
 let generator =
+  let combin = 
+    let starts = (seq [0;2;0;1;0;-1]) |> fun s -> walkFromN (seq [7;5]) s (seq [2;3;4]) |> hold (seq [2;3;1;1;1]) in
+    let number = seq [5;4;5;2;2] in 
+    let step = seq [-12;12] |> hold (seq [10;1;1;1;1;1;1;2]) in
+    walkFromN step starts number
+  in
   MidiNoteGen
-    { pitch=
-        st 34
-        |> concatMap (fun start -> walki start (ch [|2;1;-1|]) |> take 3)
-        |> concatMap (fun step -> walki step (seq [0; 1; 2;0;1;1;3]) |> take (rvi 3 8))
-    ; velo= seq [100;100;70;100;80]
-    ; durInSec= seq [0.2]
+    { pitch= 
+        (st 60) +~ combin
+    ; velo= seq [80;60;60] 
+    ; durInSec= seq [0.8;0.3;0.2]
     ; channel= st 1 }
 
 let midiFun (MidiNoteGen {pitch; velo; durInSec; channel}) input =

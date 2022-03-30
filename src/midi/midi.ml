@@ -1228,3 +1228,20 @@ let playMidi midiSq samplerateRef =
     out
   in
   JackMidi.playMidi callback samplerateRef
+
+type midiNoteGenerator =
+  | MidiNoteGen of
+      { pitch: int Seq.t
+      ; velo: int Seq.t
+      ; durInSec: float Seq.t
+      ; channel: int Seq.t }
+
+let fromGenerator (MidiNoteGen {pitch; velo; durInSec; channel}) input =
+  let durInSamp =
+    map
+      (function
+        | s -> s |> ( *. ) !Process.sample_rate |> int_of_float )
+      durInSec
+  in
+  let stream = makeNoteOfInts <$> pitch <*> velo <*> durInSamp <*> channel in
+  input |> trigger stream |> serialize |> map toRaw

@@ -3,7 +3,7 @@
   (wrapped false)
   (modules codec osc transport oscTypes)
   (private_modules codec)
-  (libraries ocplib-endian rresult))
+  (libraries ocplib-endian rresult ounit))
 
 
 

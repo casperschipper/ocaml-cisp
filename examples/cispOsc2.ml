@@ -1,12 +1,35 @@
 open Cisp
+  
+(*
+# Trying to write a live websocket interface for streams
 
-let rec handleMess rf () =
-  let parse x =
-    match x with
-    | true -> rf := false; 1.0
-    | false -> 0.0
-  in
-  Seq.Cons( parse !rf, handleMess rf )
+Idea: send a string to ocaml, have it parsed and replace the existing stream.arr
+
+Steps needed:
+
+- receive an OSC message
+- receive a string and have it change a parameter 
+- receive a string representing a list and have it inserted
+   how to compile actual programs referencing functions from CISP?
+- support more varients
+- have multiple streams
+- ... 
+
+
+*)
+
+(* This creates a stream out of a ref *)
+
+
+
+
+let rec handleMess rf =
+  ofRef rf |> 
+    Seq.map (fun x -> 
+        match x with
+        | true -> rf := false ; 1.0
+        | false -> 0.0
+      )
   
 
 let osc_in = ref false

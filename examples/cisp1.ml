@@ -1,23 +1,7 @@
 open Cisp
 open Midi
 
-(*
-# Trying to write a live websocket interface for streams
 
-Idea: send a string to ocaml, have it parsed and replace the existing stream.arr
-
-Steps needed:
-
-- receive an OSC message
-- receive a string and have it change a parameter 
-- receive a string representing a list and have it inserted
-   how to compile actual programs referencing functions from CISP?
-- support more varients
-- have multiple streams
-- ...
-
-
-*)
 
 let map = Seq.map
 

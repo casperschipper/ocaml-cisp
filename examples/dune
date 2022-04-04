@@ -162,10 +162,18 @@
 
 (executable
   (name cispOsc)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
+  (link_flags (-cclib -ljack))
   (ocamlopt_flags -O3)
   (modules cispOsc)
-  (libraries threads infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid osc_unix))
+  (libraries threads infseq midi cisp bigarray ctypes jack jackMidi fqueue euclid osc_unix))
+
+(executable
+  (name cispOsc2)
+  (link_flags (-cclib -ljack))
+  (ocamlopt_flags -O3)
+  (modules cispOsc2)
+  (libraries threads infseq midi cisp bigarray ctypes jack jackMidi fqueue euclid osc_unix))
+
 
 (executable
   (name sendOsc)

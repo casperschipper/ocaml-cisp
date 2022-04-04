@@ -4,11 +4,11 @@ let assert_equal label a b = if a = b then print_string "all ok" else print_stri
 
 (* bunch of standard symbols *)
 type generator =
-   | Seq
-   | Rv
-   | Choice
-   | Line
-   | Symbol of string
+  | Seq
+  | Rv
+  | Choice
+  | Line
+  | Symbol of string
 
 
 
@@ -30,6 +30,10 @@ type expr =
   | Float of float 
   | Symbol of string
   | List of expr list
+
+let list_of_numbers =
+  char '(' 
+    >> sepBy (one_or)
 
   (* 
   

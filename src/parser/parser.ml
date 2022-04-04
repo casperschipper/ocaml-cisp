@@ -1,8 +1,35 @@
+type charClass = Alpha | Digit | AlphaNum | Special
+
+type problem =
+  | EndOfString
+  | Expecting of string
+  | WrongCharClass of charClass * charClass
+  | NoMatch
+  | ExpectedEnd
+
+type non_empty = NonEmpty of problem * problem list
+
+let problem p = NonEmpty (p, [])
+
+let appendProblem problem (NonEmpty (p, ps)) = NonEmpty (p, problem :: ps)
+
+(* TODO to list
+   toList (NonEmpty (p,ps)) =
+     p::ps
+*)
+
 (* super tiny parser ! *)
+
 type ('a, 'problem) pstep =
   | Good of 'a * char Seq.t (* the happy path *)
   | Problem of 'problem * char Seq.t
 (* the unhappy *)
+
+(*
+   ideas:
+
+   problem should be monoid so we can add together for one_of !
+*)
 
 type ('a, 'b) parser = Parser of (char Seq.t -> ('a, 'b) pstep)
 
@@ -57,7 +84,7 @@ let item =
   Parser
     (fun charSq ->
       match charSq () with
-      | Seq.Nil -> Problem ("end of stream", Seq.empty)
+      | Seq.Nil -> Problem (EndOfString, Seq.empty)
       | Seq.Cons (c, cs) -> Good (c, cs) )
 
 (*
@@ -143,7 +170,7 @@ let liftA2 f p1 p2 = f <$> p1 <*> p2
 let one_of_parsers parsers =
   let rec oneOfHelp s0 parsers =
     match parsers with
-    | [] -> Problem ("sorry none of the parsers fitted", s0)
+    | [] -> Problem (NoMatch, s0)
     | p :: remainingParsers -> (
       match parse p s0 with
       | Good (a, rest) -> Good (a, rest)
@@ -166,7 +193,7 @@ let loop state callback =
   in
   Parser (fun chrs -> loopHelp state callback chrs)
 
-let parse_zero_or_more p =
+let zero_or_more p =
   let callback state =
     one_of_parsers
       [ p |> fmap (fun item -> Loop (item :: state))
@@ -174,7 +201,7 @@ let parse_zero_or_more p =
   in
   loop [] callback
 
-let many p = parse_zero_or_more p
+let many p = zero_or_more p
 
 let lookahead p =
   Parser
@@ -196,10 +223,10 @@ let try_parser p =
 
 let some p = List.cons <$> p <*> many p
 
+let one_or_more = some
+
 let satisfy predicate expecting =
-  item
-  >>= fun c ->
-  if predicate c then unit c else failure ("expected a " ^ expecting)
+  item >>= fun c -> if predicate c then unit c else failure (Expecting expecting)
 
 let flip f x y = (f y) x
 
@@ -217,6 +244,7 @@ let one_of s =
   in
   satisfy (flip elem s) expecting
 
+(* any of the chars in the string *)
 let one_of_str str =
   let chars = str |> explode_lst in
   one_of chars
@@ -235,7 +263,10 @@ let int_of_char_seq charLst =
   let str = charLst |> List.to_seq |> String.of_seq in
   opt_int_of_string str |> Option.value ~default:0
 
-let char c = satisfy (fun ch -> ch == c) (c |> Seq.return |> String.of_seq)
+let char c =
+  satisfy
+    (fun ch -> ch == c)
+    (c |> Seq.return |> String.of_seq |> fun str -> "expected char" ^ str)
 
 let is_digit = function
   | '0' .. '9' -> true
@@ -278,20 +309,26 @@ let chainl1 p op =
 let between openSymbol closeSymbol p =
   openSymbol >> p >>= fun x -> closeSymbol >> return x
 
-let float =
-  let divideUntilRight n =
-    let rec aux x = if x < 1.0 then x else x /. 10.0 |> aux in
-    n |> float_of_int |> aux
-  in
-  let finishInt firstDigits =
-    natural
-    >>= fun lastDigits ->
-    float_of_int firstDigits +. divideUntilRight lastDigits |> return
-  in
+(*
+   let afterThePoint =
+     let rec helper n current chars =
+       match chars () with
+       | Cons(c,rest) ->
+         let next = c * Math.pow 10 n + helper (n-1)
+       | Nil -> current
+*)
+
+type number = Float of float | Integer of int
+
+let number =
+  let construct f l = string_of_int f ^ "." ^ string_of_int l in
   natural
   >>= fun firstDigits ->
-  char '.'
-  >> one_of_parsers [finishInt firstDigits; return (float_of_int firstDigits)]
+  one_of_parsers
+    [ ( char '.' >> natural
+      >>= (fun lastDigits ->
+      Float (construct firstDigits lastDigits |> float_of_string) |> succeed)) ;
+      succeed (Integer firstDigits) ]
 
 let list_end n1 =
   loop [n1] (fun state ->
@@ -338,7 +375,7 @@ let reached_end =
     (fun s ->
       match s () with
       | Seq.Nil -> Good ((), Seq.empty)
-      | Seq.Cons (_, _) -> Problem ("not yet the end", s) )
+      | Seq.Cons (_, _) -> Problem ( ExpectedEnd, s) )
 
 let of_char_list lst = lst |> List.to_seq |> String.of_seq
 

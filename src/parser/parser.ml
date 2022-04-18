@@ -1,5 +1,7 @@
 type charClass = Alpha | Digit | AlphaNum | Special
 
+(* ocamlc -i parser.ml >> parser.mli *)
+
 type problem =
   | EndOfString
   | Expecting of string
@@ -29,6 +31,21 @@ type ('a, 'problem) pstep =
    ideas:
 
    problem should be monoid so we can add together for one_of !
+
+   Elm parser uses a "bag" of problems:
+
+   A bag is a kind of list that can be appended from both sides, you can add a deadend to the right, or to the left.
+   type Bag c x
+    = Empty
+    | AddRight (Bag c x) (DeadEnd c x)
+    | Append (Bag c x) (Bag c x)
+
+    type alias DeadEnd context problem =
+    { row : Int
+    , col : Int
+    , problem : problem
+    , contextStack : List { row : Int, col : Int, context : context }
+    }
 *)
 
 type ('a, 'b) parser = Parser of (char Seq.t -> ('a, 'b) pstep)
@@ -266,7 +283,7 @@ let int_of_char_seq charLst =
 let char c =
   satisfy
     (fun ch -> ch == c)
-    (c |> Seq.return |> String.of_seq |> fun str -> "expected char" ^ str)
+    (c |> Seq.return |> String.of_seq |> fun str -> "char" ^ str)
 
 let is_digit = function
   | '0' .. '9' -> true
@@ -319,6 +336,11 @@ let between openSymbol closeSymbol p =
 *)
 
 type number = Float of float | Integer of int
+
+let number_to_string n =
+        match n with
+        | Float f -> "float: " ^ Float.to_string f
+        | Integer i -> "int: " ^ Int.to_string i
 
 let number =
   let construct f l = string_of_int f ^ "." ^ string_of_int l in

@@ -73,6 +73,7 @@ val chainl1 :
 val between :
   ('a, 'b) parser -> ('c, 'b) parser -> ('d, 'b) parser -> ('d, 'b) parser
 type number = Float of float | Integer of int
+val number_to_string : number -> string
 val number : (number, problem) parser
 val list_end : int -> (int list, problem) parser
 val natural_number_list : (int list, problem) parser

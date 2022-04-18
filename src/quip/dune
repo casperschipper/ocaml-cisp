@@ -1,5 +1,5 @@
 (library
- (libraries parser)
+ (libraries parser cisp)
  (name            quip)
  (ocamlopt_flags -O3)	
 )

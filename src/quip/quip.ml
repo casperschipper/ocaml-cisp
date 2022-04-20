@@ -189,6 +189,7 @@ let initial_vars =
     ("list", Function list);
     ("symbol?", Function is_symbol_quip);
     ("function?", Function is_function_quip);
+    ("nil", List [] )
   ]
   |> vars_from_list
 

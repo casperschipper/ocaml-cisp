@@ -147,6 +147,17 @@ let emptyVariables = Variables Dict.empty
 type environment =
   | Environment of { outer : environment option; vars : variables }
 
+let rec print_env (Environment { outer ; vars }) =
+  let print_vars (Variables vs) =
+    vs |> Dict.iter (fun key exp 
+                      -> print_string key;
+                         print_newline ();
+                         exp |> expression_to_string |> print_string)
+  in
+  match outer with
+  | Some o -> o |> print_env ; print_vars vars; ()
+  | None -> print_vars vars;()
+
 let vars_from_list lst = lst |> List.to_seq |> Dict.of_seq
 
 let initial_vars =
@@ -361,7 +372,12 @@ and handle_if env lst =
   | _ -> Error (Problem "If takes exactly three arguments")
 
 let eval_string str =
-  Parser.parse_str (expression_list |> Parser.fmap (eval initial_env)) str
+  let parse_result = 
+    Parser.parse_str (expression_list |> Parser.fmap (eval initial_env)) str 
+  in
+  match parse_result with
+  | Parser.Good (Ok (exp,env),_) -> expression_to_string exp |> print_string; print_env env; parse_result
+  | _ -> parse_result
 
 (*
    let quip =

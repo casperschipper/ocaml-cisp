@@ -1,5 +1,12 @@
 open Parser
 
+(* 
+mainly a port of 
+tomotakatakahashi's https://github.com/tomotakatakahashi/lispy-elm 
+which in turn is based on
+http://www.norvig.com/lispy.html
+*)
+
 let assert_equal label a b =
   if a = b then print_string "all ok"
   else print_string ("failed: " ^ label ^ " <<<should be>>> ")

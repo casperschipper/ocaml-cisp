@@ -32,7 +32,7 @@ let rec expression_to_string exp =
   | Lambda (lst, body) ->
       "lambda | with parameters: \n "
       ^ expression_to_string (List lst)
-      ^ "| and expression: \n" ^ " " ^ expression_to_string body
+      ^ "| and expression: \n" ^ " " ^ expression_to_string body ^ "\n"
   | Function _ -> "function "
   | TrueExpression -> "#true"
 
@@ -151,12 +151,11 @@ let rec print_env (Environment { outer; vars }) =
   let print_vars (Variables vs) =
     vs
     |> Dict.iter (fun key exp ->
-           if is_function exp then () else 
-            begin
-              print_string key;
-              print_newline ();
-              exp |> expression_to_string |> print_string
-            end)
+           if is_function exp then ()
+           else (
+             print_string key;
+             print_newline ();
+             exp |> expression_to_string |> print_string))
   in
   match outer with
   | Some o ->

@@ -1,3 +1,6 @@
+(* very insipried by parsec and Elm Parser package by Evan Czaplicki https://github.com/elm/parser/tree/1.1.0
+*)
+
 type charClass = Alpha | Digit | AlphaNum | Special
 type 'p problem =
     EndOfString

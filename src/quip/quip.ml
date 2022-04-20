@@ -137,29 +137,36 @@ let parseAtoms = one_of_parsers
 let identity x = x
 let string_from_list characters = characters |> List.to_seq |> String.of_seq
 
-let symbol =
-  let interesting c = (not (Parser.is_space c)) && c != ')' && c != '(' in
-  parse_while interesting |> fmap string_from_list
+let parse_symbol =
+  let interesting c = (not (is_space c)) && c != ')' && c != '(' in
+  parse_while interesting |> fmap string_from_list |> Parser.andThen (fun res ->
+      match res with
+       | "" -> Parser.fail_with "string to short"
+       | any -> Parser.succeed any
+    )
 
 let atom =
   spaces
   >> one_of_parsers
-       [
+       [ 
          string "#t" |> fmap (fun _ -> TrueExpression);
          string "nil" |> fmap (fun _ -> List []);
          number |> fmap (fun num -> Constant num);
-         symbol |> fmap (fun str -> Symbol str);
+         parse_symbol |> fmap (fun str -> Symbol str);
        ]
 
 let expression_list =
-  let expression_list_help rev_expressions =
+  let rec expression_list_help rev_expressions =
     one_of_parsers
       [
         char ')' |> fmap (fun _ -> Done (List (List.rev rev_expressions)));
         atom |> fmap (fun exp -> Loop (exp :: rev_expressions));
+        spaces >> Parser.char '(' >> Parser.loop [] expression_list_help |> fmap (fun exp -> Loop (exp :: rev_expressions)) 
       ]
   in
-  char '(' >> Parser.loop [] expression_list_help
+  Parser.char '(' >> Parser.loop [] expression_list_help
+ 
+  
 
 let symbol env var =
   match get_var env var with
@@ -285,12 +292,6 @@ and eval_list env lst =
           |> Result.map (fun (evaledTail,lastEnv) -> 
              (evaledHead :: evaledTail, lastEnv)))))
   
-      (* match eval env head with
-      | Ok (evaledHead, newEnv) -> (
-          match eval_list newEnv tail with
-          | Ok (evaledTail, lastEnv) -> Ok (evaledHead :: evaledTail, lastEnv)
-          | Error e -> Error e)
-      | Error e -> Error e) *)
 
 and handle_lambda_execution params exp env args =
   if List.length params != List.length args then

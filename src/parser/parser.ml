@@ -2,14 +2,17 @@ type charClass = Alpha | Digit | AlphaNum | Special
 
 (* ocamlc -i parser.ml >> parser.mli *)
 
-type problem =
+type 'p problem =
   | EndOfString
   | Expecting of string
   | WrongCharClass of charClass * charClass
   | NoMatch
   | ExpectedEnd
+  | YourProblem of 'p
+  
 
-type non_empty = NonEmpty of problem * problem list
+
+type 'p non_empty = NonEmpty of 'p problem * 'p problem list
 
 let problem p = NonEmpty (p, [])
 
@@ -51,6 +54,8 @@ type ('a, 'problem) pstep =
 type ('a, 'b) parser = Parser of (char Seq.t -> ('a, 'b) pstep)
 
 let succeed a = Parser (fun s -> Good (a, s))
+
+let fail_with p = Parser (fun s -> Problem (YourProblem p,s))
 
 let parse (Parser p) s = p s
 
@@ -133,7 +138,8 @@ let applicative = applyP
 
 let ( <*> ) = applyP
 
-let andThen pa pb = pa >>= fun resA -> pb >>= fun resB -> return (resA, resB)
+let andThen parser f =
+  f >>= parser
 
 let failure problem = Parser (fun _ -> Problem (problem, Seq.empty))
 
@@ -402,6 +408,7 @@ let reached_end =
 let of_char_list lst = lst |> List.to_seq |> String.of_seq
 
 let parse_while f = many (satisfy f "match")
+
 
 let parens m = reserved "(" >> m >>= fun n -> reserved ")" >> return n
 

@@ -18,3 +18,7 @@
 
 * Eval takes not just an expression and returns a result (reduction), it also can update the environment (state).
 * Eval : Environment -> Expression -> Result Error (Expression, Environment)
+
+```lisp 
+(begin (define map (lambda (f xs) (if xs (cons (f (car xs)) (map f (cdr xs))) nil))) (map (lambda (x) (* x x)) (list 1 2 3)))
+```

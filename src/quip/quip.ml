@@ -155,7 +155,7 @@ let expression_list =
   let expression_list_help rev_expressions =
     one_of_parsers
       [
-        char ')' |> fmap (fun _ -> Done (List.rev rev_expressions));
+        char ')' |> fmap (fun _ -> Done (List (List.rev rev_expressions)));
         atom |> fmap (fun exp -> Loop (exp :: rev_expressions));
       ]
   in
@@ -275,15 +275,22 @@ and proc env procName args =
   | _, Ok _ -> Error (Problem "Not a function or lamdba expression")
 
 and eval_list env lst =
+  let andThen = fun f ma -> Result.bind ma f in
   match lst with
   | [] -> Ok ([], env)
   | head :: tail -> (
-      match eval env head with
+      eval env head 
+      |> andThen (fun (evaledHead,newEnv) ->
+        (eval_list newEnv tail 
+          |> Result.map (fun (evaledTail,lastEnv) -> 
+             (evaledHead :: evaledTail, lastEnv)))))
+  
+      (* match eval env head with
       | Ok (evaledHead, newEnv) -> (
           match eval_list newEnv tail with
           | Ok (evaledTail, lastEnv) -> Ok (evaledHead :: evaledTail, lastEnv)
           | Error e -> Error e)
-      | Error e -> Error e)
+      | Error e -> Error e) *)
 
 and handle_lambda_execution params exp env args =
   if List.length params != List.length args then

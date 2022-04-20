@@ -345,8 +345,8 @@ type number = Float of float | Integer of int
 
 let number_to_string n =
         match n with
-        | Float f -> "float: " ^ Float.to_string f
-        | Integer i -> "int: " ^ Int.to_string i
+        | Float f -> "float: " ^ Float.to_string f ^ "\n"
+        | Integer i -> "int: " ^ Int.to_string i ^ "\n"
 
 let number =
   let construct f l = string_of_int f ^ "." ^ string_of_int l in

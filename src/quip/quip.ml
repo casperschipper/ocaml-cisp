@@ -30,11 +30,11 @@ let rec expression_to_string exp =
   | List lst ->
       "(" ^ (lst |> List.map expression_to_string |> String.concat " ") ^ ")"
   | Lambda (lst, body) ->
-      "lambda "
+      "lambda | with parameters: \n "
       ^ expression_to_string (List lst)
-      ^ " " ^ expression_to_string body
-  | Function _ -> "function"
-  | TrueExpression -> "#t"
+      ^ "| and expression: \n" ^ " " ^ expression_to_string body
+  | Function _ -> "function "
+  | TrueExpression -> "#true"
 
 let binaryOp floatOp intOp lst =
   let append_floats e1 e2 =
@@ -121,17 +121,17 @@ let cdr lst =
   | _ -> Error (Problem "cdr is for non-empty list")
 
 let list lst = Ok (List lst)
+let is_list lst = match lst with [ List _ ] -> Ok TrueExpression | _ -> Ok nil
 
-let is_list lst =
-  match lst with [ List _ ] -> Ok TrueExpression | _ -> Ok nil
-
-let is_symbol exp = 
-  match exp with Symbol _ -> true | _ -> false
+(* these are internal! *)
+let is_symbol exp = match exp with Symbol _ -> true | _ -> false
+let is_function exp = match exp with Function _ -> true | _ -> false
 
 let is_symbol_quip lst =
-  match lst with
-  | [ Symbol _ ] -> Ok TrueExpression
-  | _ -> Ok nil
+  match lst with [ Symbol _ ] -> Ok TrueExpression | _ -> Ok nil
+
+let is_function_quip lst =
+  match lst with Function _ :: _ -> Ok TrueExpression | _ -> Ok nil
 
 let length lst =
   match lst with
@@ -147,16 +147,27 @@ let emptyVariables = Variables Dict.empty
 type environment =
   | Environment of { outer : environment option; vars : variables }
 
-let rec print_env (Environment { outer ; vars }) =
+let rec print_env (Environment { outer; vars }) =
   let print_vars (Variables vs) =
-    vs |> Dict.iter (fun key exp 
-                      -> print_string key;
-                         print_newline ();
-                         exp |> expression_to_string |> print_string)
+    vs
+    |> Dict.iter (fun key exp ->
+           if is_function exp then () else 
+            begin
+              print_string key;
+              print_newline ();
+              exp |> expression_to_string |> print_string
+            end)
   in
   match outer with
-  | Some o -> o |> print_env ; print_vars vars; ()
-  | None -> print_vars vars;()
+  | Some o ->
+      print_string "Env:\n";
+      o |> print_env;
+      print_string "Vars:\n";
+      print_vars vars;
+      ()
+  | None ->
+      print_vars vars;
+      ()
 
 let vars_from_list lst = lst |> List.to_seq |> Dict.of_seq
 
@@ -178,6 +189,7 @@ let initial_vars =
     ("list?", Function is_list);
     ("list", Function list);
     ("symbol?", Function is_symbol_quip);
+    ("function?", Function is_function_quip);
   ]
   |> vars_from_list
 
@@ -242,12 +254,14 @@ let quote env lst =
   | _ -> Error (Problem "Quote only accepts 1 argumnet")
 
 let lambda (env : environment) lst =
+  print_string "debug lambda\n";
+  print_env env;
   match lst with
   | [ List vars; exp ] -> Ok (Lambda (vars, exp), env)
   | _ -> Error (Problem "Invalid lamdba expression")
 
-
 let traverse_map_option f lst =
+  (* map a function that returns an option over a list, if any result is None, short-circuit.*)
   let rec aux f list acc =
     match list with
     | head :: tail -> (
@@ -272,6 +286,8 @@ let params_and_args_to_vars params args =
   | None -> Error (Problem "All arguments need to be symbols")
 
 let rec eval env exp =
+  print_string "debug eval\n";
+  print_env env;
   match exp with
   | Symbol symb -> symbol env symb
   | Constant _ -> Ok (exp, env)
@@ -328,6 +344,8 @@ and begin_quip env exps =
       | Error e -> Error e)
 
 and proc env procName args =
+  print_string "debug - proc\n";
+  print_env env;
   let maybe_func = get_var env procName in
   let evaled_args_result = eval_list env args in
   match (maybe_func, evaled_args_result) with
@@ -341,6 +359,8 @@ and proc env procName args =
   | _, Ok _ -> Error (Problem "Not a function or lamdba expression")
 
 and eval_list env lst =
+  print_string "debug eval_list\n";
+  print_env env;
   let andThen f ma = Result.bind ma f in
   match lst with
   | [] -> Ok ([], env)
@@ -352,6 +372,8 @@ and eval_list env lst =
                     (evaledHead :: evaledTail, lastEnv)))
 
 and handle_lambda_execution params exp env args =
+  print_string "debug lambda exec\n";
+  print_env env;
   let andThen f ma = Result.bind ma f in
   if List.length params != List.length args then
     Error (Problem "params and args do not have same length")
@@ -372,11 +394,14 @@ and handle_if env lst =
   | _ -> Error (Problem "If takes exactly three arguments")
 
 let eval_string str =
-  let parse_result = 
-    Parser.parse_str (expression_list |> Parser.fmap (eval initial_env)) str 
+  let parse_result =
+    Parser.parse_str (expression_list |> Parser.fmap (eval initial_env)) str
   in
   match parse_result with
-  | Parser.Good (Ok (exp,env),_) -> expression_to_string exp |> print_string; print_env env; parse_result
+  | Parser.Good (Ok (exp, env), _) ->
+      expression_to_string exp |> print_string;
+      print_env env;
+      parse_result
   | _ -> parse_result
 
 (*

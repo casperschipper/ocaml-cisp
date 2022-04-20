@@ -168,7 +168,7 @@ let expression_list =
       [
         char ')' |> fmap (fun _ -> Done (List (List.rev rev_expressions)));
         atom |> fmap (fun exp -> Loop (exp :: rev_expressions));
-        spaces >> Parser.char '(' >> Parser.loop [] expression_list_help |> fmap (fun exp -> Loop (exp :: rev_expressions)) 
+        spaces >> Parser.char '(' >> Parser.loop [] expression_list_help |> fmap (fun exp -> Loop (exp :: rev_expressions)); 
       ]
   in
   Parser.char '(' >> Parser.loop [] expression_list_help
@@ -313,6 +313,9 @@ and handle_lambda_execution params exp env args =
         | Ok (ret, _) -> Ok ret
         | Error e -> Error e)
     | Error error -> Error error
+
+let eval_string str =
+  Parser.parse_str (expression_list |> Parser.fmap (eval initial_env)) str
 
 (*
    let quip =

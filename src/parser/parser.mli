@@ -1,7 +1,5 @@
-(* very insipried by parsec and Elm Parser package by Evan Czaplicki https://github.com/elm/parser/tree/1.1.0
-*)
-
 type charClass = Alpha | Digit | AlphaNum | Special
+val class_as_string : charClass -> string
 type 'p problem =
     EndOfString
   | Expecting of string
@@ -9,6 +7,7 @@ type 'p problem =
   | NoMatch
   | ExpectedEnd
   | YourProblem of 'p
+val problem_to_string : ('a -> string) -> 'a problem -> string
 type 'p non_empty = NonEmpty of 'p problem * 'p problem list
 val problem : 'a problem -> 'a non_empty
 val appendProblem : 'a problem -> 'a non_empty -> 'a non_empty

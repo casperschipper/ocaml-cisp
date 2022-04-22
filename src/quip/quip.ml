@@ -31,7 +31,7 @@ let rec expression_to_string exp =
       "(" ^ (lst |> List.map expression_to_string |> String.concat " ") ^ ")"
   | Lambda (lst, body) ->
       "lambda | with parameters: \n "
-      ^ expression_to_string (List lst)
+      ^ expression_to_string (List lst) ^ "\n"
       ^ "| and expression: \n" ^ " " ^ expression_to_string body ^ "\n"
   | Function _ -> "function "
   | TrueExpression -> "#true"
@@ -165,7 +165,7 @@ type debug =
     | Production
 
 let debug_mode = 
-  Debug
+  Production
 
 let debug_env context env =
   match debug_mode with
@@ -245,6 +245,7 @@ let expression_list =
         char ')' |> fmap (fun _ -> Done (List (List.rev rev_expressions)));
         atom |> fmap (fun exp -> Loop (exp :: rev_expressions));
         Parser.char '(' >> Parser.loop [] expression_list_help |> fmap (fun exp -> Loop (exp :: rev_expressions));
+        Parser.reached_end >> Parser.fail_with (Problem "missing )")
       ]
   in
   Parser.char '(' >> Parser.loop [] expression_list_help
@@ -402,9 +403,10 @@ let eval_string str =
   | Parser.Good (Ok (exp, env), _) ->
       expression_to_string exp |> print_string;
       debug_env "Parser result" env;
-      parse_result
-  | _ -> parse_result
-
+      (* parse_result *)
+  | Parser.Good (Error (Problem problem),_) -> print_string problem;
+  | Parser.Problem (prob,_) -> Parser.problem_to_string (fun _ -> "prob") prob |> print_string
+ 
 (*
    let quip =
        one_of_parsers

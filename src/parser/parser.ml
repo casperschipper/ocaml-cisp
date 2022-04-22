@@ -1,5 +1,11 @@
 type charClass = Alpha | Digit | AlphaNum | Special
 
+let class_as_string = function 
+ | Alpha -> "alpha"
+ | Digit -> "digit"
+ | AlphaNum -> "alphanumeric"
+ | Special -> "special character" 
+
 (* ocamlc -i parser.ml >> parser.mli *)
 
 type 'p problem =
@@ -10,7 +16,14 @@ type 'p problem =
   | ExpectedEnd
   | YourProblem of 'p
   
-
+let problem_to_string to_string problem =
+  match problem with
+  | EndOfString -> "reached unexpected end"
+  | Expecting str -> "I expected str: " ^ str
+  | WrongCharClass (expected,instead) -> "I expected charclass " ^ class_as_string expected ^ "but got " ^ class_as_string instead ^ " instead."
+  | NoMatch -> "No matching parser found"
+  | ExpectedEnd -> "expected the end, but there is more"
+  | YourProblem yp -> to_string yp
 
 type 'p non_empty = NonEmpty of 'p problem * 'p problem list
 

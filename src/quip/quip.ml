@@ -147,25 +147,32 @@ let emptyVariables = Variables Dict.empty
 type environment =
   | Environment of { outer : environment option; vars : variables }
 
-let rec print_env (Environment { outer; vars }) =
-  let print_vars (Variables vs) =
-    vs
-    |> Dict.iter (fun key exp ->
-           if is_function exp then ()
-           else (
-             print_string key;
-             print_newline ();
-             exp |> expression_to_string |> print_string))
+let rec env_to_string (Environment { outer; vars }) =
+  let vars_to_strings (Variables vs) =
+     Dict.to_seq vs |> Seq.map (fun (key,express) ->
+           if is_function express then ""
+           else key ^ "\n" ^ (express |> expression_to_string)) |> List.of_seq |> String.concat " " 
+           
   in
   match outer with
   | Some o ->
-      print_string "Env:\n";
-      o |> print_env;
-      print_string "Vars:\n";
-      print_vars vars;
-      ()
+      "Environment:\n" ^ (env_to_string o) ^ "\nVars:" ^ vars_to_strings vars
   | None ->
-      print_vars vars;
+      vars_to_strings vars
+
+type debug =
+    | Debug
+    | Production
+
+let debug_mode = 
+  Debug
+
+let debug_env context env =
+  match debug_mode with
+    | Debug ->
+      print_string ("debug " ^ context ^ "\n");
+      print_string (env_to_string env)
+    | Production -> 
       ()
 
 let vars_from_list lst = lst |> List.to_seq |> Dict.of_seq
@@ -250,11 +257,10 @@ let symbol env var =
 let quote env lst =
   match lst with
   | [ exp ] -> Ok (exp, env)
-  | _ -> Error (Problem "Quote only accepts 1 argumnet")
+  | _ -> Error (Problem "Quote only accepts 1 argument")
 
 let lambda (env : environment) lst =
-  print_string "debug lambda\n";
-  print_env env;
+  debug_env "lamdba" env;
   match lst with
   | [ List vars; exp ] -> Ok (Lambda (vars, exp), env)
   | _ -> Error (Problem "Invalid lamdba expression")
@@ -285,8 +291,7 @@ let params_and_args_to_vars params args =
   | None -> Error (Problem "All arguments need to be symbols")
 
 let rec eval env exp =
-  print_string "debug eval\n";
-  print_env env;
+  debug_env "eval" env;
   match exp with
   | Symbol symb -> symbol env symb
   | Constant _ -> Ok (exp, env)
@@ -343,8 +348,7 @@ and begin_quip env exps =
       | Error e -> Error e)
 
 and proc env procName args =
-  print_string "debug - proc\n";
-  print_env env;
+  debug_env "proc" env;
   let maybe_func = get_var env procName in
   let evaled_args_result = eval_list env args in
   match (maybe_func, evaled_args_result) with
@@ -358,8 +362,7 @@ and proc env procName args =
   | _, Ok _ -> Error (Problem "Not a function or lamdba expression")
 
 and eval_list env lst =
-  print_string "debug eval_list\n";
-  print_env env;
+  debug_env "eval_list" env;
   let andThen f ma = Result.bind ma f in
   match lst with
   | [] -> Ok ([], env)
@@ -371,8 +374,7 @@ and eval_list env lst =
                     (evaledHead :: evaledTail, lastEnv)))
 
 and handle_lambda_execution params exp env args =
-  print_string "debug lambda exec\n";
-  print_env env;
+  debug_env "lambda exec" env;
   let andThen f ma = Result.bind ma f in
   if List.length params != List.length args then
     Error (Problem "params and args do not have same length")
@@ -399,7 +401,7 @@ let eval_string str =
   match parse_result with
   | Parser.Good (Ok (exp, env), _) ->
       expression_to_string exp |> print_string;
-      print_env env;
+      debug_env "Parser result" env;
       parse_result
   | _ -> parse_result
 

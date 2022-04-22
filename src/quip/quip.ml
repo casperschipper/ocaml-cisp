@@ -234,7 +234,7 @@ let expression_list =
   let rec expression_list_help rev_expressions =
     one_of_parsers
       [
-        char ')' |> fmap (fun _ -> Done (List (List.rev rev_expressions)));
+        spaces >> char ')' |> fmap (fun _ -> Done (List (List.rev rev_expressions)));
         atom |> fmap (fun exp -> Loop (exp :: rev_expressions));
         spaces >> Parser.char '('
         >> Parser.loop [] expression_list_help

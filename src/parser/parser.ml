@@ -1,10 +1,10 @@
 type charClass = Alpha | Digit | AlphaNum | Special
 
-let class_as_string = function 
- | Alpha -> "alpha"
- | Digit -> "digit"
- | AlphaNum -> "alphanumeric"
- | Special -> "special character" 
+let class_as_string = function
+  | Alpha -> "alpha"
+  | Digit -> "digit"
+  | AlphaNum -> "alphanumeric"
+  | Special -> "special character"
 
 (* ocamlc -i parser.ml >> parser.mli *)
 
@@ -15,12 +15,14 @@ type 'p problem =
   | NoMatch
   | ExpectedEnd
   | YourProblem of 'p
-  
+
 let problem_to_string to_string problem =
   match problem with
   | EndOfString -> "reached unexpected end"
   | Expecting str -> "I expected str: " ^ str
-  | WrongCharClass (expected,instead) -> "I expected charclass " ^ class_as_string expected ^ "but got " ^ class_as_string instead ^ " instead."
+  | WrongCharClass (expected, instead) ->
+      "I expected charclass " ^ class_as_string expected ^ "but got "
+      ^ class_as_string instead ^ " instead."
   | NoMatch -> "No matching parser found"
   | ExpectedEnd -> "expected the end, but there is more"
   | YourProblem yp -> to_string yp
@@ -28,7 +30,6 @@ let problem_to_string to_string problem =
 type 'p non_empty = NonEmpty of 'p problem * 'p problem list
 
 let problem p = NonEmpty (p, [])
-
 let appendProblem problem (NonEmpty (p, ps)) = NonEmpty (p, problem :: ps)
 
 (* TODO to list
@@ -67,26 +68,20 @@ type ('a, 'problem) pstep =
 type ('a, 'b) parser = Parser of (char Seq.t -> ('a, 'b) pstep)
 
 let succeed a = Parser (fun s -> Good (a, s))
-
-let fail_with p = Parser (fun s -> Problem (YourProblem p,s))
-
+let fail_with p = Parser (fun s -> Problem (YourProblem p, s))
 let parse (Parser p) s = p s
 
 let lazyp (thunk : unit -> ('a, 'b) parser) =
   Parser
     (fun s ->
       let p = thunk () in
-      parse p s )
+      parse p s)
 
 let getParsed parseResult =
-  match parseResult with
-  | Good (a, _) -> Some a
-  | Problem (_, _) -> None
+  match parseResult with Good (a, _) -> Some a | Problem (_, _) -> None
 
 let mapProblem parsed f =
-  match parsed with
-  | Good (a, _) -> a
-  | Problem (prob, chars) -> f (prob, chars)
+  match parsed with Good (a, _) -> a | Problem (prob, chars) -> f (prob, chars)
 
 let getRemainChars parseResult =
   match parseResult with
@@ -106,13 +101,9 @@ let bind p f =
   Parser (fun s -> s |> parse p |> step)
 
 let ( >>= ) = bind
-
 let ( >> ) m k = m >>= fun _ -> k
-
 let unit a = succeed a
-
 let pure = unit
-
 let return = unit
 
 let item =
@@ -120,7 +111,7 @@ let item =
     (fun charSq ->
       match charSq () with
       | Seq.Nil -> Problem (EndOfString, Seq.empty)
-      | Seq.Cons (c, cs) -> Good (c, cs) )
+      | Seq.Cons (c, cs) -> Good (c, cs))
 
 (*
            
@@ -133,7 +124,7 @@ let fmap f p =
       let result = parse p s in
       match result with
       | Good (a, rest) -> Good (f a, rest)
-      | Problem (prob, rest) -> Problem (prob, rest) )
+      | Problem (prob, rest) -> Problem (prob, rest))
 
 let ( <$> ) = fmap
 
@@ -143,17 +134,15 @@ let product l1 l2 =
   List.rev
     (List.fold_left
        (fun x a -> List.fold_left (fun y b -> b :: a :: y) x l2)
-       [] l1 )
+       [] l1)
 
-let applyP fP xP = fP >>= fun f -> xP >>= fun x -> return (f x)
+let applyP fP xP =
+  fP >>= fun f ->
+  xP >>= fun x -> return (f x)
 
 let applicative = applyP
-
 let ( <*> ) = applyP
-
-let andThen parser f =
-  f >>= parser
-
+let andThen parser f = f >>= parser
 let failure problem = Parser (fun _ -> Problem (problem, Seq.empty))
 
 (* combine
@@ -187,9 +176,7 @@ let option p q =
   Parser
     (fun s ->
       let res = parse p s in
-      match res with
-      | Good (_, _) -> res
-      | Problem (_, _) -> parse q s )
+      match res with Good (_, _) -> res | Problem (_, _) -> parse q s)
 
 let ( <|> ) = option
 
@@ -208,9 +195,9 @@ let one_of_parsers parsers =
     match parsers with
     | [] -> Problem (NoMatch, s0)
     | p :: remainingParsers -> (
-      match parse p s0 with
-      | Good (a, rest) -> Good (a, rest)
-      | Problem _ -> oneOfHelp s0 remainingParsers )
+        match parse p s0 with
+        | Good (a, rest) -> Good (a, rest)
+        | Problem _ -> oneOfHelp s0 remainingParsers)
   in
   Parser (fun s -> oneOfHelp s parsers)
 
@@ -222,9 +209,9 @@ let loop state callback =
     let result = parse myParser s0 in
     match result with
     | Good (step, s1) -> (
-      match step with
-      | Loop newState -> loopHelp newState callback s1
-      | Done finalState -> Good (finalState, s1) )
+        match step with
+        | Loop newState -> loopHelp newState callback s1
+        | Done finalState -> Good (finalState, s1))
     | Problem (p, rest) -> Problem (p, rest)
   in
   Parser (fun chrs -> loopHelp state callback chrs)
@@ -232,8 +219,10 @@ let loop state callback =
 let zero_or_more p =
   let callback state =
     one_of_parsers
-      [ p |> fmap (fun item -> Loop (item :: state))
-      ; succeed () |> fmap (fun () -> Done (List.rev state)) ]
+      [
+        p |> fmap (fun item -> Loop (item :: state));
+        succeed () |> fmap (fun () -> Done (List.rev state));
+      ]
   in
   loop [] callback
 
@@ -246,7 +235,7 @@ let lookahead p =
       match result with
       | Good (a, _) ->
           Good (a, input) (* note that we just keep the same position *)
-      | Problem (a, s) -> Problem (a, s) )
+      | Problem (a, s) -> Problem (a, s))
 (* note that we failed, but the position is still updated *)
 
 let try_parser p =
@@ -255,23 +244,19 @@ let try_parser p =
       let result = parse p input in
       match result with
       | Good (a, state) -> Good (a, state)
-      | Problem (prob, _) -> Problem (prob, input) )
+      | Problem (prob, _) -> Problem (prob, input))
 
 let some p = List.cons <$> p <*> many p
-
 let one_or_more = some
 
 let satisfy predicate expecting =
-  item >>= fun c -> if predicate c then unit c else failure (Expecting expecting)
+  item >>= fun c ->
+  if predicate c then unit c else failure (Expecting expecting)
 
 let flip f x y = (f y) x
-
 let elem x xs = List.exists (fun x' -> x' == x) xs
-
 let explode = String.to_seq
-
 let parse_str p str = parse p (explode str)
-
 let explode_lst str = str |> explode |> List.of_seq
 
 let one_of s =
@@ -292,8 +277,7 @@ let chainl1 p op =
   p >>= fun a -> rest a
 
 let opt_int_of_string str =
-  try Option.Some (int_of_string str) with
-  | Failure _ -> None
+  try Option.Some (int_of_string str) with Failure _ -> None
 
 let int_of_char_seq charLst =
   let str = charLst |> List.to_seq |> String.of_seq in
@@ -304,42 +288,20 @@ let char c =
     (fun ch -> ch == c)
     (c |> Seq.return |> String.of_seq |> fun str -> "char" ^ str)
 
-let is_digit = function
-  | '0' .. '9' -> true
-  | _ -> false
-
-let is_alpha = function
-  | 'a' .. 'z'
-   |'A' .. 'Z' ->
-      true
-  | _ -> false
-
-let not_space = function
-  | ' '
-   |'\n'
-   |'\t'
-   |'\r' ->
-      false
-  | _ -> true
-
-let is_space = function
-  | ' '
-   |'\n'
-   |'\t'
-   |'\r' ->
-      true
-  | _ -> false
-
+let is_digit = function '0' .. '9' -> true | _ -> false
+let is_alpha = function 'a' .. 'z' | 'A' .. 'Z' -> true | _ -> false
+let not_space = function ' ' | '\n' | '\t' | '\r' -> false | _ -> true
+let is_space = function ' ' | '\n' | '\t' | '\r' -> true | _ -> false
 let digitP = satisfy is_digit "digit"
-
 let natural = int_of_char_seq <$> some (satisfy is_digit "digit")
-
 let spaces = many (one_of_string " \n\r")
-
 let chainl p op a = chainl1 p op <|> return a
 
 let chainl1 p op =
-  let rec rest a = op >>= fun f -> p >>= fun b -> rest (f a b) <|> return a in
+  let rec rest a =
+    op >>= fun f ->
+    p >>= fun b -> rest (f a b) <|> return a
+  in
   p >>= fun a -> rest a
 
 let between openSymbol closeSymbol p =
@@ -357,30 +319,35 @@ let between openSymbol closeSymbol p =
 type number = Float of float | Integer of int
 
 let number_to_string n =
-        match n with
-        | Float f -> "float: " ^ Float.to_string f ^ "\n"
-        | Integer i -> "int: " ^ Int.to_string i ^ "\n"
+  match n with Float f -> string_of_float f | Integer i -> string_of_int i
+
+let number_to_float = function
+  | Float f -> f
+  | Integer i -> float_of_int i
 
 let number =
   let construct f l = string_of_int f ^ "." ^ string_of_int l in
-  natural
-  >>= fun firstDigits ->
+  natural >>= fun firstDigits ->
   one_of_parsers
-    [ ( char '.' >> natural
-      >>= (fun lastDigits ->
-      Float (construct firstDigits lastDigits |> float_of_string) |> succeed)) ;
-      succeed (Integer firstDigits) ]
+    [
+      ( char '.' >> natural >>= fun lastDigits ->
+        Float (construct firstDigits lastDigits |> float_of_string) |> succeed
+      );
+      succeed (Integer firstDigits);
+    ]
 
 let list_end n1 =
-  loop [n1] (fun state ->
+  loop [ n1 ] (fun state ->
       spaces
       >> one_of_parsers
-           [ natural |> fmap (fun num -> Loop (num :: state))
-           ; char ')' |> fmap (fun _ -> Done (List.rev state)) ] )
+           [
+             natural |> fmap (fun num -> Loop (num :: state));
+             char ')' |> fmap (fun _ -> Done (List.rev state));
+           ])
 
 let natural_number_list =
   char '(' >> spaces
-  >> one_of_parsers [natural >>= list_end; char ')' |> fmap (fun _ -> [])]
+  >> one_of_parsers [ natural >>= list_end; char ')' |> fmap (fun _ -> []) ]
 
 (* what is a list?
 
@@ -390,13 +357,13 @@ let natural_number_list =
    (seq 1,2) -> seq (2::[1] |> reverse)
 *)
 
-let sepBy1 p sep = p >>= fun x -> many (sep >> p) >>= fun xs -> return (x :: xs)
+let sepBy1 p sep =
+  p >>= fun x ->
+  many (sep >> p) >>= fun xs -> return (x :: xs)
 
 let sepBy p sep = sepBy1 p sep <|> return []
-
 let slist = between (char '(') (char ')') (sepBy natural spaces)
-
-let singletonP = (fun x -> [x]) <$> natural
+let singletonP = (fun x -> [ x ]) <$> natural
 
 let string str =
   let rec aux sq =
@@ -408,7 +375,6 @@ let string str =
   |> fmap (fun charSeq -> charSeq |> List.to_seq |> String.of_seq)
 
 let token p = p >>= fun a -> spaces >> return a
-
 let reserved s = token (string s)
 
 let reached_end =
@@ -416,20 +382,17 @@ let reached_end =
     (fun s ->
       match s () with
       | Seq.Nil -> Good ((), Seq.empty)
-      | Seq.Cons (_, _) -> Problem ( ExpectedEnd, s) )
+      | Seq.Cons (_, _) -> Problem (ExpectedEnd, s))
 
 let of_char_list lst = lst |> List.to_seq |> String.of_seq
-
 let parse_while f = many (satisfy f "match")
-
-
 let parens m = reserved "(" >> m >>= fun n -> reserved ")" >> return n
 
 let test () =
   parse_str
     (sepBy
-       ( some (satisfy is_alpha "")
-       |> fmap (fun crs -> crs |> List.to_seq |> String.of_seq) )
-       spaces )
+       (some (satisfy is_alpha "")
+       |> fmap (fun crs -> crs |> List.to_seq |> String.of_seq))
+       spaces)
     "casper is een vis"
   |> getParsed

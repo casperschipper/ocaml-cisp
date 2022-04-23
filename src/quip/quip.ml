@@ -36,6 +36,27 @@ let rec expression_to_string exp =
   | Function _ -> "function "
   | TrueExpression -> "#true"
 
+
+let traverse_map_option f lst =
+  (* map a function that returns an option over a list, if any result is None, short-circuit.*)
+  let rec aux f list acc =
+    match list with
+    | head :: tail -> (
+        match f head with Some a -> aux f tail (a :: acc) | None -> None)
+    | [] -> Some (List.rev acc)
+  in
+  aux f lst []
+
+let traverse_map_result f lst =
+    (* same as option, but than for result, on first error fail *)
+    let rec aux f list acc =
+      match list with
+      | head :: tail -> (
+          match f head with Result.Ok a -> aux f tail (a :: acc) | Error e -> Error e)
+      | [] -> Result.Ok (List.rev acc)
+    in
+    aux f lst []
+
 let binaryOp floatOp intOp lst =
   let append_floats e1 e2 =
     match (e1, e2) with
@@ -138,6 +159,16 @@ let length lst =
   | [ List list ] -> Ok (Constant (Integer (List.length list)))
   | _ -> Error (Problem "Invalid argument for length")
 
+
+(* Cisp functions *)
+
+let seq lst =
+  let mkFloat = function
+  | Constant n -> n |> Parser.number_to_float |> Result.ok
+  | _ -> Result.Error (Problem "seq requires all numbers to be floats")
+  in
+  lst |> traverse_map_result mkFloat |> Result.map (fun flt_lst -> Infseq.seq flt_lst) 
+
 module Dict = Map.Make (String)
 
 type variables = Variables of expression Dict.t
@@ -196,7 +227,8 @@ let initial_vars =
     ("list", Function list);
     ("symbol?", Function is_symbol_quip);
     ("function?", Function is_function_quip);
-    ("nil", List [] )
+    ("nil", List [] );
+    (* ("seq", Function seq); *)
   ]
   |> vars_from_list
 
@@ -265,16 +297,6 @@ let lambda (env : environment) lst =
   match lst with
   | [ List vars; exp ] -> Ok (Lambda (vars, exp), env)
   | _ -> Error (Problem "Invalid lamdba expression")
-
-let traverse_map_option f lst =
-  (* map a function that returns an option over a list, if any result is None, short-circuit.*)
-  let rec aux f list acc =
-    match list with
-    | head :: tail -> (
-        match f head with Some a -> aux f tail (a :: acc) | None -> None)
-    | [] -> Some (List.rev acc)
-  in
-  aux f lst []
 
 let rec zip lsta lstb =
   match (lsta, lstb) with
@@ -406,49 +428,3 @@ let eval_string str =
       (* parse_result *)
   | Parser.Good (Error (Problem problem),_) -> print_string problem;
   | Parser.Problem (prob,_) -> Parser.problem_to_string (fun _ -> "prob") prob |> print_string
- 
-(*
-   let quip =
-       one_of_parsers
-       [
-         Parser.number
-         ; expression_list
-       ] *)
-
-(*
-
-   eval (seq 1 2 3)
-
-   ->
-
-   list [Symbol Seq;Number (Int 1);Number (Int 2);Number (Int 3)]
-
-   (InfSeq.seq [1.0;2.0;3.0])
-*)
-
-(* (2 3 4 5 6) *)
-(* (/ 1 2 3 4) *)
-
-(*
-
-   (seq 11 12 13) -> seq int int int
-
-   (seq 11 (rv 1 10) 13) -> (seq 11 (st 11) (rv 1 10) 13)
-
-   (rv 1 10) ->
-
-   (seq (rv 1 10) 1 4)
-
-   (count 10)
-*)
-
-(*
-let rec quip_program = 
-  one_of_parsers [
-    Parser.float |> fmap (fun x -> Float x)
-    ; Parser.natural |> fmap (fun x -> Int x)
-    ; Parser. |> fmap (fun x -> String )
-  ]
-  *)
-
-(* parsing = computing ! *)

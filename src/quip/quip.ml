@@ -181,9 +181,14 @@ let seq lst =
   |> Result.map (fun flt_lst -> Stream (InfStream (Infseq.seq flt_lst)))
 
 let lst_of_two_streams lst =
+  let st a =
+    InfStream (Infseq.repeat (Parser.number_to_float a))
+  in
   match lst with
   | [ Stream a; Stream b ] -> Ok (a, b)
-  | [ Constant a;Constant b] -> Ok (InfStream (Infseq.repeat (Parser.number_to_float a)),InfStream (Infseq.repeat (Parser.number_to_float b)))
+  | [ Constant a;Constant b] -> Ok (st a,st b)
+  | [ Stream a; Constant b ] -> Ok (a, st b)
+  | [ Constant a; Stream b] -> Ok (st a, b)
   | _ -> Error (Problem "I expected two streams")
 
 let stream stream =

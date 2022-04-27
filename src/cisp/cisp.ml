@@ -310,7 +310,7 @@ let batcher batchSizeSq sq =
 let rec nth n sq = if n = 0 then head sq else nth (n - 1) sq
 
 (* does not finish on infinite sequences *)
-let reverse sq =
+let reverse sq = (* Should always be conbined with take ? *)
   let rec aux acc arg () =
     match arg () with
     | Nil -> acc
@@ -970,6 +970,8 @@ let loop size n src =
   loops control src |> concat
 
 let trunc = map Int.of_float
+
+let intify = trunc
 
 let floatify = map Float.of_int
 

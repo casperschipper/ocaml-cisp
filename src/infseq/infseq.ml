@@ -1,3 +1,4 @@
+(* explicitely infinite seq, never ends! *)
 type 'a inf_node =
   InfCons of 'a * 'a t
 and +'a t =
@@ -21,11 +22,16 @@ let tail sq =
   match sq () with
     InfCons(_,ts) -> ts
           
-
+(* use sparingly ! *)
 let rec toSeq infSq () = 
   match infSq () with
   | InfCons(h,tl) -> Seq.Cons(h,toSeq tl)
 
+let to_seq =
+  toSeq
+ 
+
+(* get a finite chunk *)
 let rec take n isq () =
   if n <= 0 then
     Seq.Nil
@@ -33,6 +39,7 @@ let rec take n isq () =
     let (InfCons (h, tl)) = isq () in
     Seq.Cons(h,take (n-1) tl)
 
+(* flatten infinite stream of finite streams *)
 let rec concatSq ssq () =
   match ssq () with 
     InfCons (h, ls) -> (
@@ -41,6 +48,22 @@ let rec concatSq ssq () =
        let newtail () = InfCons (ls', ls) in
        InfCons (h', concatSq newtail)
     | Seq.Nil -> concatSq ls () )
+
+(* for mapping multiargument functions *)
+let rec andMap sqa sqf () =
+      match (sqa (),sqf ()) with
+      | (InfCons(x,xs), InfCons(f,fs)) ->
+        InfCons (f x, andMap xs fs)
+    
+        
+let map2 f sqa sqb =
+  map f sqa |> andMap sqb
+
+let hold repetitions source =
+  let f src n =
+    src |> repeat |> take n
+  in
+  map2 f source repetitions |> concatSq
 
 let cycleSq sq =
   repeat sq |> concatSq
@@ -96,6 +119,8 @@ let rec sometimes x y p () =
   in
   InfCons (fst (), sometimes x y p)
 
+  
+
 let rec zip sqa sqb () =
   match (sqa (),sqb ()) with
     (InfCons (x,xs),InfCons(y,ys)) ->
@@ -106,7 +131,9 @@ let rec zipWith f sqa sqb () =
     (InfCons (x,xs),InfCons(y,ys)) ->
     InfCons (f x y,zipWith f xs ys)
 
+
 let applySq fSq sq = zip fSq sq |> map (fun (f,x ) -> f x)
+
 
 
 

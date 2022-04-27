@@ -12,6 +12,11 @@ let assert_equal label a b =
   else print_string ("failed: " ^ label ^ " <<<should be>>> ")
 
 type problem = Problem of string
+type stream = InfStream of float Infseq.t | FinStream of float Seq.t
+
+let stream_to_string = function
+  | InfStream _ -> "inf stream"
+  | FinStream _ -> "inf/finite stream"
 
 let problemize p = Problem p
 
@@ -22,6 +27,7 @@ type expression =
   | Lambda of expression list * expression
   | Function of (expression list -> (expression, problem) result)
   | TrueExpression
+  | Stream of stream
 
 let rec expression_to_string exp =
   match exp with
@@ -31,11 +37,11 @@ let rec expression_to_string exp =
       "(" ^ (lst |> List.map expression_to_string |> String.concat " ") ^ ")"
   | Lambda (lst, body) ->
       "lambda | with parameters: \n "
-      ^ expression_to_string (List lst) ^ "\n"
-      ^ "| and expression: \n" ^ " " ^ expression_to_string body ^ "\n"
+      ^ expression_to_string (List lst)
+      ^ "\n" ^ "| and expression: \n" ^ " " ^ expression_to_string body ^ "\n"
   | Function _ -> "function "
   | TrueExpression -> "#true"
-
+  | Stream stream -> stream_to_string stream
 
 let traverse_map_option f lst =
   (* map a function that returns an option over a list, if any result is None, short-circuit.*)
@@ -48,14 +54,16 @@ let traverse_map_option f lst =
   aux f lst []
 
 let traverse_map_result f lst =
-    (* same as option, but than for result, on first error fail *)
-    let rec aux f list acc =
-      match list with
-      | head :: tail -> (
-          match f head with Result.Ok a -> aux f tail (a :: acc) | Error e -> Error e)
-      | [] -> Result.Ok (List.rev acc)
-    in
-    aux f lst []
+  (* same as option, but than for result, on first error fail *)
+  let rec aux f list acc =
+    match list with
+    | head :: tail -> (
+        match f head with
+        | Result.Ok a -> aux f tail (a :: acc)
+        | Error e -> Error e)
+    | [] -> Result.Ok (List.rev acc)
+  in
+  aux f lst []
 
 let binaryOp floatOp intOp lst =
   let append_floats e1 e2 =
@@ -159,15 +167,65 @@ let length lst =
   | [ List list ] -> Ok (Constant (Integer (List.length list)))
   | _ -> Error (Problem "Invalid argument for length")
 
-
 (* Cisp functions *)
+
+let result_and_then f res = Result.bind res f
 
 let seq lst =
   let mkFloat = function
-  | Constant n -> n |> Parser.number_to_float |> Result.ok
-  | _ -> Result.Error (Problem "seq requires all numbers to be floats")
+    | Constant n -> n |> Parser.number_to_float |> Result.ok
+    | _ -> Result.Error (Problem "seq requires numbers only")
   in
-  lst |> traverse_map_result mkFloat |> Result.map (fun flt_lst -> Infseq.seq flt_lst) 
+  lst
+  |> traverse_map_result mkFloat
+  |> Result.map (fun flt_lst -> Stream (InfStream (Infseq.seq flt_lst)))
+
+let lst_of_two_streams lst =
+  match lst with
+  | [ Stream a; Stream b ] -> Ok (a, b)
+  | [ Constant a;Constant b] -> Ok (InfStream (Infseq.repeat (Parser.number_to_float a)),InfStream (Infseq.repeat (Parser.number_to_float b)))
+  | _ -> Error (Problem "I expected two streams")
+
+let stream stream =
+  Stream stream 
+
+let hold lst =
+  let hold_stream two_streams = 
+    match two_streams with
+    | InfStream repeats, InfStream source ->
+        Ok (InfStream (Infseq.hold (Infseq.map int_of_float repeats) source))
+    | InfStream repeats, FinStream source ->
+        let finite_repeats = Infseq.to_seq repeats |> Cisp.intify in
+        Ok (FinStream (Cisp.hold finite_repeats source))
+    | FinStream repeats, InfStream source ->
+        let finite_source = Infseq.to_seq source in
+        Ok (FinStream (Cisp.hold (repeats |> Cisp.intify) finite_source))
+    | FinStream repeats, FinStream source ->
+        Ok (FinStream (Cisp.hold (Cisp.intify repeats) source))
+    in
+    lst |> lst_of_two_streams |> result_and_then hold_stream |> Result.map stream
+    
+
+let binary_sq_function inf_func finite_func two_streams =
+    match two_streams with
+    | InfStream a, InfStream b ->
+        Ok (InfStream (inf_func a b))
+    | InfStream a_inf, FinStream b ->
+      let a_fin = Infseq.to_seq a_inf in
+        Ok (FinStream (finite_func a_fin b))
+    | FinStream a, InfStream b ->
+        Ok (FinStream (finite_func a (b |> Infseq.to_seq)))
+    | FinStream a, FinStream b ->
+        Ok (FinStream (finite_func a b))
+
+let rv lst =
+  let rv_fun = 
+    let inf_func = Infseq.map2 Cisp.rvfi in
+    binary_sq_function inf_func Cisp.rvf
+  in
+  lst |> lst_of_two_streams |> result_and_then rv_fun |> Result.map (fun str -> Stream str)
+
+
 
 module Dict = Map.Make (String)
 
@@ -180,31 +238,28 @@ type environment =
 
 let rec env_to_string (Environment { outer; vars }) =
   let vars_to_strings (Variables vs) =
-     Dict.to_seq vs |> Seq.map (fun (key,express) ->
+    Dict.to_seq vs
+    |> Seq.map (fun (key, express) ->
            if is_function express then ""
-           else key ^ "\n" ^ (express |> expression_to_string)) |> List.of_seq |> String.concat " " 
-           
+           else key ^ "\n" ^ (express |> expression_to_string))
+    |> List.of_seq |> String.concat " "
   in
+
   match outer with
   | Some o ->
-      "Environment:\n" ^ (env_to_string o) ^ "\nVars:" ^ vars_to_strings vars
-  | None ->
-      vars_to_strings vars
+      "Environment:\n" ^ env_to_string o ^ "\nVars:" ^ vars_to_strings vars
+  | None -> vars_to_strings vars
 
-type debug =
-    | Debug
-    | Production
+type debug = Debug | Production
 
-let debug_mode = 
-  Production
+let debug_mode = Production
 
 let debug_env context env =
   match debug_mode with
-    | Debug ->
+  | Debug ->
       print_string ("debug " ^ context ^ "\n");
       print_string (env_to_string env)
-    | Production -> 
-      ()
+  | Production -> ()
 
 let vars_from_list lst = lst |> List.to_seq |> Dict.of_seq
 
@@ -227,8 +282,10 @@ let initial_vars =
     ("list", Function list);
     ("symbol?", Function is_symbol_quip);
     ("function?", Function is_function_quip);
-    ("nil", List [] );
-    (* ("seq", Function seq); *)
+    ("nil", List []);
+    ("seq", Function seq);
+    ("rv", Function rv);
+    ("hold", Function hold);
   ]
   |> vars_from_list
 
@@ -271,14 +328,16 @@ let atom =
 
 let expression_list =
   let rec expression_list_help rev_expressions =
-    spaces >> 
-    one_of_parsers
-      [
-        char ')' |> fmap (fun _ -> Done (List (List.rev rev_expressions)));
-        atom |> fmap (fun exp -> Loop (exp :: rev_expressions));
-        Parser.char '(' >> Parser.loop [] expression_list_help |> fmap (fun exp -> Loop (exp :: rev_expressions));
-        Parser.reached_end >> Parser.fail_with (Problem "missing )")
-      ]
+    spaces
+    >> one_of_parsers
+         [
+           char ')' |> fmap (fun _ -> Done (List (List.rev rev_expressions)));
+           atom |> fmap (fun exp -> Loop (exp :: rev_expressions));
+           Parser.char '('
+           >> Parser.loop [] expression_list_help
+           |> fmap (fun exp -> Loop (exp :: rev_expressions));
+           Parser.reached_end >> Parser.fail_with (Problem "missing )");
+         ]
   in
   Parser.char '(' >> Parser.loop [] expression_list_help
 
@@ -336,6 +395,7 @@ let rec eval env exp =
   | Function _ -> Ok (exp, env)
   | Lambda (_, _) -> Ok (exp, env)
   | TrueExpression -> Ok (exp, env)
+  | Stream _ -> Ok (exp, env)
 
 and define env exps =
   match exps with
@@ -424,7 +484,25 @@ let eval_string str =
   match parse_result with
   | Parser.Good (Ok (exp, env), _) ->
       expression_to_string exp |> print_string;
-      debug_env "Parser result" env;
-      (* parse_result *)
-  | Parser.Good (Error (Problem problem),_) -> print_string problem;
-  | Parser.Problem (prob,_) -> Parser.problem_to_string (fun _ -> "prob") prob |> print_string
+      debug_env "Parser result" env (* parse_result *)
+  | Parser.Good (Error (Problem problem), _) -> print_string problem
+  | Parser.Problem (prob, _) ->
+      Parser.problem_to_string (fun _ -> "prob") prob |> print_string
+
+
+
+let eval_string_to_stream strng =
+  let print_stream exp =
+    match exp with
+    | Stream (InfStream infstr) -> (infstr  |> Infseq.take 100 |> Cisp.for_example |> List.iter (fun x -> print_float x; print_string "\t")); print_newline ()
+    | Stream (FinStream finstr) -> finstr |> Cisp.for_example |> List.iter (fun x -> print_float x; print_string "\t"; print_newline ())
+    | _ -> print_string "sorry no stream to print!" ; print_newline ();
+  in
+  let parse_result =
+    Parser.parse_str (expression_list |> Parser.fmap (eval initial_env)) strng
+  in
+  match parse_result with
+  | Parser.Good (Ok (exp, _), _) -> print_stream exp
+  | Parser.Good (Error (Problem problem), _) -> print_string problem
+  | Parser.Problem (prob, _) -> Parser.problem_to_string (fun _ -> "prob") prob |> print_string
+    

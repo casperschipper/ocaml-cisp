@@ -310,7 +310,7 @@ let batcher batchSizeSq sq =
 let rec nth n sq = if n = 0 then head sq else nth (n - 1) sq
 
 (* does not finish on infinite sequences *)
-let reverse sq = (* Should always be conbined with take ? *)
+let reverse sq = (* Should always be combined with take ? *)
   let rec aux acc arg () =
     match arg () with
     | Nil -> acc
@@ -744,6 +744,12 @@ let rec walk start steps () =
       let next = start +. h in
       Cons (start, walk next ls)
   | Nil -> Nil
+    
+let some_walks (start : float Seq.t) (steps : (float Seq.t) Seq.t) =
+  map2 (fun start steps2 -> walk start steps2) start steps |> concat
+
+let many_walks (starts : float Infseq.t) (steps : (float Seq.t) Infseq.t) =
+  Infseq.map2 (fun start steps2 -> walk start steps2) starts steps |> Infseq.concatSq
 
 (* bring your own function *)
 let rec iterwalk start f steps () =
@@ -752,7 +758,6 @@ let rec iterwalk start f steps () =
       let next = f start h in
       Cons (start, iterwalk next f ls)
   | Nil -> Nil
-
 (* operator is a function
    to get the next value *)
 let rec boundedFuncWalk start steps operator wrapfunc () =

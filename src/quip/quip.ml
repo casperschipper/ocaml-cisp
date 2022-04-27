@@ -228,9 +228,19 @@ let rv lst =
     let inf_func = Infseq.map2 Cisp.rvfi in
     binary_sq_function inf_func Cisp.rvf
   in
-  lst |> lst_of_two_streams |> result_and_then rv_fun |> Result.map (fun str -> Stream str)
+  lst |> lst_of_two_streams |> result_and_then rv_fun |> Result.map stream
 
-
+let plus lst =
+  let plus_fun =
+    binary_sq_function (Infseq.map2 ( +. )) (Cisp.map2 ( +. ))
+  in
+  lst |> lst_of_two_streams |> result_and_then plus_fun |> Result.map stream
+  
+let walk lst =
+  let walk_fun =
+    binary_sq_function Cisp.many_walks 
+  in
+  lst |> lst_of_two_streams |> result_and_then walk_fun
 
 module Dict = Map.Make (String)
 

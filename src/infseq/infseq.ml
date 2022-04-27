@@ -39,6 +39,19 @@ let rec take n isq () =
     let (InfCons (h, tl)) = isq () in
     Seq.Cons(h,take (n-1) tl)
 
+let rec drop n isq =
+  if n <= 0 then 
+    isq
+  else
+    match isq () with
+    | InfCons(_,tail) -> drop (n - 1) tail
+
+let rec chunk chunk_sizes input =
+  match chunk_sizes () with
+  | InfCons(size, rest) ->
+    InfCons(take size input, fun () -> chunk rest (drop size input))
+
+
 (* flatten infinite stream of finite streams *)
 let rec concatSq ssq () =
   match ssq () with 
@@ -111,6 +124,12 @@ let walki (start: int) steps =
 
 let walk (start: float) steps =
   recursive steps start ( +. ) (fun x -> x)
+
+    
+let chunk chunk_size input =
+  let init = (chunk_size, input) in
+  recursive 
+
 
 let rec sometimes x y p () =
   let fst () =

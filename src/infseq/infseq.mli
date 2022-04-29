@@ -8,6 +8,7 @@ val tail : (unit -> 'a inf_node) -> 'a t
 val toSeq : 'a t -> 'a Seq.t
 val to_seq : 'a t -> 'a Seq.t
 val take : int -> 'a t -> 'a Seq.t
+val drop : int -> 'a t -> 'a t
 val concatSq : 'a Seq.t t -> 'a t
 val andMap : 'a t -> ('a -> 'b) t -> 'b t
 val map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
@@ -20,6 +21,7 @@ val recursive : 'a t -> 'b -> ('a -> 'b -> 'b) -> ('b -> 'c) -> 'c t
 val recursive1 : 'a t -> 'b -> ('a -> 'b -> 'b) -> ('b -> 'c) -> 'c t
 val walki : int -> int t -> int t
 val walk : float -> float t -> float t
+val chunk : float t -> 'a t -> 'a Seq.t t
 val sometimes : 'a -> 'a -> int -> 'a t
 val zip : 'a t -> 'b t -> ('a * 'b) t
 val zipWith : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t

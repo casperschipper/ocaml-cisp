@@ -12,11 +12,18 @@ let assert_equal label a b =
   else print_string ("failed: " ^ label ^ " <<<should be>>> ")
 
 type problem = Problem of string
-type stream = InfStream of float Infseq.t | FinStream of float Seq.t
+
+type stream =  
+| InfStream of float Infseq.t 
+| FinStream of float Seq.t 
+| FinStreams of float Seq.t Infseq.t
+| FinFinStreams of float Seq.t Seq.t
 
 let stream_to_string = function
   | InfStream _ -> "inf stream"
-  | FinStream _ -> "inf/finite stream"
+  | FinStream _ -> "possibly finite stream"
+  | FinStreams _ -> "an infinite number of finite streams"
+  | FinFinStreams _ -> "a finite number of finite streams"
 
 let problemize p = Problem p
 
@@ -191,6 +198,17 @@ let lst_of_two_streams lst =
   | [ Constant a; Stream b] -> Ok (st a, b)
   | _ -> Error (Problem "I expected two streams")
 
+let lst_of_two_streams_finite lst =
+  let st a =
+    FinStream (Seq.return (Parser.number_to_float a))
+  in
+  match lst with
+  | [ Stream a; Stream b ] -> Ok (a, b)
+  | [ Constant a;Constant b] -> Ok (st a,st b)
+  | [ Stream a; Constant b ] -> Ok (a, st b)
+  | [ Constant a; Stream b] -> Ok (st a, b)
+  | _ -> Error (Problem "I expected two streams")
+
 let stream stream =
   Stream stream 
 
@@ -207,6 +225,7 @@ let hold lst =
         Ok (FinStream (Cisp.hold (repeats |> Cisp.intify) finite_source))
     | FinStream repeats, FinStream source ->
         Ok (FinStream (Cisp.hold (Cisp.intify repeats) source))
+    | _ -> Error (Problem "Hold does not support streams of streams as args")
     in
     lst |> lst_of_two_streams |> result_and_then hold_stream |> Result.map stream
     
@@ -222,6 +241,10 @@ let binary_sq_function inf_func finite_func two_streams =
         Ok (FinStream (finite_func a (b |> Infseq.to_seq)))
     | FinStream a, FinStream b ->
         Ok (FinStream (finite_func a b))
+    | _ -> Error (Problem "this function does not support streams of streams as args")
+
+
+
 
 let rv lst =
   let rv_fun = 
@@ -230,7 +253,7 @@ let rv lst =
   in
   lst |> lst_of_two_streams |> result_and_then rv_fun |> Result.map stream
 
-let plus lst =
+let plus_st lst =
   let plus_fun =
     binary_sq_function (Infseq.map2 ( +. )) (Cisp.map2 ( +. ))
   in
@@ -238,9 +261,21 @@ let plus lst =
   
 let walk lst =
   let walk_fun =
-    binary_sq_function Cisp.many_walks 
+    function
+    | (InfStream starts , FinStreams steps) -> 
+      Ok (InfStream (Cisp.many_walks starts steps) |> stream)
+    | _ ->
+      Error (Problem "walk does not know what to do with this")
   in
-  lst |> lst_of_two_streams |> result_and_then walk_fun
+  lst |> lst_of_two_streams_finite |> result_and_then walk_fun
+
+let chunks lst =
+  let chunk_fun = function
+    | (InfStream chunk_size, InfStream input) -> 
+      Ok ((FinStreams (Infseq.chunk chunk_size input)) |> stream)
+    | _ -> Error (Problem "expecting infinite streams for both arguments")
+  in 
+  lst |> lst_of_two_streams |> result_and_then chunk_fun
 
 module Dict = Map.Make (String)
 
@@ -301,6 +336,9 @@ let initial_vars =
     ("seq", Function seq);
     ("rv", Function rv);
     ("hold", Function hold);
+    ("walk", Function walk);
+    ("chunks", Function chunks);
+    ("plus", Function plus_st);
   ]
   |> vars_from_list
 

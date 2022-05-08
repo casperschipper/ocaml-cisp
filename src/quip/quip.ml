@@ -13,11 +13,57 @@ let assert_equal label a b =
 
 type problem = Problem of string
 
+
+(* Stream of Stream is just stream Seq.t *)
 type stream =  
 | InfStream of float Infseq.t 
 | FinStream of float Seq.t 
 | FinStreams of float Seq.t Infseq.t
 | FinFinStreams of float Seq.t Seq.t
+
+type list_type =
+  | FloatList
+  | FinList
+  | InfList
+  | Impossible of string
+
+type quiplist =
+| FloatLst of float List.t
+| FinStreamLst of (float Seq.t) List.t
+| InfStreamLst of (float Infseq.t) List.t
+(* | LstLst of quiplist List.t *)
+
+
+
+
+
+
+(* 
+
+
+(seq 1 2 3 (seq 10 11 12)) -> 1 2 3 10 1 2 3 11 1 2 3 12
+(seq 1 2 3 (seq 10 11 12)) -> 1 2 3 10 11 12 1 2 3 10 11 12
+
+(cat (seq 10 11 12) (seq 1 2) (seq 11 12 13))
+
+observation:
+only finite streams can be catted
+catting flattens finite streams into one finite stream
+
+transcat makes a weave out of infinite streams (maybe makes less sense as finite streams)
+
+(trans (rv 1 100) (ch 1 2 3 4) ())
+
+*)
+
+(* 
+
+type stream =  
+  | InfStream of float Infseq.t 
+  | FinStream of float Seq.t 
+  | FinStreams of stream InfSeq.t
+  | FinFinStreams of stream Seq.t
+*)
 
 let stream_to_string = function
   | InfStream _ -> "inf stream"
@@ -36,6 +82,8 @@ type expression =
   | TrueExpression
   | Stream of stream
 
+
+
 let rec expression_to_string exp =
   match exp with
   | Constant n -> Parser.number_to_string n
@@ -49,6 +97,73 @@ let rec expression_to_string exp =
   | Function _ -> "function "
   | TrueExpression -> "#true"
   | Stream stream -> stream_to_string stream
+
+
+let monoform (lst : expression list)  =
+  (* This function turns a diverse list into a single type, type normalisation *)
+  let rec find_type xs state =
+    match xs with
+    | [] -> 
+      state
+    | x::rest ->
+      match x with
+      | Constant _ -> 
+        (
+        match state with
+        | FloatList -> find_type rest FloatList
+        | FinList -> find_type rest FinList
+        | InfList -> find_type rest InfList
+        | Impossible str -> Impossible str
+        )
+      | Stream (InfStream _) -> 
+        (
+        match state with
+        | FloatList -> find_type rest InfList
+        | FinList -> find_type rest FinList
+        | InfList -> find_type rest InfList
+        | Impossible str -> Impossible str
+        )
+      | Stream (FinStream _) ->
+          (match state with
+          | FloatList -> find_type rest FinList
+          | FinList -> find_type rest FinList
+          | InfList -> find_type rest FinList
+          | Impossible str -> Impossible str)
+      | Stream (FinFinStreams _) ->
+        Impossible "finfin streams not supported"
+      | Stream (FinStreams _) ->
+        Impossible "finstreams not supported"
+      | _ ->
+        Impossible "these are not streams"
+  in
+  let make_float item =
+      match item with
+      | Constant num -> Parser.number_to_float num
+      | _ -> 0.0
+  in
+  let make_finite_sq item =
+    match item with
+    | Constant num -> Parser.number_to_float num |> Cisp.st
+    | Stream (FinStream sq) -> sq
+    | Stream (InfStream sq) -> sq |> Infseq.to_seq
+    | _ -> Cisp.st (0.0)
+  in
+  let make_infinite_sq item =
+    match item with
+    | Constant num -> Parser.number_to_float num |> Infseq.repeat
+    | Stream (FinStream sq) -> Infseq.cycleSq sq 
+    | Stream (InfStream sq) -> sq 
+    | _ -> Infseq.repeat (0.0)
+  in
+  let f input = 
+    match find_type lst FloatList with
+    | FloatList -> input |> List.map make_float |> fun xs -> Ok (FloatLst xs)
+    | InfList -> input |> List.map make_infinite_sq |> fun xs -> Ok (InfStreamLst xs)
+    | FinList -> input |> List.map make_finite_sq |> fun xs -> Ok (FinStreamLst xs)
+    | Impossible mistake -> Error (Problem mistake)
+  in
+  f lst
+  
 
 let traverse_map_option f lst =
   (* map a function that returns an option over a list, if any result is None, short-circuit.*)
@@ -178,14 +293,46 @@ let length lst =
 
 let result_and_then f res = Result.bind res f
 
+type sequence =
+  | FloatSq of float List.t
+  | StreamSq of stream List.t
+
+
+(* if all floats, float list
+   if at least one stream, streams
+    if one float other streams streams
+      if all infinite, infinite stream *)
+
+let mkFloat = function
+| Constant n -> n |> Parser.number_to_float |> Result.ok
+| _ -> Result.Error (Problem "seq requires numbers only")
+
 let seq lst =
-  let mkFloat = function
-    | Constant n -> n |> Parser.number_to_float |> Result.ok
-    | _ -> Result.Error (Problem "seq requires numbers only")
-  in
+  (* this is normal seq *)
   lst
   |> traverse_map_result mkFloat
   |> Result.map (fun flt_lst -> Stream (InfStream (Infseq.seq flt_lst)))
+
+let ch lst =
+  let handle_lst lst =
+    match lst with
+    | FloatLst flst ->  (Cisp.ch (Array.of_list flst)) |> Result.ok
+    | InfStreamLst fin_str_lst -> 
+      (
+        fin_str_lst |>
+        Array.of_list |> 
+        Infseq.index_seq arr |>
+        (fun infstr -> Stream (InfStream infstr))
+        |> Result.ok
+      )
+    | _ ->
+      Error (Problem "unsupported list type")
+      
+
+  in
+  lst 
+  |> monoform 
+  |> result_and_then handle_lst
 
 let lst_of_two_streams lst =
   let st a =
@@ -276,6 +423,11 @@ let chunks lst =
     | _ -> Error (Problem "expecting infinite streams for both arguments")
   in 
   lst |> lst_of_two_streams |> result_and_then chunk_fun
+
+
+
+
+
 
 module Dict = Map.Make (String)
 

@@ -8,6 +8,10 @@ let rec map f isq () =
   match isq () with InfCons (h, tl) -> InfCons (f h, map f tl)
 
 let rec repeat x () = InfCons (x, repeat x)
+
+let rec generator f () =
+  InfCons (f (), generator f)
+
 let head sq = match sq () with InfCons (x, _) -> x
 let tail sq = match sq () with InfCons (_, ts) -> ts
 
@@ -101,3 +105,33 @@ let rec zipWith f sqa sqb () =
   | InfCons (x, xs), InfCons (y, ys) -> InfCons (f x y, zipWith f xs ys)
 
 let applySq fSq sq = zip fSq sq |> map (fun (f, x) -> f x)
+
+let wrap low high x =
+  let range = low - high |> abs in
+  let modded = (x - low) mod range in
+  if modded < 0 then high + x else low + x
+
+let index array indexer =
+  let len = Array.length array in
+  let f index =
+    index |> wrap 0 len |> Array.get array
+  in
+indexer |> map f 
+
+let index_seq (arr : 'a t Array.t) indexer =
+  let array_size = Array.length arr in
+  let unfolder (array,idx) =
+    match idx () with
+    | InfCons(firstIdx, restIdx) ->
+      let safeIdx = wrap 0 array_size firstIdx in
+      let indexed = Array.get array safeIdx in
+      match indexed () with
+      | InfCons(current, tail) -> 
+        Array.set array safeIdx tail;
+         (current,(array,restIdx))
+  in
+  unfold unfolder (arr,indexer) 
+
+let ch_seq (arr : 'a t Array.t) indexer =
+  let rand_index = Array.length arr |> Cisp.rvi 0 
+  index_seq arr (generator rand_index) 

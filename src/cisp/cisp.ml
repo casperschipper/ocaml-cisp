@@ -522,6 +522,12 @@ let rec st a () =
   (* static *)
   Cons (a, st a)
 
+(* stateless generator, function is called on each cons *)
+let rec generator f () =
+  match f () with
+  | Some x -> Cons(x,generator f)
+  | None -> Nil
+
 let normalizeNumberOfChannels channelsA channelsB =
   let na, nb = (List.length channelsA, List.length channelsB) in
   if na = nb then (channelsA, channelsB)
@@ -833,6 +839,26 @@ let index arr indexer =
   let arrIndexFun = getSafeIndexFun arr in
   map (fun idx -> arrIndexFun idx) indexer
 
+let index_seq (arr : 'a Seq.t Array.t) indexer =
+  let array_size = Array.length arr in
+  let unfolder (array,idx) =
+    match idx () with
+    | Nil -> None
+    | Cons(firstIdx, restIdx) ->
+      let safeIdx = wrap 0 array_size firstIdx in
+      let indexed = Array.get array safeIdx in
+      match indexed () with
+      | Cons(current, tail) -> 
+        Array.set array safeIdx tail;
+         Some(current,(array,restIdx))
+      | Nil -> None
+  in
+  Seq.unfold unfolder (arr,indexer) 
+
+
+  
+
+
 let wrappedCount arr = count |> map (fun x -> x mod Array.length arr)
 
 (* this allows you to walk a list, af it was circulair *)
@@ -1006,6 +1032,14 @@ let pickOne arr =
 let ch arr =
   let picker = rv (st 0) (st (Array.length arr)) in
   index arr picker
+
+  (* select from seqs *)
+let choice_seq arr =
+  let indexer =
+      let f () = Some (rvi 0 (Array.length arr)) in
+      generator f
+  in
+  index_seq arr indexer
 
 let mtof midi = 440.0 *. (2.0 ** ((midi -. 69.0) /. 12.0))
 

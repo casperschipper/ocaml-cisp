@@ -1,0 +1,3 @@
+(library
+ (name toolkit)
+ (ocamlopt_flags -O3))

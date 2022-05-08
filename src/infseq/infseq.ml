@@ -132,6 +132,8 @@ let index_seq (arr : 'a t Array.t) indexer =
   in
   unfold unfolder (arr,indexer) 
 
-let ch_seq (arr : 'a t Array.t) indexer =
-  let rand_index = Array.length arr |> Cisp.rvi 0 
-  index_seq arr (generator rand_index) 
+let ch_seq (arr : 'a t Array.t) =
+  let len = Array.length arr in
+  let f =  fun () -> Toolkit.rvi 0 len in
+  let indexer = generator f in
+  index_seq arr indexer 

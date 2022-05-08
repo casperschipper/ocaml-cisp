@@ -1,5 +1,6 @@
 (library
  (name infseq)
+ (libraries cisp)
  (ocamlopt_flags -O3)	
 )
 

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <float.h>
-#include  <sndfile.h>
+#include <sndfile.h>
 
 #include <caml/mlvalues.h>
 #include <caml/memory.h>
@@ -12,7 +12,7 @@
 #include <caml/custom.h>
 #include <caml/fail.h>
 #include <caml/bigarray.h>
-
+ 
 
 value caml_snd_write (value input_ar, value filename, value format_tuple)
 {	

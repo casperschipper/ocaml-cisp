@@ -1006,26 +1006,17 @@ let intify = trunc
 
 let floatify = map Float.of_int
 
-let rvfi low high =
-  let range = abs_float (low -. high) in
-  let offset = min low high in
-  Random.float range +. offset
-
-let rvi low high =
-  let range = abs (low - high) in
-  let offset = min low high in
-  Random.int range + offset
 
 let rv low high =
   let control = zip low high in
-  map (fun (l, h) -> rvi l h) control
+  map (fun (l, h) -> Toolkit.rvi l h) control
 
 let rvf low high =
   let control = zip low high in
-  map (fun (l, h) -> rvfi l h) control
+  map (fun (l, h) -> Toolkit.rvfi l h) control
 
 let pickOne arr =
-  let picker = rvi 0 (Array.length arr) in
+  let picker = Toolkit.rvi 0 (Array.length arr) in
   arr.(picker)
 
 (* choice *)
@@ -1033,10 +1024,10 @@ let ch arr =
   let picker = rv (st 0) (st (Array.length arr)) in
   index arr picker
 
-  (* select from seqs *)
+(* select from seqs *)
 let choice_seq arr =
   let indexer =
-      let f () = Some (rvi 0 (Array.length arr)) in
+      let f () = Some (Toolkit.rvi 0 (Array.length arr)) in
       generator f
   in
   index_seq arr indexer

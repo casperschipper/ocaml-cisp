@@ -13,4 +13,4 @@ let _ =
   let bank = casc_bank 0.707 20 20. 20000. in_snd in
   let snd = Sndfile.fromProc (44100 * 20) 44100 bank in
   (* adjust path *)
-  Sndfile.write snd "/home/luc/Work/sounds/filtered1.wav" Sndfile.WAV_16
+  Sndfile.write snd "/Users/casperschipper/devel/ocaml/ocaml-cisp/examples/output.wav" Sndfile.WAV_16

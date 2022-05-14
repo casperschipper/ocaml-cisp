@@ -1,0 +1,6 @@
+(library
+   (name midiParser)
+   (ocamlopt_flags -O3)
+   (modules graph node) 
+   (libraries midi cisp infseq)
+   )

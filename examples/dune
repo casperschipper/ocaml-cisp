@@ -34,6 +34,13 @@
  (libraries bigarray ctypes jack))
 
 (executable
+ (name simplecasper)
+ (link_flags (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules simplecasper)
+ (libraries bigarray ctypes jack))
+
+(executable
  (name fmfb)
  (link_flags (-cclib -ljack -cclib  -lsndfile))
  (ocamlopt_flags -O3)

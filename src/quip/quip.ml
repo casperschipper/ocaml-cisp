@@ -353,7 +353,7 @@ let binary_sq_function inf_func finite_func two_streams =
 
 let rv lst =
   let rv_fun =
-    let inf_func = Infseq.map2 Cisp.rvfi in
+    let inf_func = Infseq.map2 Toolkit.rvfi in
     binary_sq_function inf_func Cisp.rvf
   in
   lst |> lst_of_two_streams |> result_and_then rv_fun |> Result.map stream

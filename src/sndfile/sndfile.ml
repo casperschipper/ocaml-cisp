@@ -69,6 +69,7 @@ let read fname =
 
 let idx snd i = snd.buffer.{i}
 
+(* t channel number index -> returns samples*)
 let idx_channel snd c i = snd.buffer.{(snd.channels * i) + c}
 
 let n_frames snd = Bigarray.Array1.dim snd.buffer / snd.channels
@@ -113,3 +114,17 @@ let fromProc n sr glst =
 
 let toProc snd channel =
   Process.map (idx_channel snd channel) (Process.inc_int 0 1)
+
+  (* TODO this should return a result, if the channel number is incorrect *)
+let to_seq snd channel =
+  let count =
+    let number = n_frames snd in
+    let rec aux n () =
+      if n == number then
+         Seq.Nil
+      else
+         Seq.Cons(n, aux (n + 1))
+    in
+    aux 0
+  in
+  Seq.map (idx_channel snd channel) count

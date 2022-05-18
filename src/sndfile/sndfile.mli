@@ -50,3 +50,5 @@ val fromProc : int -> int -> float Process.t list -> t
 (** [fromProc length sample_rate processes ] *)
 
 val toProc : t -> int -> float Process.t
+
+val to_seq : t -> int -> float Seq.t

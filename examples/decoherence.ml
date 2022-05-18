@@ -1,6 +1,8 @@
 open Cisp
 open Seq
 
+let rvfi = Toolkit.rvfi
+let rvi = Toolkit.rvi
 
 (*open Format *)
     
@@ -96,7 +98,7 @@ let mkStutter channelN =
 
 let mkBoerman nInput =
   let place =
-    (seq [0.0;4.0 |> sec]) 
+    (ch [|0.0;2.0;0.1;0.1;0.001;4.0|] |> map sec) 
   in
   let dura =
    (ch [|1.0;2.0;3.0;4.0;5.0;6.0;7.0;8.0|])
@@ -232,15 +234,15 @@ let voiceWithInputs voicef inputs =
   List.fold_left (fun acc inpt -> (voicef inpt) +.~ acc) (st 0.0) inputs |> softclip
 
 let makeStereo mkfun =
-  ( voiceWithInputs mkfun [0;1;2;4;6]
-  , voiceWithInputs mkfun [0;1;3;5;7])
+  ( voiceWithInputs mkfun [0;0;0;0;0]
+  , voiceWithInputs mkfun [0;0;0;0;0])
   
 let boer3 = makeStereo mkBoermanFading3
 let boer2 = makeStereo mkBoermanFading2
-let boer = makeStereo mkBoermanFading
+let boer = makeStereo mkBoerman
 let noiseL,noiseR = makeStereo mkSlowNoiseBuff 
 let stutter = makeStereo mkStutter 
-let mirror= makeStereo mkMirror 
+let mirror = makeStereo mkMirror 
 let zigzag = makeStereo mkZigzag 
 let loopsy = makeStereo mkLoops
            

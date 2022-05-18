@@ -692,6 +692,9 @@ let mixList lst () = List.fold_left ( +~ ) lst
 (* zipped list will be lenght of shortest list *)
 
 let clip low high x = if x < low then low else if x > high then high else x
+ 
+let tanh_clip =
+  Seq.map tanh
 
 let wrapf low high x =
   let range = low -. high |> abs_float in

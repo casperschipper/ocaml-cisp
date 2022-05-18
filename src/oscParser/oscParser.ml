@@ -6,9 +6,7 @@ type 'a t = OscParser of (data Seq.t -> ('a * data Seq.t, string) Result.t)
 
 let ofData = function
   | `Int32 n -> string_of_int n
-  | `Float f
-   |`Double f ->
-      Printf.sprintf "%f" f
+  | `Float f | `Double f -> Printf.sprintf "%f" f
   | `String s -> s
   | `True -> "True"
   | `False -> "False"
@@ -33,14 +31,16 @@ let bind p f =
   OscParser
     (fun s ->
       let r1 = run p s in
-      step r1 )
+      step r1)
 
 let ( >>= ) = bind
 
 (* and applicative *)
 let ( >> ) m k = m >>= fun _ -> k
 
-let ( <*> ) fP xP = fP >>= fun f -> xP >>= fun x -> return (f x)
+let ( <*> ) fP xP =
+  fP >>= fun f ->
+  xP >>= fun x -> return (f x)
 
 let failure err = OscParser (fun _ -> Result.Error err)
 
@@ -50,7 +50,7 @@ let item =
     (fun oscSq ->
       match oscSq () with
       | Nil -> Result.error "reached unexpected end"
-      | Cons (x, xs) -> Result.Ok (x, xs) )
+      | Cons (x, xs) -> Result.Ok (x, xs))
 
 let satisfy predicate error =
   item >>= fun c -> if predicate c then return c else failure error
@@ -59,41 +59,26 @@ let option p q =
   OscParser
     (fun s ->
       let res = run p s in
-      match res with
-      | R.Error _ -> run q s
-      | R.Ok res -> R.Ok res )
+      match res with R.Error _ -> run q s | R.Ok res -> R.Ok res)
 
-let isString str data =
-  match data with
-  | `String s -> s = str
-  | _ -> false
+let isString str data = match data with `String s -> s = str | _ -> false
 
 let float =
-  item
-  >>= fun d ->
+  item >>= fun d ->
   match d with
-  | `Float f
-   |`Double f ->
-      return f
+  | `Float f | `Double f -> return f
   | _ -> failure "expected a float"
 
 let int =
-  item
-  >>= fun d ->
-  match d with
-  | `Int32 i -> return i
-  | _ -> failure "expected an int"
+  item >>= fun d ->
+  match d with `Int32 i -> return i | _ -> failure "expected an int"
 
 let string =
-  item
-  >>= fun s ->
-  match s with
-  | `String s -> return s
-  | _ -> failure "expected a string"
+  item >>= fun s ->
+  match s with `String s -> return s | _ -> failure "expected a string"
 
 let bool =
-  item
-  >>= fun s ->
+  item >>= fun s ->
   match s with
   | `True -> return true
   | `False -> return false

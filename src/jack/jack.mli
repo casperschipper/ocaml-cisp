@@ -27,4 +27,10 @@ val play : int -> float ref -> float Process.t list -> unit
 
 (* this is for float Seq.t *)
 val playSeqs : int -> float ref -> float Seq.t list -> unit
-                                                        
+(** [playSeqs n_channels samplerate seq_lst] plays back audio using Jack.
+[n_channels] is the number of input channels as integer
+[samplerate] can be retrieved from [Process.sample_rate]
+[seq_lst] contains a [Seq.t] for each channel.
+
+  Jack is assumed to be running before calling this function.
+*)                            

@@ -20,6 +20,11 @@
  (libraries cisp bigarray ctypes jack sndfile))
 
 (executable
+ (name null)
+ (modules null)
+ (libraries cisp bigarray ctypes jack sndfile))
+
+(executable
  (name multisine)
  (link_flags (-cclib -ljack -cclib  -lsndfile))
  (ocamlopt_flags -O3)

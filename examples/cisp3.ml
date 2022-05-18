@@ -19,8 +19,8 @@ let rhythm () =
     
   
 let onePitchLoop () =
-  let a = rvi 36 40 in
-  let b = rvi 36 40 in
+  let a = Toolkit.rvi 36 40 in
+  let b = Toolkit.rvi 36 40 in
   let ps = lift rv 1 15 |> take 3 in
   let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
   seq mapped |> index [|a;b|]

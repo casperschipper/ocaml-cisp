@@ -1,0 +1,4 @@
+(library
+ (name            wfs_score)
+ (libraries cisp infseq toolkit)
+)

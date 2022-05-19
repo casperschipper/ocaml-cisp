@@ -22,6 +22,7 @@
 (executable
  (name null)
  (modules null)
+ (ocamlopt_flags -O3)
  (libraries cisp bigarray ctypes jack sndfile))
 
 (executable

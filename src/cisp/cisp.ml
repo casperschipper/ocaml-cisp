@@ -1137,6 +1137,15 @@ let waveOscL arr frq =
   let phasor = walk 0.0 (st incr) in
   indexLin arr phasor
 
+let waveOscStr arr frq = 
+  let state = 0.0 in
+  let arraySize = Array.length arr |> Float.of_int in
+  let update currFrq state =
+    let nextInr = currFrq /. !samplerate *. arraySize in 
+    state +. nextInr
+  in
+  recursive frq state update (fun x -> x) |> indexLin arr
+
 (* combine two Seq's: a, b, a, b, a, b etc.. *)
 (*
 let rec interleave xs ys () =
@@ -1364,7 +1373,15 @@ let tline timeToNext sq =
     let now = getPreciseTime () in
     let segmentDur = targetT -. oldT in
     let diffT = now -. oldT in
-    oldX +. (diffT /. segmentDur *. (targetX -. oldX))
+    let range = targetX -. oldX in 
+    let sampledur = 1.0 /. !Process.sample_rate in
+    let speed =
+      diffT /. (max sampledur segmentDur)
+    in
+    if (sampledur > diffT) then 
+      targetX 
+    else
+      oldX +. (speed *. range)
   in
   let ctrl = zip timeToNext sq in
   let updateControl c =
@@ -1514,6 +1531,10 @@ let biquad_static a0 a1 a2 b0 b1 b2 x =
       [|i; x1; new_y; y1; new_y|] )
     (fun s -> s.(4))
 
+(* todo create non-static version
+   just transform the static a0 a1 a2 .. into a combinatino of x and 
+*)
+
 let blpf_static f q x =
   let w = two_pi *. (f /. !samplerate) in
   let a = sin w /. (q *. 2.) in
@@ -1525,6 +1546,8 @@ let blpf_static f q x =
   let a1 = -2. *. cosw in
   let a2 = 1. -. a in
   biquad_static a0 a1 a2 b0 b1 b2 x
+
+
 
 let bhpf_static f q x =
   let w = two_pi *. (f /. !samplerate) in

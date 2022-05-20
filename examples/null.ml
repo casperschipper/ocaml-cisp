@@ -1,42 +1,49 @@
+(*
 let mkBoermanFading2 () =
   let open Cisp in
-  let map = Seq.map in
-  let tabIndex = ch [|0.0;5.0;0.0;1.0|] in
-  let dura = ch [| 1.0; 0.5; 0.25; 2.; 3.;10.;20.0 |] in
-  let myLineTest = tline dura tabIndex in
-  let bufIndex = myLineTest |> map (( *. ) <| sec 4.0) in
-  let taper fadeTime x =
-    match x with
-    | 1.0 -> 1.0
-    | att when x < fadeTime -> att /. 0.05
-    | rel when x > 1.0 -. fadeTime ->
-        1.0 -. ((rel -. (1.0 -. fadeTime)) /. fadeTime)
-    | _ -> 1.0
-  in
-  let buffer = Array.make (seci 10.0) 0.0 in
-  let input = Process.inputSeq 0 |> bhpf_static 40.0 0.9 in
+  let memsize = 10.0 in
+  let tabIndex = seq [0.0;sec memsize]  in
+  let dura = ch [| 0.5; 2.0/.3.0; 3.0/.2.0; 2.0 |] |> Seq.map (fun x -> x *. memsize)  in
+  let readpos = tline dura tabIndex in
+  let buffer = Array.make (seci memsize) 0.0 in
+  let input = Process.inputSeq 0 |> bhpf_static 100.0 0.9 in
   let writerIdx = countTill <| cap buffer in
-  let env =
-    writerIdx |> map Float.of_int
-    |> map (fun x -> x /. (cap buffer |> Float.of_int) |> taper 0.05)
-  in
-  let mupInput = input *.~ env in
-  let writer = write buffer writerIdx mupInput in
+  let writer = write buffer writerIdx input in
   let myReader =
-    indexCub buffer bufIndex *.~ (myLineTest |> map (taper 0.05))
+    indexCub buffer readpos 
   in
   let joined = effect writer myReader in
-  joined |> map tanh
+  joined 
+*)
 
+let mkBoermanFading3 () =
+  let open Cisp in
+  let memsize = 10.0 in
+  let tabIndex = seq [0.0;sec memsize]  in
+  let dura = ch [| 0.5; 2.0/.3.0; 3.0/.2.0; 2.0 |] |> Seq.map (fun x -> x *. memsize)  in
+  let sineBuff = rangei 0 1024 |> Seq.map (fun x -> sin ((float_of_int x *. two_pi)  /. 1024.0))  |> Array.of_seq in
+  let modFreq = (lift rvf (-100.0) (120.0) |> Seq.map mtof) |> timed (st 1.0) in
+  let modder = waveOscStr sineBuff modFreq *.~ (st (sec 1.1)) in  
+  let readpos = tline dura tabIndex +.~ modder |> Seq.map (clip 0.0 (sec memsize)) in
+  let buffer = Array.make (seci memsize) 0.0 in
+  let input = Process.inputSeq 0 |> bhpf_static 50.0 0.9 in
+  let writerIdx = countTill <| cap buffer in
+  let writer = write buffer writerIdx input in
+  let myReader =
+    indexCub buffer readpos 
+  in
+  let joined = effect writer myReader in
+  joined 
+ 
 let all_channels =
-  Cisp.rangei 0 15 |> List.of_seq |> List.map (fun _ -> mkBoermanFading2 ())
+  Cisp.rangei 0 15 |> List.of_seq |> List.map (fun _ -> mkBoermanFading3 ())
 
 let () =
   let open Cisp in
   let f () =
     let () =
       Jack.playSeqs 1 Process.sample_rate
-        (effect masterClock (mkBoermanFading2 ()) :: all_channels)
+        (effect masterClock (mkBoermanFading3 ()) :: all_channels)
     in
     while true do
       Unix.sleep 60

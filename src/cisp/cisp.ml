@@ -559,6 +559,10 @@ let ( +~ ) = zipWith (fun a b -> a + b)
 let ( *~ ) = zipWith (fun a b -> a * b)
 let ( /~ ) = zipWith (fun a b -> a / b)
 let ( -~ ) = zipWith (fun a b -> a - b)
+let mup a b = map2 ( *. ) a b
+let div x div = map2 ( /. ) x div
+let offset x off = map2 ( +. ) x off
+let subtract x sub = map2 ( -. ) x sub
 
 (* sum multichannel *)
 let addChannelLsts channelAList channelBList =
@@ -835,14 +839,15 @@ let indexLin arr indexer =
   in
   map f indexer
 
+(**
+  lookup function in     
+*)
 let lookup arr input =
   let len = Array.length arr in
   let idx =
-  input |>
-    map
-      (fun inp ->
-        inp |> clip (-1.0) 1.0 |> linlin (-1.0) 1.0 0.0 (float_of_int len))
-      
+    input
+    |> map (fun inp ->
+           inp |> clip (-1.0) 1.0 |> linlin (-1.0) 1.0 0.0 (float_of_int len))
   in
   indexLin arr idx
 
@@ -1227,7 +1232,9 @@ let syncEffectClock triggerSq effectSq =
 
 let mutateArrayi = mutateArray 0
 let mutateArrayf = mutateArray 0.0
-let getPreciseTime () = (!currentSampleCounter |> Float.of_int) /. 44100.0
+
+let getPreciseTime () =
+  (!currentSampleCounter |> Float.of_int) /. !Process.sample_rate
 (*Mtime_clock.elapsed () |> Mtime.Span.to_uint64_ns |> Int64.to_float |> ( *. ) Mtime.ns_to_s*)
 
 let updateOpt old newOpt = match newOpt with Some value -> value | None -> old
@@ -1254,7 +1261,7 @@ let tline timeToNext sq =
     let range = targetX -. oldX in
     let sampledur = 1.0 /. !Process.sample_rate in
     let speed = diffT /. max sampledur segmentDur in
-    if sampledur > diffT then targetX else oldX +. (speed *. range)
+    oldX +. (speed *. range)
   in
   let ctrl = zip timeToNext sq in
   let updateControl c =
@@ -1380,8 +1387,9 @@ let rec fractRandTimerN n timerSeq =
   else tmd timerSeq (fractRandTimerN (n - 1) timerSeq)
 
 let slowNoise speed =
-  let arr = rvf (st 0.0) (st 1.0) |> take (1024 * 512) |> Array.of_seq in
-  let index = walk 0.0 speed in
+  let tab_size = 1024 * 512 in
+  let arr = rvf (st (-1.0)) (st 1.0) |> take tab_size |> Array.of_seq in
+  let index = walk 0.0 (speed |> map (fun x -> x /. float_of_int tab_size)) in
   indexCub arr index
 
 (* https://www.w3.org/2011/audio/audio-eq-cookbook.html *)

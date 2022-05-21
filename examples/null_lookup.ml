@@ -18,16 +18,16 @@ let mkBoermanFading2 () =
 
 let mkLookup () =
   let open Cisp in
-  let freq = ((Random.int 10) + 1) * 100 |> float_of_int |> st |> fun x -> x *.~ (slowNoise (st 0.01) *.~ (st 0.1) +.~ (st 1.0)) in
+  let freq = ((Random.int 10) + 1) * 100 |> float_of_int |> st |> fun x -> x *.~ (slowNoise (st 0.01) *.~ (st 0.03) +.~ (st 1.0)) in
   let input = Process.inputSeq 0 +.~ osc  freq in
   (*let arr = sineseg 16384 |> Array.of_seq in
     let distort = lookup arr input in*)
   let dura = ch [| 3.0; 5.0; 7.0 |] in
-  let amps = seq [ 0.0; 1.0; 0.0; 0.1; 0.0 ] in
+  let amps = seq [ 0.0; 0.01; 0.0; 0.1; 0.0; 1.0 ] in
   let envelope = tline dura amps in
-  let env2 = tline (ch [| 7.0; 11.0; 200.0 |]) (lift rvf 1.0 8.0) in
+  let env2 = tline (seq [ 1.0; 11.0; 200.0 ]) (lift rvf 1.0 8.0) in
   let distort inp = Seq.map sin inp in
-  input *.~ envelope *.~ env2 |> distort |> Seq.map tanh |> Seq.map (fun x ->  Float.pow x 10.0)
+  input *.~ envelope *.~ env2 |> distort |> Seq.map tanh
 
 let all_channels =
   Cisp.rangei 0 15 |> List.of_seq |> List.map (fun _ -> mkLookup ())

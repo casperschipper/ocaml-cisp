@@ -1253,6 +1253,7 @@ type tLineState = {
   control : (float * float) Seq.t;
 }
 
+(* time and then value *)
 let tline timeToNext sq =
   let valueNow oldT oldX targetT targetX () =
     let now = getPreciseTime () in
@@ -1261,28 +1262,34 @@ let tline timeToNext sq =
     let range = targetX -. oldX in
     let sampledur = 1.0 /. !Process.sample_rate in
     let speed = diffT /. max sampledur segmentDur in
+    (* let direction = speed > 0.0 in *)
     oldX +. (speed *. range)
   in
   let ctrl = zip timeToNext sq in
-  let updateControl c =
+  let rec updateControl now oldT c =
     match c () with
-    | Nil -> ((0.0, 10.0), fun () -> Nil)
-    | Cons ((tt, tx), tl) -> ((tt, tx), tl)
+    | Nil -> ((1.0,0.0), fun () -> Nil)
+    | Cons ((tt, tx), tl) ->
+      if oldT +. tt > now then 
+        ((tt, tx), tl)
+     else
+        updateControl now (oldT +. tt) tl
   in
   let initial =
     let now = getPreciseTime () in
-    let (targetX, targetT), ctrlTail = updateControl ctrl in
-    { oldT = now; oldX = 0.0; targetT; targetX; control = ctrlTail }
+    let (targetX, targetT_), ctrlTail = updateControl now now ctrl in
+    { oldT = now; oldX = 0.0; targetT = targetT_ +. now; targetX; control = ctrlTail }
   in
   let update state =
     let now = getPreciseTime () in
     if state.targetT > now then state (* no changes *)
     else
-      let (tarT, tarX), tail = updateControl state.control in
+      let (tarT, tarX), tail = updateControl now state.oldT state.control in
+
       {
         oldT = state.targetT;
         oldX = state.targetX;
-        targetT = tarT +. now;
+        targetT = tarT; 
         targetX = tarX;
         control = tail;
       }

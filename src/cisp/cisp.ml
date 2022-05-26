@@ -765,6 +765,19 @@ let index_seq (arr : 'a Seq.t Array.t) indexer =
   in
   Seq.unfold unfolder (arr, indexer)
 
+  let lookup_signal_array (arr:'a Array.t) (signal:float Seq.t) =
+    let len = 
+      Array.length arr 
+    in
+    let make_index f = 
+      f 
+      |> (linlin (-1.0) 1.0 0.0 (len |> float_of_int))
+      |> floor 
+      |> int_of_float 
+      |> indexArr len arr
+    in
+    signal |> Seq.map make_index 
+
 let wrappedCount arr = count |> map (fun x -> x mod Array.length arr)
 
 (* this allows you to walk a list, af it was circulair *)

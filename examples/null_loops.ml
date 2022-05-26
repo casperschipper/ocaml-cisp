@@ -49,14 +49,28 @@ let consume (sq : (unit -> unit) Seq.t) =
       rest
   | Nil -> fun () -> Seq.Nil
 
+(* any array, use a signal (-1.0 < signal < 1.0) to lookup values in array *)
+let lookup_signal_array (arr:'a Array.t) (signal:float Seq.t) =
+  let len = 
+    Array.length arr 
+  in
+  let make_index f = 
+    f 
+    |> (linlin (-1.0) 1.0 0.0 (len |> float_of_int))
+    |> floor 
+    |> int_of_float 
+    |> indexArr len arr
+  in
+  signal |> Seq.map make_index 
+
 let blow_sq =
-  triangle (st 0.33)
-  |> Seq.map (fun x -> linlin (-1.0) 1.0 9000.0 80000.0 x)
+  triangle (st (1.0 /. 13.0))
+  |> lookup_signal_array [|10.0;20.0;30.0;512.0;1024.0;16384.0;65536.0|]
   |> wrRef bLow 
 
 let bhigh_sq =
-  triangle (st 0.44)
-  |> Seq.map (fun x -> linlin (-1.0) 1.0 9000.0 80000.0 x)
+  triangle (st (1.0 /. 11.0))
+  |> lookup_signal_array [|10.0;20.0;30.0;512.0;1024.0;16384.0;65536.0|]
   |> wrRef bLow
 
 let loopr () =
@@ -67,18 +81,18 @@ let loopr () =
   let buffer = Array.make memsize 0.0 in
   let writerIdx = countTill <| cap buffer in
   let writer = write buffer writerIdx input in
-  let starts = timed (lift rvf 1.0 3.0) (lift rvf 0.0 10.0) |> Seq.map sec in
+  let starts = tline_start (Toolkit.rvfi 1.0 5.0) (lift rvf 1.0 5.0) (seq [0.0;10.0]) |> Seq.map sec in
   let bLow = rdRef bLow in
   let bHigh = rdRef bHigh in
   let durations =
     timed
-      (fractRandTimer (ch [| 1.7; 3.2; 2.0; 3.0; 4.0 |]))
+      (lift rvf 0.1 2.0)
       (rvf bLow bHigh |> Seq.map int_of_float
       |> Seq.map (fun x -> if x < 0 then 99999 else x))
   in
-  let ratios = timed (st 4.0) (ch [| 0.5; 1.0; 2.0 |]) in
+  let ratios = timed (triangle (st 0.01) |> Seq.map (linlin (-1.0) 1.0 0.01 1.0)) (seq [-4.0;-1.0;0.5;1.0;2.0;0.25]) in
   let readIdx = ramps starts durations ratios in
-  let reader = indexLin buffer readIdx in
+  let reader = indexCub buffer readIdx in
   effect writer reader
 
 let clock = generator (fun () -> Some (getSampleCount ()))

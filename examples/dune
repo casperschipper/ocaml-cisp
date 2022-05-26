@@ -32,6 +32,12 @@
  (libraries cisp bigarray ctypes jack sndfile))
 
  (executable
+ (name ssp2)
+ (modules ssp2)
+ (ocamlopt_flags -O3)
+ (libraries cisp jack))
+
+ (executable
  (name null_lookup)
  (modules null_lookup)
  (ocamlopt_flags -O3)

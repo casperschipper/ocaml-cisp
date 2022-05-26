@@ -426,6 +426,10 @@ let sq_lst_tranpose lstOfSq =
 let transcat sq = sq |> transpose |> concat
 let transList lst = lst |> ofList |> transcat
 
+let effect_lst (first : unit Seq.t) (rest : unit Seq.t list) =
+  List.fold_left effect first rest 
+  
+
 let rec transpose_list lst =
   let foldHeads acc x = match x with [] -> acc | h :: _ -> h :: acc in
   let foldTails acc x = match x with [] -> acc | _ :: ts -> ts :: acc in
@@ -574,7 +578,7 @@ let linlin inA inB outA outB input =
   let a = minimum inA inB in
   let b = maximum inA inB in
   let c = minimum outA outB in
-  let d = maximum inA inB in
+  let d = maximum outA outB in
   ((input -. a) /. (b -. a) *. (d -. c)) +. c
 
 let mapLinlin inA inB outA outB input =
@@ -1036,6 +1040,20 @@ let waveOscStr arr frq =
   in
   recursive frq state update (fun x -> x) |> indexLin arr
 
+let sawtooth freq =
+    let upd current_freq phase =
+      phase +. (1.0 /. !Process.sample_rate *. current_freq)
+    in
+    recursive freq 0.0 upd (fun phase ->
+        phase |> Float.modf |> fst |> ( *. ) 2.0 |> ( -. ) 1.0)
+  
+let triangle freq =
+    let upd current_freq phase =
+      phase +. (1.0 /. !Process.sample_rate *. current_freq)
+    in
+    recursive freq 0.0 upd (fun phase ->
+        (4.0 *. Float.abs (phase -. (Float.floor phase +. 0.5))) -. 1.0)
+
 (* combine two Seq's: a, b, a, b, a, b etc.. *)
 (*
 let rec interleave xs ys () =
@@ -1237,6 +1255,9 @@ let getPreciseTime () =
   (!currentSampleCounter |> Float.of_int) /. !Process.sample_rate
 (*Mtime_clock.elapsed () |> Mtime.Span.to_uint64_ns |> Int64.to_float |> ( *. ) Mtime.ns_to_s*)
 
+let getSampleCount () =
+  !currentSampleCounter
+
 let updateOpt old newOpt = match newOpt with Some value -> value | None -> old
 
 let ofOpt default optSq =
@@ -1254,114 +1275,67 @@ type tLineState = {
 }
 
 let print_tline_state { oldT; oldX; targetT; targetX; _ } =
-  print_string "tline state: "; 
-  print_string " now : "; print_float <| getPreciseTime ();
-  print_string " oldT :"; print_float oldT;
-  print_string " oldX :"; print_float oldX;
-  print_string " targetT :"; print_float targetT;
-  print_string " targetX :"; print_float targetX;
-  print_string "\n\n"; 
+  print_string "tline state: ";
+  print_string " now : ";
+  print_float <| getPreciseTime ();
+  print_string " oldT :";
+  print_float oldT;
+  print_string " oldX :";
+  print_float oldX;
+  print_string " targetT :";
+  print_float targetT;
+  print_string " targetX :";
+  print_float targetX;
+  print_string "\n\n";
   ()
 
-(*
-(* time and then value *)
-let tline timeToNext sq =
-  let valueNow oldT oldX targetT targetX () =
-    let now = getPreciseTime () in
-    let segmentDur = targetT -. oldT in
-    let timeSinceOldT = now -. oldT in
-    let diffX = targetX -. oldX in
-    (* let sampledur = 1.0 /. !Process.sample_rate in *)
-    let progress = timeSinceOldT /. segmentDur in
-    (* let direction = speed > 0.0 in *)
-    match Float.classify_float progress with
-    | Float.FP_nan -> oldX
-    | _ -> oldX +. (progress *. diffX)
-  in
-  let ctrl = zip timeToNext sq in
-  let rec updateControl now oldT c =
-    match c () with
-    | Nil -> ((1.0, 0.0), fun () -> Nil)
-    | Cons ((tt, tx), ctrl_tail) ->
-        let newT = oldT +. tt in
-        if newT > now then ((newT, tx), ctrl_tail)
-        else updateControl now newT ctrl_tail
-  in
-  let initial =
-    let now = getPreciseTime () in
-    let (targetX, targetT_), ctrlTail = updateControl now now ctrl in
-    {
-      oldT = now;
-      oldX = 0.0;
-      targetT = targetT_ +. now;
-      targetX;
-      control = ctrlTail;
-    }
-  in
-  let update state =
-    let now = getPreciseTime () in
-    if state.targetT > now then state (* no changes *)
-    else
-      let (tarT, tarX), tail = updateControl now state.oldT state.control in
-      {
-        oldT = state.targetT;
-        oldX = state.targetX;
-        targetT = tarT;
-        targetX = tarX;
-        control = tail;
-      }
-  in
-  let evaluate state =
-    valueNow state.oldT state.oldX state.targetT state.targetX ()
-  in
-  simpleRecursive initial update evaluate
-*)
-
 let tline_start startX timeToNext sq =
-  let valueNow oldT oldX targetT targetX () =
+  let evaluate { oldT; oldX; targetT; targetX; _ } =
     let now = getPreciseTime () in
-    if now = targetT then 
-      targetX
+    if now = targetT then targetX
     else
       let segmentDur = targetT -. oldT in
       let timeSinceOldT = now -. oldT in
       let diffX = targetX -. oldX in
-      let progress = timeSinceOldT /. segmentDur in
+      let progress = timeSinceOldT /. segmentDur |> max 0.0 |> min 1.0 in
       match Float.classify_float progress with
       | Float.FP_nan -> oldX
       | Float.FP_infinite -> oldX
       | _ -> oldX +. (progress *. diffX)
   in
   let rec updateControl now oldT ctrl =
-    let _ = print_string "\n-----update control-----\n" in
+    (* let _ = print_string "\n-----update control-----\n" in *)
     match ctrl () with
-    | Nil -> let _ = print_string "warning! control reached end" in ((100000.0, 0.0), fun () -> Nil)
+    | Nil ->
+        let _ = print_string "warning! control reached end" in
+        ((100000.0, 0.0), fun () -> Nil)
     | Cons ((tDelta, newX), ctrl_tail) ->
         let newT = oldT +. tDelta in
         if newT >= now then ((newT, newX), ctrl_tail)
-        else 
-          let _ = print_string "newT is not bigger than now: "; flush stdout in
+        else
+          (* let _ = print_string "newT is not bigger than now: "; flush stdout in *)
           updateControl now newT ctrl_tail
   in
   let initial =
-    let ctrl = zip timeToNext sq in 
+    let ctrl = zip timeToNext sq in
     let now = getPreciseTime () in
     let (targetT_, targetX), ctrlTail = updateControl now now ctrl in
-    let _ = print_string "\n\n" in
     {
       oldT = now;
       oldX = startX;
-      targetT = targetT_; 
+      targetT = targetT_;
       targetX;
       control = ctrlTail;
     }
   in
   let update state =
     let now = getPreciseTime () in
-    let newState = 
-    if state.targetT > now then state (* no changes *)
+    let newState =
+      if state.targetT > now then state (* no changes *)
       else
-        let (newT, newX), tail = updateControl now state.targetT state.control in
+        let (newT, newX), tail =
+          updateControl now state.targetT state.control
+        in
         {
           oldT = state.targetT;
           oldX = state.targetX;
@@ -1370,12 +1344,31 @@ let tline_start startX timeToNext sq =
           control = tail;
         }
     in
-    print_tline_state newState ; newState
-  in
-  let evaluate state =
-    valueNow state.oldT state.oldX state.targetT state.targetX ()
+    (* print_tline_state newState ;  *)
+    newState
   in
   simpleRecursive initial update evaluate
+
+let tline = tline_start 0.0
+
+(**
+  phasor, speed per tick, top 
+    *)
+let phasor speed top =
+  recursive speed 0.0
+    (fun speed oldX ->
+      let next = oldX +. max speed top in
+      if next > top then next -. top else next)
+    id
+
+let ramps starts durations speeds =
+  let rec ramp start dur ratio () =
+    if dur <= 0 then Seq.Nil
+    else
+      let next = start +. ratio in
+      Seq.Cons (start +. ratio, ramp next (dur - 1) ratio)
+  in
+  map3 ramp starts durations speeds |> concat
 
 let timed intervalSeconds sq =
   let rec aux valueTime startValue later () =

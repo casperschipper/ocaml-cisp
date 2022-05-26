@@ -15,18 +15,20 @@ let mkBoermanFading2 () =
   let joined = effect writer myReader in
   joined 
 *)
+(*
+Would be very cool:
 
+if input mixes dry sounds with echo, use more speakers.
+
+*)
 let mkBoermanFading3 () =
   let open Cisp in
   let memsize = 10.0 in
   let tabIndex = seq [0.0;sec memsize]  in
-  let dura = ch [| 0.5; 2.0/.3.0; 3.0/.2.0; 2.0 |] |> Seq.map (fun x -> x *. memsize)  in
-  let sineBuff = rangei 0 1024 |> Seq.map (fun x -> sin ((float_of_int x *. two_pi)  /. 1024.0))  |> Array.of_seq in
-  let modFreq = (lift rvf (-100.0) (120.0) |> Seq.map mtof) |> timed (st 1.0) in
-  let modder = waveOscStr sineBuff modFreq *.~ (st (sec 1.1)) in  
-  let readpos = tline dura tabIndex +.~ modder |> Seq.map (clip 0.0 (sec memsize)) in
+  let dura = ch [| 0.01; 0.125; 0.25; 0.5; 2.0/.3.0; 3.0/.2.0; 2.0;4.0 |] |> Seq.map (fun x -> x *. memsize)  in
+  let readpos = tline dura tabIndex |> Seq.map (clip 0.0 (sec memsize)) in
   let buffer = Array.make (seci memsize) 0.0 in
-  let input = Process.inputSeq 0 |> bhpf_static 50.0 0.9 in
+  let input = Process.inputSeq 0 |> bhpf_static 50.0 0.9  in
   let writerIdx = countTill <| cap buffer in
   let writer = write buffer writerIdx input in
   let myReader =

@@ -37,6 +37,12 @@
  (ocamlopt_flags -O3)
  (libraries cisp bigarray ctypes jack sndfile))
 
+ (executable
+ (name null_loops)
+ (modules null_loops)
+ (ocamlopt_flags -O3)
+ (libraries cisp bigarray ctypes jack sndfile))
+
 (executable
  (name multisine)
  (link_flags (-cclib -ljack -cclib  -lsndfile))

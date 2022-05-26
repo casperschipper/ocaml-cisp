@@ -2,6 +2,6 @@ open Cisp
 
 
 let () = 
-  let _ = Process.sample_rate := 10.0 in
-  let env = tline_start 0.0 (st 1.0) (seq [1.0;0.0]) in
-  let _ = effect masterClock (env) |> take 60  |> Seq.iter (fun x -> print_string" x: "; print_float x; print_newline (); flush stdout)  in ()
+  let env = triangle (st 50.0) |> Seq.map (linlin (-1.0) 1.0 400.0 12000.0) in
+  let oscil () = osc env in
+  Jack.playSeqs 0 Process.sample_rate [effect masterClock (oscil ());oscil ();oscil ();oscil ()]

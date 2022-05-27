@@ -37,6 +37,18 @@
  (ocamlopt_flags -O3)
  (libraries cisp jack))
 
+  (executable
+ (name ssp3)
+ (modules ssp3)
+ (ocamlopt_flags -O3)
+ (libraries cisp jack))
+
+(executable
+ (name tablepath)
+ (modules tablepath)
+ (ocamlopt_flags -O3)
+ (libraries toolkit cisp jack))
+
  (executable
  (name null_lookup)
  (modules null_lookup)

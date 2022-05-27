@@ -697,7 +697,7 @@ let boundedWalk start steps wrapfunc =
   in
   aux start steps
 
-let boundedWalkf start steps wrapfunc =
+let boundedWalkf start steps (wrapfunc : float -> float) =
   let rec aux start steps () =
     match steps () with
     | Nil -> Nil
@@ -706,6 +706,22 @@ let boundedWalkf start steps wrapfunc =
         Cons (wrapfunc start, aux next ls)
   in
   aux start steps
+
+(**
+   start is startvalue
+   wrapfunc takes a control value, and then does something to the current state (wrap, reset whatever)
+   steps is current "speed"  
+  *)
+let bounded_walk_control start (wrapfunc : float -> float -> float) control steps =
+  let rec aux start steps control ()  =
+    match steps (),control () with
+    | (Nil,_) -> Nil
+    | (_,Nil) -> Nil
+    | (Cons (h, ls),Cons(c,cs)) ->
+        let next = start +. h in
+        Cons (wrapfunc c start, aux next ls cs)
+  in
+  aux start control steps
 
 (* dealing with arrays / buffers *)
 let cap arr = Array.length arr

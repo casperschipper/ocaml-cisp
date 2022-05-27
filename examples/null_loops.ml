@@ -50,18 +50,7 @@ let consume (sq : (unit -> unit) Seq.t) =
   | Nil -> fun () -> Seq.Nil
 
 (* any array, use a signal (-1.0 < signal < 1.0) to lookup values in array *)
-let lookup_signal_array (arr:'a Array.t) (signal:float Seq.t) =
-  let len = 
-    Array.length arr 
-  in
-  let make_index f = 
-    f 
-    |> (linlin (-1.0) 1.0 0.0 (len |> float_of_int))
-    |> floor 
-    |> int_of_float 
-    |> indexArr len arr
-  in
-  signal |> Seq.map make_index 
+
 
 let blow_sq =
   triangle (st (1.0 /. 13.0))
@@ -74,7 +63,7 @@ let bhigh_sq =
   |> wrRef bLow
 
 let loopr () =
-  let open Cisp in
+  let open Cisp in 
   let input = Process.inputSeq 0 in
   (* let input =  in  *)
   let memsize = seci 10.0 in

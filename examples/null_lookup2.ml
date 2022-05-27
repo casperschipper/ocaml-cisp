@@ -1,4 +1,4 @@
-let low = ref 0.0;
+let low = ref 0.0
 
 let mini_peak p width alternative input =
   let f x alt = 

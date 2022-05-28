@@ -1,20 +1,23 @@
 (executable
  (name collatz)
- (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules collatz)
  (libraries cisp bigarray ctypes jack sndfile))
 
 (executable
  (name scheduler)
- (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules scheduler)
  (libraries cisp bigarray ctypes jack sndfile))
 
 (executable
  (name decoherence)
- (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules decoherence)
  (libraries cisp bigarray ctypes jack sndfile))
@@ -25,19 +28,19 @@
  (ocamlopt_flags -O3)
  (libraries cisp bigarray ctypes jack sndfile))
 
- (executable
+(executable
  (name ssp)
  (modules ssp)
  (ocamlopt_flags -O3)
  (libraries cisp bigarray ctypes jack sndfile))
 
- (executable
+(executable
  (name ssp2)
  (modules ssp2)
  (ocamlopt_flags -O3)
  (libraries cisp jack))
 
-  (executable
+(executable
  (name ssp3)
  (modules ssp3)
  (ocamlopt_flags -O3)
@@ -49,19 +52,38 @@
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack))
 
- (executable
+(executable
+ (name tablepath2)
+ (modules tablepath2)
+ (ocamlopt_flags -O3)
+ (libraries toolkit cisp jack))
+
+(executable
+ (name tablepath2nrt)
+ (modules tablepath2nrt)
+ (ocamlopt_flags -O3)
+ (libraries toolkit cisp jack sndfile))
+
+ 
+(executable
+ (name tablepathslow)
+ (modules tablepathslow)
+ (ocamlopt_flags -O3)
+ (libraries toolkit cisp jack sndfile))
+
+(executable
  (name null_lookup)
  (modules null_lookup)
  (ocamlopt_flags -O3)
  (libraries cisp bigarray ctypes jack sndfile))
 
- (executable
+(executable
  (name null_lookup2)
  (modules null_lookup2)
  (ocamlopt_flags -O3)
  (libraries cisp bigarray ctypes jack sndfile))
 
- (executable
+(executable
  (name null_loops)
  (modules null_loops)
  (ocamlopt_flags -O3)
@@ -69,192 +91,314 @@
 
 (executable
  (name multisine)
- (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules multisine)
  (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name simplesine)
- (link_flags (-cclib -ljack))
+ (link_flags
+  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules simplesine)
  (libraries bigarray ctypes jack))
 
 (executable
  (name simplecasper)
- (link_flags (-cclib -ljack))
+ (link_flags
+  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules simplecasper)
  (libraries bigarray ctypes jack))
 
 (executable
  (name fmfb)
- (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules fmfb)
  (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name kuramoto)
- (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules kuramoto)
  (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name inputexample)
- (link_flags (-cclib -ljack -cclib  -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules inputexample)
  (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name filtertest)
- (link_flags (-cclib -ljack -cclib -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules filtertest)
  (libraries bigarray ctypes jack sndfile))
 
-
 (executable
  (name sndfiletest)
- (link_flags (-cclib -ljack -cclib -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules sndfiletest)
  (libraries bigarray ctypes jack sndfile))
 
-
 (executable
  (name nonrt)
- (link_flags (-cclib -ljack -cclib -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules nonrt)
- (libraries bigarray ctypes jack sndfile)) 
-
-
+ (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name fluct)
- (link_flags (-cclib -ljack -cclib -lsndfile))
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules fluct)
  (libraries bigarray ctypes jack sndfile yojson))
 
+(executable
+ (name cispTest)
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules cispTest)
+ (libraries midi cisp bigarray ctypes jack jackMidi sndfile fqueue))
 
 (executable
-  (name cispTest)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
-  (ocamlopt_flags -O3)
-  (modules cispTest)
-  (libraries midi cisp bigarray ctypes jack jackMidi sndfile fqueue))
+ (name cisp1)
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules cisp1)
+ (libraries
+  infseq
+  lwt.unix
+  oscStream
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  euclid))
 
 (executable
-  (name cisp1)
-  (link_flags (-cclib -ljack))
-  (ocamlopt_flags -O3)
-  (modules cisp1)
-  (libraries infseq lwt.unix oscStream midi cisp bigarray ctypes jack jackMidi euclid))
-
-  (executable
-  (name midiStartFile)
-  (link_flags (-cclib -ljack))
-  (ocamlopt_flags -O3)
-  (modules midiStartFile)
-  (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
+ (name midiStartFile)
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules midiStartFile)
+ (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
 
 (executable
-  (name cisp2)
-  (link_flags (-cclib -ljack))
-  (ocamlopt_flags -O3)
-  (modules cisp2)
-  (preprocess (pps lwt_ppx))
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi fqueue euclid))
+ (name cisp2)
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules cisp2)
+ (preprocess
+  (pps lwt_ppx))
+ (libraries infseq midi cisp bigarray ctypes jack jackMidi fqueue euclid))
 
 (executable
-  (name cisp3)
-  (link_flags -cclib -ljack )
-  (ocamlopt_flags -O3)
-  (modules cisp3)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid)
-)
+ (name cisp3)
+ (link_flags -cclib -ljack)
+ (ocamlopt_flags -O3)
+ (modules cisp3)
+ (libraries
+  infseq
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  sndfile
+  fqueue
+  euclid))
 
 (executable
-  (name cisp4)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
-  (ocamlopt_flags -O3)
-  (modules cisp4)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
-
-
-(executable
-  (name cisp5)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
-  (ocamlopt_flags -O3)
-  (modules cisp5)
-  (libraries lo infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
-
-(executable
-  (name cisp6)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
-  (ocamlopt_flags -O3)
-  (modules cisp6)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
+ (name cisp4)
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules cisp4)
+ (libraries
+  infseq
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  sndfile
+  fqueue
+  euclid))
 
 (executable
-  (name cisp7)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
-  (ocamlopt_flags -O3)
-  (modules cisp7)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
+ (name cisp5)
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules cisp5)
+ (libraries
+  lo
+  infseq
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  sndfile
+  fqueue
+  euclid))
 
 (executable
-  (name cisp8)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
-  (ocamlopt_flags -O3)
-  (modules cisp8)
-  (libraries infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid))
+ (name cisp6)
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules cisp6)
+ (libraries
+  infseq
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  sndfile
+  fqueue
+  euclid))
 
 (executable
-  (name cispOsc)
-  (link_flags (-cclib -ljack))
-  (ocamlopt_flags -O3)
-  (modules cispOsc)
-  (libraries threads infseq midi cisp bigarray ctypes jack jackMidi fqueue euclid osc_unix))
+ (name cisp7)
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules cisp7)
+ (libraries
+  infseq
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  sndfile
+  fqueue
+  euclid))
 
 (executable
-  (name cispOsc2)
-  (link_flags (-cclib -ljack))
-  (ocamlopt_flags -O3)
-  (modules cispOsc2)
-  (libraries threads infseq midi cisp bigarray ctypes jack jackMidi fqueue euclid osc_unix))
-
+ (name cisp8)
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules cisp8)
+ (libraries
+  infseq
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  sndfile
+  fqueue
+  euclid))
 
 (executable
-  (name sendOsc)
-  (link_flags (-cclib -ljack -cclib -lsndfile))
-  (ocamlopt_flags -O3)
-  (modules sendOsc)
-  (libraries lo threads infseq midi cisp bigarray ctypes jack jackMidi sndfile fqueue euclid osc_unix))
+ (name cispOsc)
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules cispOsc)
+ (libraries
+  threads
+  infseq
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  fqueue
+  euclid
+  osc_unix))
 
+(executable
+ (name cispOsc2)
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules cispOsc2)
+ (libraries
+  threads
+  infseq
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  fqueue
+  euclid
+  osc_unix))
+
+(executable
+ (name sendOsc)
+ (link_flags
+  (-cclib -ljack -cclib -lsndfile))
+ (ocamlopt_flags -O3)
+ (modules sendOsc)
+ (libraries
+  lo
+  threads
+  infseq
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  sndfile
+  fqueue
+  euclid
+  osc_unix))
 
 (executable
  (name receiveOsc)
- (link_flags (-cclib -ljack))
- (ocamlopt_flags -O3)	    
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
  (modules receiveOsc)
  (libraries threads lo midi cisp jackMidi))
 
 (executable
  (name ivo)
- (link_flags (-cclib -ljack))
- (ocamlopt_flags -O3)	    
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
  (modules ivo)
  (libraries lo oscParser midi cisp jackMidi))
 
 ;(executable
- ; (name osc_to_audio_example_using_threads)
-  ;(link_flags (-cclib -ljack -cclib -lsndfile))
-  ;(ocamlopt_flags -O3)
-  ;(modules osc_to_audio_example_using_threads)
-  ;(libraries threads lo infseq midi cisp bigarray ctypes jack jackMidi))
+; (name osc_to_audio_example_using_threads)
+;(link_flags (-cclib -ljack -cclib -lsndfile))
+;(ocamlopt_flags -O3)
+;(modules osc_to_audio_example_using_threads)
+;(libraries threads lo infseq midi cisp bigarray ctypes jack jackMidi))

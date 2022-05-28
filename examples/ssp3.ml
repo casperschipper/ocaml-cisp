@@ -13,7 +13,7 @@ let topArray = ref 10.0
 
 let mups = 4.0
 
-let time_table = [|0.001;7.0;1.0;0.2;3.0;5.0;10.0|] 
+let time_table = [|7.0;1.0;0.2;3.0;5.0;10.0|] 
 
 let a = tline_start 10.0 (mups *.- ch time_table) (ch [|-1.0;1.0;0.0;0.1;-1.0|] |> hold (lift rv 1 2)) |> wrRef topD
 let b = tline_start 10.0 (mups *.- ch time_table) (ch [|-1.0;1.0;0.0;0.1;-1.0|] |> hold (lift rv 1 2)) |> wrRef bottomD

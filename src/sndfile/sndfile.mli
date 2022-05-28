@@ -43,7 +43,7 @@ val idx : t -> int -> float
 val idx_channel : t -> int -> int -> float
 (** [idx_channel snd channel idx] *)
 
-val fromSeq : int -> int -> float Seq.t list -> t
+val from_seq : int -> int -> float Seq.t list -> t
 (** [fromSeq length sample_rate streams ] *)
 
 val fromProc : int -> int -> float Process.t list -> t

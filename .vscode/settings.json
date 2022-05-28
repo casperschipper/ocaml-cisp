@@ -1,0 +1,5 @@
+{
+    "files.associations": {
+        "sndfile.h": "c"
+    }
+}

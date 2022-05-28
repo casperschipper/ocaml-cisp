@@ -8,10 +8,7 @@ let rec map f isq () =
   match isq () with InfCons (h, tl) -> InfCons (f h, map f tl)
 
 let rec repeat x () = InfCons (x, repeat x)
-
-let rec generator f () =
-  InfCons (f (), generator f)
-
+let rec generator f () = InfCons (f (), generator f)
 let head sq = match sq () with InfCons (x, _) -> x
 let tail sq = match sq () with InfCons (_, ts) -> ts
 
@@ -89,13 +86,6 @@ let rec chunk chunk_size input () =
       let n = match int_of_float f with 0 -> 1 | nonZero -> nonZero in
       InfCons (take n input, chunk rest (drop n input))
 
-let rec sometimes x y p () =
-  let fst () =
-    let rnd = Random.int p in
-    if rnd < 1 then y else x
-  in
-  InfCons (fst (), sometimes x y p)
-
 let rec zip sqa sqb () =
   match (sqa (), sqb ()) with
   | InfCons (x, xs), InfCons (y, ys) -> InfCons ((x, y), zip xs ys)
@@ -113,27 +103,32 @@ let wrap low high x =
 
 let index array indexer =
   let len = Array.length array in
-  let f index =
-    index |> wrap 0 len |> Array.get array
-  in
-indexer |> map f 
+  let f index = index |> wrap 0 len |> Array.get array in
+  indexer |> map f
 
 let index_seq (arr : 'a t Array.t) indexer =
   let array_size = Array.length arr in
-  let unfolder (array,idx) =
+  let unfolder (array, idx) =
     match idx () with
-    | InfCons(firstIdx, restIdx) ->
-      let safeIdx = wrap 0 array_size firstIdx in
-      let indexed = Array.get array safeIdx in
-      match indexed () with
-      | InfCons(current, tail) -> 
-        Array.set array safeIdx tail;
-         (current,(array,restIdx))
+    | InfCons (firstIdx, restIdx) -> (
+        let safeIdx = wrap 0 array_size firstIdx in
+        let indexed = Array.get array safeIdx in
+        match indexed () with
+        | InfCons (current, tail) ->
+            Array.set array safeIdx tail;
+            (current, (array, restIdx)))
   in
-  unfold unfolder (arr,indexer) 
+  unfold unfolder (arr, indexer)
+
+let rec sometimes x y p () =
+  let head () =
+    let rnd = if p < 1 then (-1) else Random.int p in
+    if rnd = 0 then y else x
+  in
+  InfCons (head (), sometimes x y p)
 
 let ch_seq (arr : 'a t Array.t) =
   let len = Array.length arr in
-  let f =  fun () -> Toolkit.rvi 0 len in
+  let f () = Toolkit.rvi 0 len in
   let indexer = generator f in
-  index_seq arr indexer 
+  index_seq arr indexer

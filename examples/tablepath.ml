@@ -25,7 +25,7 @@ let write_split () =
   let idx = Toolkit.rvi 1 (max - 1) in
   let a = Toolkit.rvi 1 (max - 1) in
   let b = Toolkit.rvi 1 (max - 1) in
-  let o = Toolkit.rvi 10 100 in
+  let o = Toolkit.rvi 10 11 in
   let stream = 
     if Toolkit.rvi 0 30 > 28 then
       Cisp.ch [|a;b|] |> Cisp.hold (Cisp.st o) |> Infseq.cycleSq

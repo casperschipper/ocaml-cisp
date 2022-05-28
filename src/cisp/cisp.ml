@@ -983,6 +983,7 @@ let rec collatz n () =
     let next = if even n then n / 2 else (n * 3) + 1 in
     Cons (next, collatz next)
 
+
 (* use floats as arguments to somethign that expects streams *)
 let lift f a b = f (st a) (st b)
 let pair a b = (a, b)

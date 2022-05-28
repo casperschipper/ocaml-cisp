@@ -78,7 +78,7 @@ let channels snd = snd.channels
 
 let sr snd = snd.sr
 
-let fromSeq n sr slst =
+let from_seq n sr slst =
   let n_channels = List.length slst in
   let buf =
     Bigarray.Array1.create Bigarray.Float32 Bigarray.c_layout (n * n_channels)

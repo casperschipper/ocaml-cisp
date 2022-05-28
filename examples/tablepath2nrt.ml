@@ -39,14 +39,16 @@ let write_normal idx =
   steps.(idx) <- next 
 
   
-
 let () = 
-  let open Cisp in
-
+  let open Cisp in 
   let chaos = timed (fractRandTimer (ch [|0.001;0.1;0.5;1.0;2.0;3.0;4.0|])) (st write_split |> Seq.map (fun x -> x ()) ) in 
   let peace = timed (fractRandTimer (ch [|0.001;0.1;0.5;1.0;2.0|])) (countTill 255 |> Seq.map write_normal) in
   let eff = effect_lst masterClock [chaos;peace] in 
   let signal () = play_index_table steps |> Infseq.index noise |> Infseq.to_seq in
-  let channels = rangei 0 14 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
-  Jack.playSeqs 0 Process.sample_rate ((effect eff (signal ())) :: channels)
- 
+  let channels = rangei 0 30 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
+  let size = !Process.sample_rate *. 180.0 |> int_of_float in
+  let _ = debugi "sampler rate:" size in 
+  let with_effect = (effect eff (signal ())) :: channels in
+  let t = Sndfile.from_seq size (int_of_float !Process.sample_rate) with_effect in
+  Sndfile.write t "/Users/casperschipper/Music/Null/tablepath2nrt.wav" Sndfile.WAV_32
+   

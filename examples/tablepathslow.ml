@@ -1,5 +1,7 @@
-let max = 256
-let noise = Cisp.sineseg max |> Array.of_seq
+let max = 16384
+let noise = 
+  let open Cisp in
+  lift rvf (-1.0) 1.0 |> Seq.map (fun x -> Float.pow x 30.0) |> take max |> Array.of_seq
 
 let steps =
   Array.init max (fun idx -> let next = ((idx + 1) mod max) in Infseq.repeat next)
@@ -24,13 +26,10 @@ let play_index_table arr =
 let write_split () =
   let idx = Toolkit.rvi 1 (max - 1) in
   let a = Toolkit.rvi 1 (max - 1) in
-  let b = Toolkit.rvi 1 (max - 1) in
-  let o = Toolkit.rvi 10 11 in
+  let b = Toolkit.rvi 1 3 in
+  let p = Cisp.pickOne [|10;44;20;40;50;100;1000;2000;3000;4000;100;200;3000;400|] in 
   let stream = 
-    if Toolkit.rvi 0 30 > 28 then
-      Cisp.ch [|a;b|] |> Cisp.hold (Cisp.st o) |> Infseq.cycleSq
-    else 
-      Cisp.seq [a;b]  |> Cisp.hold (Cisp.st o) |> Infseq.cycleSq 
+    Infseq.sometimes ((idx+b) mod max) a p 
   in
   steps.(idx) <- stream
 
@@ -43,8 +42,8 @@ let write_normal idx =
 let () = 
   let open Cisp in
 
-  let chaos = timed (fractRandTimer (ch [|0.001;0.1;0.5;1.0;2.0;3.0;4.0|])) (st write_split |> Seq.map (fun x -> x ()) ) in 
-  let peace = timed (fractRandTimer (ch [|0.001;0.1;0.5;1.0;2.0|])) (countTill 255 |> Seq.map write_normal) in
+  let chaos = timed (fractRandTimer (ch [|0.1;1.0|])) (st write_split |> Seq.map (fun x -> x ()) ) in 
+  let peace = timed (fractRandTimer (ch [|0.001;0.1;1.0|])) (countTill 255 |> Seq.map write_normal) in
   let eff = effect_lst masterClock [chaos;peace] in 
   let signal () = play_index_table steps |> Infseq.index noise |> Infseq.to_seq in
   let channels = rangei 0 14 |> Seq.map (fun _ -> signal ()) |> List.of_seq in

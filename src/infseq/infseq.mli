@@ -23,11 +23,12 @@ val recursive1 : 'a t -> 'b -> ('a -> 'b -> 'b) -> ('b -> 'c) -> 'c t
 val walki : int -> int t -> int t
 val walk : float -> float t -> float t
 val chunk : float t -> 'a t -> 'a Seq.t t
-val sometimes : 'a -> 'a -> int -> 'a t
 val zip : 'a t -> 'b t -> ('a * 'b) t
 val zipWith : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
 val applySq : ('a -> 'b) t -> 'a t -> 'b t
 val wrap : int -> int -> int -> int
 val index : 'a array -> int t -> 'a t
-val index_seq : 'a t Array.t -> int t -> 'a t
-val ch_seq : 'a t Array.t -> 'a t
+val index_seq : 'a t array -> int t -> 'a t
+val sometimes : 'a -> 'a -> int -> 'a t
+val ch_seq : 'a t array -> 'a t
+

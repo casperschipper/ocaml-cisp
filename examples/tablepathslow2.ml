@@ -1,11 +1,17 @@
 let max = 1024
+
+let channels = 16
+
 let noise = 
   let open Cisp in
-
   lift rvf (-1.0) 1.0 |> Seq.map (fun x -> Float.pow x 10.0) |> take max |> Array.of_seq
 
 let steps =
-  Array.init max (fun idx -> let next = ((idx + 1) mod max) in Infseq.repeat next)
+  let one_array () = 
+    Array.init max (fun idx -> let next = ((idx + 1) mod max) in Infseq.repeat next)
+  in
+  Array.make channels (one_array ())
+ 
 
 let get_table arr idx =
   if idx > Array.length arr || (idx < 0) then 
@@ -34,9 +40,9 @@ let write_split () =
 
 let write_normal idx =
   let next = Infseq.repeat ((idx + 1) mod (max-1)) in 
-  steps.(idx) <- next 
+  steps.(idx) <- next  
 
-  
+
 
 let () = 
   let open Cisp in
@@ -45,13 +51,13 @@ let () =
   let peace = timed (fractRandTimer (ch [|0.001;0.1;0.1;1.0;2.0|])) (countTill max |> Seq.map write_normal) in
   let eff = effect_lst masterClock [chaos;peace] in 
   let signal () = play_index_table steps |> Infseq.index noise |> Infseq.to_seq in
-  let channels = rangei 0 8 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
+  let channels = rangei 0 30 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
   
   let with_effect = ((effect eff (signal ())) :: channels) in
-   if false then
+   if true then
     let size = !Process.sample_rate *. 120.0 |> int_of_float in
     let t = Sndfile.from_seq size (int_of_float !Process.sample_rate) with_effect in
-    Sndfile.write t "/Users/casperschipper/Music/Null/tablepath_pulse_2.wav" Sndfile.WAV_32
+    Sndfile.write t "/Users/casperschipper/Music/Null/tablepath_pulse_3.wav" Sndfile.WAV_32
   else 
     Jack.playSeqs 0 Process.sample_rate with_effect
   

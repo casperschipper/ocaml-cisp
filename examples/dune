@@ -64,25 +64,29 @@
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
- 
 (executable
  (name tablepathslow)
  (modules tablepathslow)
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
- (executable
+(executable
  (name tablepathslow2)
  (modules tablepathslow2)
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
-  (executable
+(executable
  (name tablepathsplit)
  (modules tablepathsplit)
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
+(executable
+ (name tablepathsplit2)
+ (modules tablepathsplit2)
+ (ocamlopt_flags -O3)
+ (libraries toolkit cisp jack sndfile))
 
 (executable
  (name null_lookup)

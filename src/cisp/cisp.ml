@@ -815,16 +815,19 @@ let weights weightLst () =
         let nextCurr = weight + curr in
         if pick < nextCurr then value else lookupWeight ws nextCurr pick
   in
-  let rec aux weights max () =
-    Cons (lookupWeight weights 0 (Random.int max), aux weights max)
+  let rec aux weights maxi () =
+    Cons (lookupWeight weights 0 (Random.int (max 1 maxi)), aux weights maxi)
   in
   aux weightLst sumWeights ()
 
 (* return mostly x, but 1 in P events y *)
 let rec sometimes x y p () =
   let head () =
-    let rnd = Random.int p in
-    if rnd < 1 then y else x
+    if p < 1 then 
+      x
+    else
+      let rnd = Random.int p in
+      if rnd < 1 then y else x
   in
   Cons (head (), sometimes x y p)
 

@@ -59,6 +59,12 @@
  (libraries toolkit cisp jack))
 
 (executable
+ (name tablepath2b)
+ (modules tablepath2b)
+ (ocamlopt_flags -O3)
+ (libraries toolkit cisp jack sndfile))
+
+(executable
  (name tablepath2nrt)
  (modules tablepath2nrt)
  (ocamlopt_flags -O3)

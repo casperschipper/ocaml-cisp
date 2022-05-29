@@ -8,5 +8,9 @@ let rvfi low high =
 let rvi low high =
   let range = abs (low - high) in
   let offset = min low high in
-  Random.int range + offset
+  let rnd = match range with
+  | 0 -> 0
+  | x -> Random.int x 
+  in
+  rnd + offset
  

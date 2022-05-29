@@ -35,7 +35,7 @@ let mkBoermanFading3 () =
     indexCub buffer readpos 
   in
   let joined = effect writer myReader in
-  joined 
+  3.0 *.- joined 
  
 let all_channels =
   Cisp.rangei 0 15 |> List.of_seq |> List.map (fun _ -> mkBoermanFading3 ())

@@ -1,4 +1,4 @@
-let max = 256
+let max = 512
 let noise = Cisp.sineseg max |> Array.of_seq
 
 let steps =
@@ -43,10 +43,10 @@ let write_normal idx =
 let () = 
   let open Cisp in
 
-  let chaos = timed (fractRandTimer (ch [|0.001;0.1;0.5;1.0;2.0;3.0;4.0|])) (st write_split |> Seq.map (fun x -> x ()) ) in 
-  let peace = timed (fractRandTimer (ch [|0.001;0.1;0.5;1.0;2.0|])) (countTill 255 |> Seq.map write_normal) in
+  let chaos = timed (fractRandTimer (ch [|0.5;1.0;2.0;3.0;4.0|])) (st write_split |> Seq.map (fun x -> x ()) ) in 
+  let peace = timed (fractRandTimer (ch [|0.001;0.1;0.5;1.0;2.0|])) (countTill (max-1) |> Seq.map write_normal) in
   let eff = effect_lst masterClock [chaos;peace] in 
-  let signal () = play_index_table steps |> Infseq.index noise |> Infseq.to_seq |> Cisp.blpf_static 50.0 0.1 |> Seq.map (fun x -> x *. 400.0 |> sin) in
+  let signal () = play_index_table steps |> Infseq.index noise |> Infseq.to_seq |> Cisp.blpf_static 60.0 0.9 |> Seq.map (fun x -> x *. 40000.0 |> sin) in
   let channels = rangei 0 14 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
   Jack.playSeqs 0 Process.sample_rate ((effect eff (signal ())) :: channels)
  

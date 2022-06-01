@@ -128,3 +128,6 @@ let to_seq snd channel =
     aux 0
   in
   Seq.map (idx_channel snd channel) count
+
+let n_channels snd =
+  snd.channels

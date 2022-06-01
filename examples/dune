@@ -29,6 +29,12 @@
  (libraries cisp bigarray ctypes jack sndfile))
 
 (executable
+ (name nullmic)
+ (modules nullmic)
+ (ocamlopt_flags -O3)
+ (libraries cisp bigarray ctypes jack sndfile))
+
+(executable
  (name ssp)
  (modules ssp)
  (ocamlopt_flags -O3)
@@ -91,6 +97,12 @@
 (executable
  (name tablepathsplit2)
  (modules tablepathsplit2)
+ (ocamlopt_flags -O3)
+ (libraries toolkit cisp jack sndfile))
+
+ (executable
+ (name tablepathsplitnew)
+ (modules tablepathsplitnew)
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 

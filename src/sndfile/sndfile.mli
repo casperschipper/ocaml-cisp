@@ -52,3 +52,5 @@ val fromProc : int -> int -> float Process.t list -> t
 val toProc : t -> int -> float Process.t
 
 val to_seq : t -> int -> float Seq.t
+
+val n_channels : t -> int 

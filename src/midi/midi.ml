@@ -616,11 +616,11 @@ let printRaw (status, data1, data2) =
  * *)
 let withInterval interval fillerEvent sq =
   let ctrl = zip sq interval in
-  concatMap (fun (src, Samps n) () -> Cons (src, repeat n fillerEvent)) ctrl
+  concatMap (fun (src, Samps n) () -> Cons (src, fun () -> repeat n fillerEvent)) ctrl
 
 let withInt interval fillerEvent sq =
   let ctrl = zip sq interval in
-  concatMap (fun (src, n) () -> Cons (src, repeat n fillerEvent)) ctrl
+  concatMap (fun (src, n) () -> Cons (src, fun () -> repeat n fillerEvent)) ctrl
 
 (* does not work: *
    let intervalNotesOnly interval sq =
@@ -699,7 +699,7 @@ let enqueue = Fqueue.enqueue
 let enqueueOnlyNotes v q =
   match v with
   | MidiSilence -> q
-  | any -> Fqueue.enqueue any q
+  | nonSilence -> Fqueue.enqueue nonSilence q
 
 let print_state m label =
   let now = m.now in

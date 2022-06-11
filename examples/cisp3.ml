@@ -1,97 +1,19 @@
-open Cisp
-open Midi
 
-let map = Seq.map
 
-let midiReader =
-  let ( let* ) x f = Reader.bind f x in
-  let* trigger = MidiState.boolFromNote in
-  Reader.return trigger
-
-let from01 x =
-  match x with
-    1 -> true | _ -> false
-  
-let rhythm () =
-  let ps = lift rv 1 15 |> take 3 in
-  let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
-  seq mapped |> map from01
-    
-  
-let onePitchLoop () =
-  let a = Toolkit.rvi 36 40 in
-  let b = Toolkit.rvi 36 40 in
-  let ps = lift rv 1 15 |> take 3 in
-  let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
-  seq mapped |> index [|a;b|]
-
-let velo () =
-  let a = 50 in
-  let b = 80 in
-  let ps = lift rv 1 15 |> take 3 in
-  let mapped = List.of_seq ps |> List.map toBinary |> List.concat in
-  seq mapped |> index [|a;b|] 
-          
-
-               
-  
-let notes channel =
-  st makeNoteOfInts 
-  <*> onePitchLoop ()
-  <*> velo ()
-  <*> (seci 0.1 |> st)
-  <*> (st channel)
-
-let ofTrigger trig channel =
-  let p = pickOne [|2;3|] in
-  let s = syncOverClock (rhythm () |> pulseDivider (st p)) (notes channel) in
-  weavePattern trig s (st None)
-
-let mkBundles t =
-  let addOptToBundle opt bundle =
-    match opt with
-    | Some evt -> addToBundle bundle evt
-    | None -> bundle
-  in
-  let chs = rangei 1 10 |> List.of_seq in
-  chs |> List.map (fun channel -> ofTrigger t channel) |>  list_fold_heads_with silenceBundle addOptToBundle
-  
-
-  
-let midiFun input =
-  input
-  |> MidiState.makeSeq
-  |> map (Reader.run midiReader)
-  |> mkBundles
-  |> serializeBundles
-  |> map toRaw
-       
-  
 let () =
-  let f () =
-    Midi.playMidi midiFun Process.sample_rate
-    ; while true
-      do
-        Unix.sleep 60
-      done
+  let open Cisp in
+  let arr = lift rvf 1.0 1000.0 |> take 19 in
+  let signal freq = 
+    let amp = mupWalk 1.0 (st 1.0) in 
+    pulsegen (st freq) *.~ amp in
+  let channels = arr |> fmap signal |> List.of_seq |> sumlist |> fun x -> [x;x] in
+  let with_effect = match channels with
+    |  first ::rest -> effect masterClock first :: rest
+    | [] -> []
   in
-  let _ = Thread.create f () in
-  let _ = Sys.command "jack_disconnect system_midi:capture_2 ocaml_midi:ocaml_midi_in" in
-  let _ = Sys.command "jack_disconnect ocaml_midi:ocaml_midi_out system_midi:playback_1" in
-  let _ = Sys.command "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_5" in
-  let _ = Sys.command "jack_connect system_midi:capture_1 ocaml_midi:ocaml_midi_in" in
-  while true
-  do
-    Unix.sleep 60
-  done
-
-   
-
-    
-    
-
-
-  
-  
-            
- 
+  if false then
+    let size = !Process.sample_rate *. 90.0 |> int_of_float in
+    let t = Sndfile.from_seq size (int_of_float !Process.sample_rate) with_effect in
+    Sndfile.write t "/Users/casperschipper/Music/Null/pulse_split_recycle_range.wav" Sndfile.WAV_32
+  else 
+    Jack.playSeqs 0 Process.sample_rate with_effect

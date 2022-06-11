@@ -1,5 +1,5 @@
 (library
  (name            cisp)
- (libraries toolkit mtime mtime.clock.os process infseq sorted)
+ (libraries toolkit process infseq sorted time)
  (ocamlopt_flags -O3)	
 )

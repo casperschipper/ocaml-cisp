@@ -29,6 +29,12 @@
  (libraries cisp bigarray ctypes jack sndfile))
 
 (executable
+ (name nullsine)
+ (modules nullsine)
+ (ocamlopt_flags -O3)
+ (libraries cisp bigarray ctypes jack sndfile))
+
+(executable
  (name nullmic)
  (modules nullmic)
  (ocamlopt_flags -O3)
@@ -106,6 +112,13 @@
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
+
+ (executable
+ (name tablepathnew)
+ (modules tablepathnew)
+ (ocamlopt_flags -O3)
+ (libraries toolkit cisp jack sndfile))
+
 (executable
  (name null_lookup)
  (modules null_lookup)
@@ -146,7 +159,7 @@
   (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules simplecasper)
- (libraries bigarray ctypes jack))
+ (libraries cisp bigarray ctypes jack))
 
 (executable
  (name fmfb)

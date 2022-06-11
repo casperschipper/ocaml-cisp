@@ -7,6 +7,12 @@ open Seq
    let thunk x = fun () -> x
 *)
 
+let compare a b = 
+  if a > b then 1
+  else if a < b then -1 else 
+    0
+
+
 let samplerate = ref !Process.sample_rate
 let id x = x
 let thunk x () = x
@@ -14,7 +20,7 @@ let emptySt () = Nil
 let force l = l ()
 let ( |> ) x f = f x
 let ( <| ) f x = f x
-let ( >> ) f g x = g (f x)
+let ( >> ) f g x = g (f x) 
 let ( << ) f g x = f (g x)
 let fst (x, _) = x
 let snd (_, x) = x
@@ -592,6 +598,8 @@ let rec mkLots n thing =
 
 let mixList lst () = List.fold_left ( +~ ) lst
 
+let sumlist lst = List.fold_left (+.~) (st 0.0) lst
+
 (* zipped list will be lenght of shortest list *)
 
 let clip low high x = if x < low then low else if x > high then high else x
@@ -725,7 +733,7 @@ let bounded_walk_control start (wrapfunc : float -> float -> float) control step
 
 (* dealing with arrays / buffers *)
 let cap arr = Array.length arr
-
+ 
 let safeIdx len idx =
   let result = idx mod len in
   if result >= 0 then result else result + len
@@ -1189,6 +1197,8 @@ let pulse n sq filler =
 *)
 type pulseGenState = { phase : float; out : float }
 
+
+
 (* this uses a floating point counter, so will also do non-integer intervals, rounding it off *)
 let pulsegen freqSq =
   let init = { phase = 1.0; out = 0.0 } in
@@ -1200,6 +1210,20 @@ let pulsegen freqSq =
     else { out = 0.0; phase = state.phase +. phaseIncr }
   in
   recursive1 freqSq init update (fun state -> state.out)
+
+
+type pulseGenFBState = { phase : float; out : float; amp : float }
+
+let pulsegen_fb freqSq fb =
+    let init = { phase = 1.0; out = 0.0; amp = 1.0 } in
+    let sr = !Process.sample_rate in
+    let update newFreq state =
+      let phaseIncr = newFreq /. sr |> clip 0.0 1.0 in
+      if state.phase >= 1.0 then
+        { out = 1.0; phase = state.phase -. 1.0 +. phaseIncr; amp = state.amp *. fb }
+      else { out = 0.0; phase = state.phase +. phaseIncr; amp = state.amp }
+    in
+    recursive1 freqSq init update (fun state -> state.out)
 
 type clockGenState = { phase : float; out : bool }
 
@@ -1384,6 +1408,9 @@ let tline_start startX timeToNext sq =
 
 let tline = tline_start 0.0
 
+let safeline start (times : (Time.second Time.t) Seq.t) (values) =
+  tline_start start (map Time.float_seconds times) values
+
 (**
   phasor, speed per tick, top 
     *)
@@ -1482,6 +1509,9 @@ let grow start ratio n = mupWalk start (st ratio) |> take n |> toList
 let write arr indexSq valueSq =
   let control = zip indexSq valueSq in
   map (fun (idx, value) -> arr.(idx) <- value) control
+
+let fmap =
+  Seq.map 
 
 let writeOne arr index value = arr.(index) <- value
 

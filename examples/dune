@@ -437,6 +437,13 @@
  (libraries threads lo midi cisp jackMidi))
 
 (executable
+ (name receiveOscTest)
+
+ (ocamlopt_flags -O3)
+ (modules receiveOscTest)
+ (libraries threads lo midi cisp jackMidi))
+
+(executable
  (name ivo)
  (link_flags
   (-cclib -ljack))

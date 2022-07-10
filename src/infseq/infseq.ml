@@ -132,3 +132,16 @@ let ch_seq (arr : 'a t Array.t) =
   let f () = Toolkit.rvi 0 len in
   let indexer = generator f in
   index_seq arr indexer
+
+
+let fst (x,_) =
+  x
+
+let snd (_,y) =
+  y
+
+let rec transpose (sqqss : (('a t) Seq.t)) () =
+  let uncons = 
+    sqqss |> Seq.map (fun sq -> match sq () with
+  | InfCons (x,xs) -> (x,xs)) in
+  InfCons( Seq.map fst uncons, transpose (Seq.map snd uncons) )

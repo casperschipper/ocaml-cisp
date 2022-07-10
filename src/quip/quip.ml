@@ -285,13 +285,37 @@ let mkFloat = function
   | Constant n -> n |> Parser.number_to_float |> Result.ok
   | _ -> Result.Error (Problem "seq requires numbers only")
 
-let seq lst =
+let seq_old lst =
   (* this is normal seq *)
   lst
   |> traverse_map_result mkFloat
   |> Result.map (fun flt_lst -> Stream (InfStream (Infseq.seq flt_lst)))
 
-let ch lst =
+let fin_stream_seq (lst : (float Seq.t) list) = 
+ lst |> List.to_seq |> Cisp.transpose |> Cisp.concat
+
+let inf_stream_seq (lst : (float Infseq.t) list) =
+  lst |> List.to_seq |> Infseq.transpose |> Infseq.concatSq
+
+let seq lst =
+  lst |>
+  monoform |>
+  Result.map (
+  fun mono_lst ->
+    match mono_lst with
+    | FloatLst flt_lst -> Stream (InfStream (Infseq.seq flt_lst))
+    | FinStreamLst fin_str_lst -> Stream (FinStream (fin_stream_seq fin_str_lst))
+    | InfStreamLst inf_stream_list -> Stream (InfStream (inf_stream_seq inf_stream_list)))
+
+
+let st lst = 
+  match lst with
+  | [value] -> (value 
+    |> mkFloat 
+    |> Result.map (fun flt -> Stream (InfStream (Infseq.repeat flt))))
+  | _ -> Result.Error (Problem "only takes one float or int value")
+
+let ch lst = 
   let handle_lst lst =
     match lst with
     | FloatLst flst -> Cisp.ch (Array.of_list flst) |> fin_stream |> Result.ok
@@ -440,6 +464,8 @@ let initial_vars =
     ("walk", Function walk);
     ("chunks", Function chunks);
     ("plus", Function plus_st);
+    ("st", Function st);
+    ("ch", Function ch)
   ]
   |> vars_from_list
 
@@ -670,3 +696,5 @@ let eval_string_to_stream strng =
   | Parser.Good (Error (Problem problem), _) -> print_string problem
   | Parser.Problem (prob, _) ->
       Parser.problem_to_string (fun _ -> "prob") prob |> print_string
+
+      (* utop # eval_string_to_stream "(seq 1.0 (seq 11.0 12.0) 3)";; *)

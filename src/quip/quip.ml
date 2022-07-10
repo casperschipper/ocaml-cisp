@@ -303,7 +303,7 @@ let seq lst =
   Result.map (
   fun mono_lst ->
     match mono_lst with
-    | FloatLst flt_lst -> Stream (InfStream (Infseq.seq flt_lst))
+    | FloatLst flt_lst -> Stream (FinStream (List.to_seq flt_lst))
     | FinStreamLst fin_str_lst -> Stream (FinStream (fin_stream_seq fin_str_lst))
     | InfStreamLst inf_stream_list -> Stream (InfStream (inf_stream_seq inf_stream_list)))
 
@@ -318,14 +318,14 @@ let st lst =
 let ch lst = 
   let handle_lst lst =
     match lst with
-    | FloatLst flst -> Cisp.ch (Array.of_list flst) |> fin_stream |> Result.ok
+    | FloatLst flst -> Cisp.ch (Array.of_list flst) |> fin_stream 
     | InfStreamLst inf_stream_lst ->
         inf_stream_lst |> Array.of_list |> Infseq.ch_seq |> inf_stream
-        |> Result.ok
+       
     | FinStreamLst fin_stream_lst ->
-        fin_stream_lst |> Array.of_list |> Cisp.choice_seq |> fin_stream |> Result.ok
+        fin_stream_lst |> Array.of_list |> Cisp.choice_seq |> fin_stream 
   in
-  lst |> monoform |> result_and_then handle_lst
+  lst |> monoform |> Result.map handle_lst
 
 let lst_of_two_streams lst =
   let st a = InfStream (Infseq.repeat (Parser.number_to_float a)) in

@@ -804,7 +804,7 @@ let index_seq (arr : 'a Seq.t Array.t) indexer =
     match idx () with
     | Nil -> None
     | Cons (firstIdx, restIdx) -> (
-        let safeIdx = wrap 0 array_size firstIdx in
+        let safeIdx = Toolkit.wrap 0 array_size firstIdx in
         let indexed = Array.get array safeIdx in
         match indexed () with
         | Cons (current, tail) ->

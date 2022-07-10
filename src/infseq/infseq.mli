@@ -31,4 +31,5 @@ val index : 'a array -> int t -> 'a t
 val index_seq : 'a t array -> int t -> 'a t
 val sometimes : 'a -> 'a -> int -> 'a t
 val ch_seq : 'a t array -> 'a t
+val transpose : 'a t Seq.t -> 'a Seq.t t
 

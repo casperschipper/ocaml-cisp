@@ -614,9 +614,9 @@ let printRaw (status, data1, data2) =
 (* intersperce a Seq with silence 
  * M...M...M...M...  
  * *)
-let withInterval interval fillerEvent sq =
+let withInterval (interval : deltaT Seq.t) (fillerEvent : 'a) (sq : 'a Seq.t) =
   let ctrl = zip sq interval in
-  concatMap (fun (src, Samps n) () -> Cons (src, fun () -> repeat n fillerEvent)) ctrl
+  ctrl |> concatMap (fun (src, Samps n) () -> Cons (src, Cisp.repeat n fillerEvent)) 
 
 let withInt interval fillerEvent sq =
   let ctrl = zip sq interval in
@@ -952,7 +952,7 @@ let seconds s = Samps (44100.0 *. s |> Int.of_float)
 let timing = seconds 0.01 |> st
 
 let testSequence =
-  withInterval (st (Samps 4)) MidiSilence
+  withInterval (Cisp.st (Samps 4)) MidiSilence 
     (map (fun i -> NoteOn (MidiCh 1, Pitch (60 + (i mod 12)), Velo 100)) count)
 
 let justSilence = ref (st (toRaw MidiSilence))

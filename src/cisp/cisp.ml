@@ -2,10 +2,23 @@ open Seq
 
 (* Seq is a thunk that when forced returns a value and a thunk to get the tail *)
 
+(* 
+Idea:
+
+Could CispSeqs' have a context of midicontroller states that always is available to all Seq computations within it?
+It is a combination of Reader and Seq.
+So for example, one could ask at each value for the state of the environment ?
+A CispSeq would be a sequence that requires an input to be "performed". A question would be how
+
+
+*)
+
 (*
    this is the same as
    let thunk x = fun () -> x
 *)
+
+
 
 let compare a b = 
   if a > b then 1
@@ -605,15 +618,27 @@ let sumlist lst = List.fold_left (+.~) (st 0.0) lst
 let clip low high x = if x < low then low else if x > high then high else x
 let tanh_clip = Seq.map tanh
 
+let modBy x y =
+  let result = x mod y in
+  if result >= 0 then result
+  else result + y
+
+let modByf x y =
+  let result = mod_float x y in
+  if result >= 0.0 then result
+  else result +. y
+
 let wrapf low high x =
-  let range = low -. high |> abs_float in
-  let modded = mod_float (x -. low) range in
-  if modded < 0.0 then high +. x else low +. x
+  let l = min low high in 
+  let r = abs_float (high -. low) in 
+  l +. (x -. l) |> modByf r
 
 let wrap low high x =
-  let range = low - high |> abs in
-  let modded = (x - low) mod range in
-  if modded < 0 then high + x else low + x
+  let l = min low high in
+  let r = abs (high - low) in
+  l + (x - l) |> modBy r
+  
+  
 
 (* Inspired by the Elm architecture. I guess this is some distant form of Functional Reactive Programming.
  *

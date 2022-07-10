@@ -2,6 +2,16 @@ type data = Lo.Message.data
 
 module R = Result
 
+(* A table as in *)
+type floats = float Array.t
+
+let set (idx:int) (flt:float) (arr:floats) =
+  Array.set arr idx flt 
+
+let get idx (arr:floats) =
+  arr.(idx)
+
+
 type 'a t = OscParser of (data Seq.t -> ('a * data Seq.t, string) Result.t)
 
 let ofData = function

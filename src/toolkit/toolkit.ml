@@ -14,3 +14,11 @@ let rvi low high =
   in
   rnd + offset
  
+  let wrap low high x =
+    let range = low - high |> abs in
+    let modded = 
+      match range with
+      | 0 -> low
+      | non_zero_range -> 
+        (x - low) mod non_zero_range in
+    if modded < 0 then high + x else low + x

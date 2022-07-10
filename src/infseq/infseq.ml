@@ -96,11 +96,9 @@ let rec zipWith f sqa sqb () =
 
 let applySq fSq sq = zip fSq sq |> map (fun (f, x) -> f x)
 
-let wrap low high x =
-  let range = low - high |> abs in
-  let modded = (x - low) mod range in
-  if modded < 0 then high + x else low + x
-
+let wrap =
+  Toolkit.wrap 
+  
 let index array indexer =
   let len = Array.length array in
   let f index = index |> wrap 0 len |> Array.get array in

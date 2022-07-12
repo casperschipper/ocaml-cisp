@@ -10,7 +10,7 @@ Has been used for the interactive piece "decoherence" (see <https://klangraum-du
 
 Core modules:
 
-- cisp (the seq function stuff, with algorithmic composition building blocks, schedulars, sequencers, random generators, oscillators, filters etc.. mostly targeted at a compositionally motivated approach to sound synthesis)
+- cisp (the seq function stuff, with algorithmic composition building blocks, schedulers, sequencers, random generators, oscillators, filters etc.. mostly targeted at a compositionally motivated approach to sound synthesis)
 - midi (parse and generate midi)
 - jack (to play audio)
 - jackMidi (to play midi)

@@ -59,12 +59,15 @@ type quiplist =
 
 let stream_to_string = function
   | InfStream _ -> "inf stream"
-  | FinStream sq -> Seq.map string_of_float sq |> List.of_seq |> String.concat "\t"
-  | FinStreams _ -> "an infinite number of finite streams"
+  | FinStream sq -> "finstream: " ^ (Seq.map string_of_float sq |> List.of_seq |> String.concat "\t")
+  | FinStreams sqqs ->  
+    (let snip = sqqs |> Infseq.take 5 in 
+    let str = snip |> Seq.map (fun sq -> sq |> Seq.map string_of_float |> List.of_seq |> String.concat "\t") |> List.of_seq |> String.concat "\n" in 
+    "an infinite number of finite streams\n" ^ str)
   | FinFinStreams sqqs -> sqqs 
       |> Seq.map (fun sq ->
         "seq of length: " ^ (string_of_int (Seq.length sq)) 
-      ) |> List.of_seq |> String.concat "\n"
+      ) |> List.of_seq |> String.concat "\t"
 
 let problemize p = Problem p
 
@@ -471,17 +474,22 @@ let plus_st lst =
       float_lst |> lst_of_two_streams |> result_and_then plus_fun
       |> Result.map stream
 
+let one_leg start steps = steps |> Seq.map (fun stp -> stp +. start) 
+
+
 let walk lst =
   let walk_fun = function
     | InfStream starts, FinStreams steps ->
         Ok (InfStream (Cisp.many_walks starts steps) |> stream)
+    | FinStream starts, FinStreams steps ->
+        let ws = Seq.map2 one_leg starts (Infseq.toSeq steps) |> Cisp.concat in
+        Ok (Stream (FinStream ws))
     | FinStream starts, FinFinStreams steps ->
-        let f start steps = steps |> Seq.map (fun stp -> stp +. start) in
         let ws =
-          Seq.map2 f starts steps |> Cisp.concat
+          Seq.map2 one_leg starts steps |> Cisp.concat
         in
         Ok (Stream (FinStream ws))
-    | _ -> Error (Problem "walk does not know what to do with this")
+    | e1,e2 -> Error (Problem ("walk does not know what to do with this:\n" ^ (stream_to_string e1) ^ "-" ^ (stream_to_string e2) ))
   in
   lst |> lst_of_two_streams_finite |> result_and_then walk_fun
 

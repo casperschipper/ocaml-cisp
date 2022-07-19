@@ -188,7 +188,7 @@ let rec appendAlt a b () =
   | Cons (h, tl) -> fun () -> Cons(h, appendAlt tl b)
 *)
 
-(* When the seq reaches Nil, restart from the beginning. This is an implicit infinite stream, may be better use InfSeq if you want this *)
+(* When the seq reaches Nil, restart from the beginning. This is an implicit infinite stream, may be better use InfSeq if you want this 
 let rec cycle a () =
   let rec cycle_append current_a () =
     match current_a () with
@@ -196,6 +196,22 @@ let rec cycle a () =
     | Cons (this_a, rest) -> Cons (this_a, cycle_append rest)
   in
   cycle_append a ()
+  *)
+
+let rec cyclen_nonempty n xs () =
+  if n < 1 then
+    Nil 
+  else
+    Seq.append xs (cyclen_nonempty (n -1) xs) ()
+
+let rec cyclen n xs () =
+  if n < 1 then
+    Nil
+  else 
+    match xs () with
+    | Nil -> Nil
+    | Cons(this_a,rest) -> Seq.append (fun () -> Cons (this_a, rest)) (cyclen_nonempty (n-1) xs) ()
+  
 
 let rec range a b () = if a >= b then Nil else Cons (a, range (a +. 1.0) b)
 
@@ -606,7 +622,7 @@ let sumlist lst = List.fold_left ( +.~ ) (st 0.0) lst
 
 let clip low high x = if x < low then low else if x > high then high else x
 let tanh_clip = Seq.map tanh
-
+(* 
 let modBy y x =
   match y with
   | 0 -> x (* safety first ! *)
@@ -629,7 +645,9 @@ let wrapf low high x =
 let wrap low high x =
   let l = min low high in
   let r = abs (high - low) in
-  l + (x - l) |> modBy r
+  l + (x - l) |> modBy r 
+  
+  *)
 
 (* Inspired by the Elm architecture. I guess this is some distant form of Functional Reactive Programming.
  *

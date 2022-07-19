@@ -5,6 +5,9 @@ open Parser
    tomotakatakahashi's https://github.com/tomotakatakahashi/lispy-elm
    which in turn is based on
    http://www.norvig.com/lispy.html
+
+   open questions:
+   How to deal with (1 2 3 4) ((1 2) (3 4) (5 6))
 *)
 
 let assert_equal label a b =
@@ -56,9 +59,12 @@ type quiplist =
 
 let stream_to_string = function
   | InfStream _ -> "inf stream"
-  | FinStream _ -> "possibly finite stream"
+  | FinStream sq -> Seq.map string_of_float sq |> List.of_seq |> String.concat "\t"
   | FinStreams _ -> "an infinite number of finite streams"
-  | FinFinStreams _ -> "a finite number of finite streams"
+  | FinFinStreams sqqs -> sqqs 
+      |> Seq.map (fun sq ->
+        "seq of length: " ^ (string_of_int (Seq.length sq)) 
+      ) |> List.of_seq |> String.concat "\n"
 
 let problemize p = Problem p
 
@@ -90,7 +96,10 @@ let rec expression_to_string exp =
   | Stream stream -> stream_to_string stream
 
 let monoform (lst : expression list) =
-  (* This function turns a diverse list into a single type, type normalisation *)
+  (* This function turns a diverse list into a single type, type normalisation
+     For example, if a list is a mix of floats and streams, everything is made into a stream.
+     If something starts with a float, but along the way there is a single stream, it will be stream list, since that is the more fundamental type in Cisp.
+  *)
   let rec find_type xs state =
     match xs with
     | [] -> state
@@ -203,7 +212,8 @@ let binaryOp floatOp intOp lst =
       sum_nums append_floats (Ok (Constant (Float f1))) rest
   | exp :: _ ->
       Error
-        (expression_to_string exp ^ "+ cannot apply, not a number" |> problemize)
+        (expression_to_string exp ^ "plus cannot apply, not a number"
+        |> problemize)
 
 let plus lst = binaryOp ( +. ) ( + ) lst
 let minus lst = binaryOp ( -. ) ( - ) lst
@@ -291,39 +301,55 @@ let seq_old lst =
   |> traverse_map_result mkFloat
   |> Result.map (fun flt_lst -> Stream (InfStream (Infseq.seq flt_lst)))
 
-let fin_stream_seq (lst : (float Seq.t) list) = 
- lst |> List.to_seq |> Cisp.transpose |> Cisp.concat
+let fin_stream_seq (lst : float Seq.t list) =
+  lst |> List.to_seq |> Cisp.transpose |> Cisp.concat
 
-let inf_stream_seq (lst : (float Infseq.t) list) =
+let inf_stream_seq (lst : float Infseq.t list) =
   lst |> List.to_seq |> Infseq.transpose |> Infseq.concatSq
 
+let fin_stream_cycle (lst : float Seq.t list) =
+  lst |> Infseq.seq |> Infseq.concatSq
+
 let seq lst =
-  lst |>
-  monoform |>
-  Result.map (
-  fun mono_lst ->
-    match mono_lst with
-    | FloatLst flt_lst -> Stream (FinStream (List.to_seq flt_lst))
-    | FinStreamLst fin_str_lst -> Stream (FinStream (fin_stream_seq fin_str_lst))
-    | InfStreamLst inf_stream_list -> Stream (InfStream (inf_stream_seq inf_stream_list)))
+  lst |> monoform
+  |> Result.map (fun mono_lst ->
+         match mono_lst with
+         | FloatLst flt_lst -> Stream (FinStream (List.to_seq flt_lst))
+         | FinStreamLst fin_str_lst ->
+             Stream (FinStream (fin_stream_seq fin_str_lst))
+         | InfStreamLst inf_stream_list ->
+             Stream (InfStream (inf_stream_seq inf_stream_list)))
 
+let cycle lst =
+  lst |> monoform
+  |> result_and_then (fun mono_lst ->
+         match mono_lst with
+         | FloatLst flt_lst -> Ok (Stream (InfStream (Infseq.seq flt_lst)))
+         | FinStreamLst fin_str_lst ->
+             Ok (Stream (InfStream (fin_stream_cycle fin_str_lst)))
+         | InfStreamLst _ ->
+             Error (Problem "Infite cycle on infinite seq is not very sensible"))
 
-let st lst = 
+let st lst =
   match lst with
-  | [value] -> (value 
-    |> mkFloat 
-    |> Result.map (fun flt -> Stream (InfStream (Infseq.repeat flt))))
-  | _ -> Result.Error (Problem "only takes one float or int value")
+  | [] -> Result.Error (Problem "st [] makes no sense")
+  | [ Stream (FinStream seq) ] -> Stream (FinStreams (Infseq.repeat seq)) |> Result.ok
+  | [ Constant value ] ->
+      value 
+      |> Parser.number_to_float 
+      |>  (fun flt -> Stream (InfStream (Infseq.repeat flt))) 
+      |> Result.ok
+  | _ ->
+    Result.Error (Problem "st cannot accept this argument")
 
-let ch lst = 
+let ch lst =
   let handle_lst lst =
     match lst with
-    | FloatLst flst -> Cisp.ch (Array.of_list flst) |> fin_stream 
+    | FloatLst flst -> Cisp.ch (Array.of_list flst) |> fin_stream
     | InfStreamLst inf_stream_lst ->
         inf_stream_lst |> Array.of_list |> Infseq.ch_seq |> inf_stream
-       
     | FinStreamLst fin_stream_lst ->
-        fin_stream_lst |> Array.of_list |> Cisp.choice_seq |> fin_stream 
+        fin_stream_lst |> Array.of_list |> Cisp.choice_seq |> fin_stream
   in
   lst |> monoform |> Result.map handle_lst
 
@@ -382,14 +408,79 @@ let rv lst =
   in
   lst |> lst_of_two_streams |> result_and_then rv_fun |> Result.map stream
 
+let result_alternative f1 f2 value =
+  let r1 = f1 value in
+  match r1 with Ok r1 -> Ok r1 | Error _ -> f2 value
+
+let fold_quiplist_zip operator empty_seq empty_inf_seq (lst : quiplist) =
+  match lst with
+  | FloatLst flt_lst ->
+      Constant (Parser.Float (List.fold_left operator 0.0 flt_lst))
+      (* List.fold_left *)
+  | FinStreamLst fin_str_lst ->
+      Stream
+        (FinStream
+           (List.fold_left (Cisp.zipWith operator) empty_seq fin_str_lst))
+  | InfStreamLst inf_str_lst ->
+      Stream
+        (InfStream
+           (List.fold_left (Infseq.zipWith operator) empty_inf_seq inf_str_lst))
+
+let fold_quiplist_cartesian operator (lst : quiplist) =
+  match lst with
+  | FloatLst flt_lst ->
+      Result.ok (Constant (Parser.Float (List.fold_left operator 0.0 flt_lst)))
+  | FinStreamLst fin_str_lst ->
+      Result.ok
+        (Stream
+           (FinStream
+              (List.fold_left (Cisp.cartesian operator) (Seq.return 0.0)
+                 fin_str_lst)))
+  | InfStreamLst _ ->
+      Result.Error
+        (Problem "You probably do not want to cartesian map the infinite")
+
+let op_cartesian op lst =
+  let mono = lst |> monoform in
+  mono |> result_and_then (fold_quiplist_cartesian op)
+
 let plus_st lst =
-  let plus_fun = binary_sq_function (Infseq.map2 ( +. )) (Cisp.map2 ( +. )) in
-  lst |> lst_of_two_streams |> result_and_then plus_fun |> Result.map stream
+  match lst with
+  | [ Stream (FinStream flt_a); Stream (FinStream flt_b) ] ->
+      let ( <*> ) = Cisp.( <*> ) in
+      Stream (FinStream (Seq.repeat ( +. ) <*> flt_a <*> flt_b)) |> Result.ok
+  | [ Stream (InfStream flt_a); Stream (FinStream flt_b) ] ->
+      Stream
+        (InfStream
+           (Infseq.repeat ( +. ) |> Infseq.andMap flt_a
+           |> Infseq.andMap (Infseq.cycleSq flt_b)))
+      |> Result.ok
+  | [ Stream (FinStream flt_a); Stream (InfStream flt_b) ] ->
+      Stream
+        (InfStream
+           (Infseq.repeat ( +. )
+           |> Infseq.andMap (Infseq.cycleSq flt_a)
+           |> Infseq.andMap flt_b))
+      |> Result.ok
+  | [ Stream (InfStream flt_a); Stream (InfStream flt_b) ] ->
+      Stream (InfStream (Infseq.zipWith ( +. ) flt_a flt_b)) |> Result.ok
+  | float_lst ->
+      let plus_fun =
+        binary_sq_function (Infseq.map2 ( +. )) (Cisp.map2 ( +. ))
+      in
+      float_lst |> lst_of_two_streams |> result_and_then plus_fun
+      |> Result.map stream
 
 let walk lst =
   let walk_fun = function
     | InfStream starts, FinStreams steps ->
         Ok (InfStream (Cisp.many_walks starts steps) |> stream)
+    | FinStream starts, FinFinStreams steps ->
+        let f start steps = steps |> Seq.map (fun stp -> stp +. start) in
+        let ws =
+          Seq.map2 f starts steps |> Cisp.concat
+        in
+        Ok (Stream (FinStream ws))
     | _ -> Error (Problem "walk does not know what to do with this")
   in
   lst |> lst_of_two_streams_finite |> result_and_then walk_fun
@@ -444,6 +535,10 @@ let initial_vars =
     ("-", Function minus);
     ("/", Function divide);
     ("*", Function multiply);
+    ("+#", Function (op_cartesian ( +. )));
+    ("-#", Function (op_cartesian ( -. )));
+    ("*#", Function (op_cartesian ( *. )));
+    ("/#", Function (op_cartesian ( /. )));
     ("not", Function handle_not);
     (">", Function bigger_than);
     ("<", Function smaller_than);
@@ -459,13 +554,15 @@ let initial_vars =
     ("function?", Function is_function_quip);
     ("nil", List []);
     ("seq", Function seq);
+    ("cycle", Function cycle);
     ("rv", Function rv);
     ("hold", Function hold);
     ("walk", Function walk);
     ("chunks", Function chunks);
     ("plus", Function plus_st);
     ("st", Function st);
-    ("ch", Function ch)
+    ("ch", Function ch);
+    (* ("map", Function quipmap); *)
   ]
   |> vars_from_list
 
@@ -697,4 +794,4 @@ let eval_string_to_stream strng =
   | Parser.Problem (prob, _) ->
       Parser.problem_to_string (fun _ -> "prob") prob |> print_string
 
-      (* utop # eval_string_to_stream "(seq 1.0 (seq 11.0 12.0) 3)";; *)
+(* utop # eval_string_to_stream "(seq 1.0 (seq 11.0 12.0) 3)";; *)

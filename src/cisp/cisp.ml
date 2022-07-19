@@ -2,15 +2,13 @@ open Seq
 
 (* Seq is a thunk that when forced returns a value and a thunk to get the tail *)
 
-(* 
-Idea:
+(*
+   Idea:
 
-Could CispSeqs' have a context of midicontroller states that always is available to all Seq computations within it?
-It is a combination of Reader and Seq.
-So for example, one could ask at each value for the state of the environment ?
-A CispSeq would be a sequence that requires an input to be "performed". A question would be how
-
-
+   Could CispSeqs' have a context of midicontroller states that always is available to all Seq computations within it?
+   It is a combination of Reader and Seq.
+   So for example, one could ask at each value for the state of the environment ?
+   A CispSeq would be a sequence that requires an input to be "performed". A question would be how
 *)
 
 (*
@@ -18,14 +16,7 @@ A CispSeq would be a sequence that requires an input to be "performed". A questi
    let thunk x = fun () -> x
 *)
 
-
-
-let compare a b = 
-  if a > b then 1
-  else if a < b then -1 else 
-    0
-
-
+let compare a b = if a > b then 1 else if a < b then -1 else 0
 let samplerate = ref !Process.sample_rate
 let id x = x
 let thunk x () = x
@@ -33,7 +24,7 @@ let emptySt () = Nil
 let force l = l ()
 let ( |> ) x f = f x
 let ( <| ) f x = f x
-let ( >> ) f g x = g (f x) 
+let ( >> ) f g x = g (f x)
 let ( << ) f g x = f (g x)
 let fst (x, _) = x
 let snd (_, x) = x
@@ -446,8 +437,7 @@ let transcat sq = sq |> transpose |> concat
 let transList lst = lst |> ofList |> transcat
 
 let effect_lst (first : unit Seq.t) (rest : unit Seq.t list) =
-  List.fold_left effect first rest 
-  
+  List.fold_left effect first rest
 
 let rec transpose_list lst =
   let foldHeads acc x = match x with [] -> acc | h :: _ -> h :: acc in
@@ -610,35 +600,36 @@ let rec mkLots n thing =
   sum |> map (( *. ) attenuate)
 
 let mixList lst () = List.fold_left ( +~ ) lst
-
-let sumlist lst = List.fold_left (+.~) (st 0.0) lst
+let sumlist lst = List.fold_left ( +.~ ) (st 0.0) lst
 
 (* zipped list will be lenght of shortest list *)
 
 let clip low high x = if x < low then low else if x > high then high else x
 let tanh_clip = Seq.map tanh
 
-let modBy x y =
-  let result = x mod y in
-  if result >= 0 then result
-  else result + y
+let modBy y x =
+  match y with
+  | 0 -> x (* safety first ! *)
+  | nonZeroY ->
+      let result = x mod nonZeroY in
+      if result >= 0 then result else result + y
 
-let modByf x y =
-  let result = mod_float x y in
-  if result >= 0.0 then result
-  else result +. y
+let modByf y x =
+  match y with
+  | 0.0 -> x
+  | nonZeroY -> 
+    let result = mod_float x nonZeroY in
+    if result >= 0.0 then result else result +. y
 
 let wrapf low high x =
-  let l = min low high in 
-  let r = abs_float (high -. low) in 
+  let l = min low high in
+  let r = abs_float (high -. low) in
   l +. (x -. l) |> modByf r
 
 let wrap low high x =
   let l = min low high in
   let r = abs (high - low) in
   l + (x - l) |> modBy r
-  
-  
 
 (* Inspired by the Elm architecture. I guess this is some distant form of Functional Reactive Programming.
  *
@@ -745,12 +736,13 @@ let boundedWalkf start steps (wrapfunc : float -> float) =
    wrapfunc takes a control value, and then does something to the current state (wrap, reset whatever)
    steps is current "speed"  
   *)
-let bounded_walk_control start (wrapfunc : float -> float -> float) control steps =
-  let rec aux start steps control ()  =
-    match steps (),control () with
-    | (Nil,_) -> Nil
-    | (_,Nil) -> Nil
-    | (Cons (h, ls),Cons(c,cs)) ->
+let bounded_walk_control start (wrapfunc : float -> float -> float) control
+    steps =
+  let rec aux start steps control () =
+    match (steps (), control ()) with
+    | Nil, _ -> Nil
+    | _, Nil -> Nil
+    | Cons (h, ls), Cons (c, cs) ->
         let next = start +. h in
         Cons (wrapfunc c start, aux next ls cs)
   in
@@ -758,7 +750,7 @@ let bounded_walk_control start (wrapfunc : float -> float -> float) control step
 
 (* dealing with arrays / buffers *)
 let cap arr = Array.length arr
- 
+
 let safeIdx len idx =
   let result = idx mod len in
   if result >= 0 then result else result + len
@@ -814,24 +806,20 @@ let index_seq (arr : 'a Seq.t Array.t) indexer =
   in
   Seq.unfold unfolder (arr, indexer)
 
-  let lookup_signal_array (arr:'a Array.t) (signal:float Seq.t) =
-    let len = 
-      Array.length arr 
-    in
-    let make_index f = 
-      f 
-      |> (linlin (-1.0) 1.0 0.0 (len |> float_of_int))
-      |> floor 
-      |> int_of_float 
-      |> indexArr len arr
-    in
-    signal |> Seq.map make_index 
+let lookup_signal_array (arr : 'a Array.t) (signal : float Seq.t) =
+  let len = Array.length arr in
+  let make_index f =
+    f
+    |> linlin (-1.0) 1.0 0.0 (len |> float_of_int)
+    |> floor |> int_of_float |> indexArr len arr
+  in
+  signal |> Seq.map make_index
 
 let wrappedCount arr = count |> map (fun x -> x mod Array.length arr)
 
 (* this allows you to walk a list, af it was circulair *)
 let listWalk arr step () =
-  let wrapFunc = wrap 0 (Array.length arr) in
+  let wrapFunc = Toolkit.wrap 0 (Array.length arr) in
   index arr (boundedWalk 0 step wrapFunc)
 
 type 'a weightList = Weights of (int * 'a) list
@@ -856,8 +844,7 @@ let weights weightLst () =
 (* return mostly x, but 1 in P events y *)
 let rec sometimes x y p () =
   let head () =
-    if p < 1 then 
-      x
+    if p < 1 then x
     else
       let rnd = Random.int p in
       if rnd < 1 then y else x
@@ -1019,7 +1006,6 @@ let rec collatz n () =
     let next = if even n then n / 2 else (n * 3) + 1 in
     Cons (next, collatz next)
 
-
 (* use floats as arguments to somethign that expects streams *)
 let lift f a b = f (st a) (st b)
 let pair a b = (a, b)
@@ -1107,18 +1093,18 @@ let waveOscStr arr frq =
   recursive frq state update (fun x -> x) |> indexLin arr
 
 let sawtooth freq =
-    let upd current_freq phase =
-      phase +. (1.0 /. !Process.sample_rate *. current_freq)
-    in
-    recursive freq 0.0 upd (fun phase ->
-        phase |> Float.modf |> fst |> ( *. ) 2.0 |> ( -. ) 1.0)
-  
+  let upd current_freq phase =
+    phase +. (1.0 /. !Process.sample_rate *. current_freq)
+  in
+  recursive freq 0.0 upd (fun phase ->
+      phase |> Float.modf |> fst |> ( *. ) 2.0 |> ( -. ) 1.0)
+
 let triangle freq =
-    let upd current_freq phase =
-      phase +. (1.0 /. !Process.sample_rate *. current_freq)
-    in
-    recursive freq 0.0 upd (fun phase ->
-        (4.0 *. Float.abs (phase -. (Float.floor phase +. 0.5))) -. 1.0)
+  let upd current_freq phase =
+    phase +. (1.0 /. !Process.sample_rate *. current_freq)
+  in
+  recursive freq 0.0 upd (fun phase ->
+      (4.0 *. Float.abs (phase -. (Float.floor phase +. 0.5))) -. 1.0)
 
 (* combine two Seq's: a, b, a, b, a, b etc.. *)
 (*
@@ -1222,8 +1208,6 @@ let pulse n sq filler =
 *)
 type pulseGenState = { phase : float; out : float }
 
-
-
 (* this uses a floating point counter, so will also do non-integer intervals, rounding it off *)
 let pulsegen freqSq =
   let init = { phase = 1.0; out = 0.0 } in
@@ -1236,19 +1220,22 @@ let pulsegen freqSq =
   in
   recursive1 freqSq init update (fun state -> state.out)
 
-
 type pulseGenFBState = { phase : float; out : float; amp : float }
 
 let pulsegen_fb freqSq fb =
-    let init = { phase = 1.0; out = 0.0; amp = 1.0 } in
-    let sr = !Process.sample_rate in
-    let update newFreq state =
-      let phaseIncr = newFreq /. sr |> clip 0.0 1.0 in
-      if state.phase >= 1.0 then
-        { out = 1.0; phase = state.phase -. 1.0 +. phaseIncr; amp = state.amp *. fb }
-      else { out = 0.0; phase = state.phase +. phaseIncr; amp = state.amp }
-    in
-    recursive1 freqSq init update (fun state -> state.out)
+  let init = { phase = 1.0; out = 0.0; amp = 1.0 } in
+  let sr = !Process.sample_rate in
+  let update newFreq state =
+    let phaseIncr = newFreq /. sr |> clip 0.0 1.0 in
+    if state.phase >= 1.0 then
+      {
+        out = 1.0;
+        phase = state.phase -. 1.0 +. phaseIncr;
+        amp = state.amp *. fb;
+      }
+    else { out = 0.0; phase = state.phase +. phaseIncr; amp = state.amp }
+  in
+  recursive1 freqSq init update (fun state -> state.out)
 
 type clockGenState = { phase : float; out : bool }
 
@@ -1337,9 +1324,7 @@ let getPreciseTime () =
   (!currentSampleCounter |> Float.of_int) /. !Process.sample_rate
 (*Mtime_clock.elapsed () |> Mtime.Span.to_uint64_ns |> Int64.to_float |> ( *. ) Mtime.ns_to_s*)
 
-let getSampleCount () =
-  !currentSampleCounter
-
+let getSampleCount () = !currentSampleCounter
 let updateOpt old newOpt = match newOpt with Some value -> value | None -> old
 
 let ofOpt default optSq =
@@ -1433,7 +1418,7 @@ let tline_start startX timeToNext sq =
 
 let tline = tline_start 0.0
 
-let safeline start (times : (Time.second Time.t) Seq.t) (values) =
+let safeline start (times : Time.second Time.t Seq.t) values =
   tline_start start (map Time.float_seconds times) values
 
 (**
@@ -1535,9 +1520,7 @@ let write arr indexSq valueSq =
   let control = zip indexSq valueSq in
   map (fun (idx, value) -> arr.(idx) <- value) control
 
-let fmap =
-  Seq.map 
-
+let fmap = Seq.map
 let writeOne arr index value = arr.(index) <- value
 
 let mapIndex arr index f =

@@ -1,3 +1,4 @@
 (library
  (name toolkit)
- (ocamlopt_flags -O3))
+ (inline_tests)
+ (preprocess (pps ppx_inline_test ppx_assert)))

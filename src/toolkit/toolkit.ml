@@ -13,12 +13,50 @@ let rvi low high =
   | x -> Random.int x 
   in
   rnd + offset
- 
-  let wrap low high x =
-    let range = low - high |> abs in
-    let modded = 
-      match range with
-      | 0 -> low
-      | non_zero_range -> 
-        (x - low) mod non_zero_range in
-    if modded < 0 then high + x else low + x
+
+let modBy y x =
+  match y with
+  | 0 -> x (* safety first ! *)
+  | nonZeroY ->
+      let result = x mod nonZeroY in
+      if result >= 0 then result else result + y
+
+let modByf y x =
+  match y with
+  | 0.0 -> x
+  | nonZeroY -> 
+    let result = mod_float x nonZeroY in
+    if result >= 0.0 then result else result +. y
+
+let wrapf low high x =
+  let l = min low high in
+  let r = abs_float (high -. low) in
+  l +. ((x -. l) |> modByf r)
+
+let wrap low high x =
+  let l = min low high in
+  let r = abs (high - low) in
+  l + ((x - l) |> modBy r)
+
+let%test "modBy mod x" =
+  let input = [0;1;2;3;4;5;6] in
+  let expect = [0;1;2;0;1;2;0] in 
+  List.equal Int.equal (input |> List.map (modBy 3)) expect
+
+let%test "wrap" = 
+  let input = [0;1;2;3;4;5] in    
+  let expect = [0;1;2;0;1;2] in
+  List.equal Int.equal (input |> List.map (wrap 0 3)) expect
+
+let%test "wrap negative" = 
+  let input = [-1;0;1;2;3;4] in
+  let expect = [3;0;1;2;3;0] in
+  List.equal Int.equal (input |> List.map (wrap 0 4)) expect
+
+let%test "wrap higher" = 
+  let input = [7;8;9;10;11;12;13] in
+  let expect = [9;8;9;8;9;8;9] in
+  List.equal Int.equal (input |> List.map (wrap 8 10)) expect
+
+
+      

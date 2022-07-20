@@ -60,7 +60,7 @@ let toBool x =
   x = X
 
 let euclidTrigger a b =
-  euclidRhythm a b |> List.map toBool |> List.to_seq |> cycle
+  euclidRhythm a b |> List.map toBool |> List.to_seq |> Infseq.cycleSq
 
 let toBinary bt =
   match bt with

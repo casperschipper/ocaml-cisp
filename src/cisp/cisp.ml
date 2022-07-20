@@ -204,15 +204,14 @@ let rec cyclen_nonempty n xs () =
   else
     Seq.append xs (cyclen_nonempty (n -1) xs) ()
 
-let rec cyclen n xs () =
+let cyclen n xs () =
   if n < 1 then
     Nil
   else 
     match xs () with
     | Nil -> Nil
-    | Cons(this_a,rest) -> Seq.append (fun () -> Cons (this_a, rest)) (cyclen_nonempty (n-1) xs) ()
+    | Cons(this_a,rest) ->  (fun () -> Cons (this_a, Seq.append rest (cyclen_nonempty (n-1) xs)))  ()
   
-
 let rec range a b () = if a >= b then Nil else Cons (a, range (a +. 1.0) b)
 
 let rangei a b =

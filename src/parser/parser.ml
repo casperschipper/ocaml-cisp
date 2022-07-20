@@ -249,6 +249,10 @@ let try_parser p =
 let some p = List.cons <$> p <*> many p
 let one_or_more = some
 
+(* [predicate] is just a function that checks if the char is what you want
+   [expecting] is a string that is displayed when the character is not found
+  *)
+
 let satisfy predicate expecting =
   item >>= fun c ->
   if predicate c then unit c else failure (Expecting expecting)

@@ -53,6 +53,8 @@ let hold repetitions source =
 let cycleSq sq = repeat sq |> concatSq
 let seq lst = lst |> List.to_seq |> cycleSq
 
+let of_list = seq
+
 let rec unfold f seed () =
   let current, nextSeed = f seed in
   InfCons (current, unfold f nextSeed)

@@ -16,14 +16,14 @@ let rvi low high =
 
 let modBy y x =
   match y with
-  | 0 -> x (* safety first ! *)
+  | 0 -> y (* safety first ! *)
   | nonZeroY ->
       let result = x mod nonZeroY in
       if result >= 0 then result else result + y
 
 let modByf y x =
   match y with
-  | 0.0 -> x
+  | 0.0 -> y
   | nonZeroY -> 
     let result = mod_float x nonZeroY in
     if result >= 0.0 then result else result +. y
@@ -57,6 +57,11 @@ let%test "wrap higher" =
   let input = [7;8;9;10;11;12;13] in
   let expect = [9;8;9;8;9;8;9] in
   List.equal Int.equal (input |> List.map (wrap 8 10)) expect
+
+let%test "wrap 0" =
+  let input = [0;1;2;3;4] in
+  let expect = [0;0;0;0;0] in
+  List.equal Int.equal (input |> List.map (wrap 0 0)) expect
 
 
       

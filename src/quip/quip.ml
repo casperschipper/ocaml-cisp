@@ -8,6 +8,16 @@ open Parser
 
    open questions:
    How to deal with (1 2 3 4) ((1 2) (3 4) (5 6))
+
+  Problem (seq 2 (cycle 11 12) 3) interprets 2 and 3 as infinite streams, but for seq that doesn't make sense
+
+  Some observations about streams.contents
+  The old Seq function actually understood integers as infinite streams of the same number, therefore
+  Seq would transpose these: (seq 1 2 3) is thus 1 2 3 1 2 3 1 2 3  etc...
+
+  However, when one has finite streams, seq 1 2 3 would result in 1 2 3 . end
+  
+
 *)
 
 let assert_equal label a b =
@@ -59,15 +69,23 @@ type quiplist =
 
 let stream_to_string = function
   | InfStream _ -> "inf stream"
-  | FinStream sq -> "finstream: " ^ (Seq.map string_of_float sq |> List.of_seq |> String.concat "\t")
-  | FinStreams sqqs ->  
-    (let snip = sqqs |> Infseq.take 5 in 
-    let str = snip |> Seq.map (fun sq -> sq |> Seq.map string_of_float |> List.of_seq |> String.concat "\t") |> List.of_seq |> String.concat "\n" in 
-    "an infinite number of finite streams\n" ^ str)
-  | FinFinStreams sqqs -> sqqs 
-      |> Seq.map (fun sq ->
-        "seq of length: " ^ (string_of_int (Seq.length sq)) 
-      ) |> List.of_seq |> String.concat "\t"
+  | FinStream sq ->
+      "finstream: "
+      ^ (Seq.map string_of_float sq |> List.of_seq |> String.concat "\t")
+  | FinStreams sqqs ->
+      let snip = sqqs |> Infseq.take 5 in
+      let str =
+        snip
+        |> Seq.map (fun sq ->
+               sq |> Seq.map string_of_float |> List.of_seq
+               |> String.concat "\t")
+        |> List.of_seq |> String.concat "\n"
+      in
+      "an infinite number of finite streams\n" ^ str
+  | FinFinStreams sqqs ->
+      sqqs
+      |> Seq.map (fun sq -> "seq of length: " ^ string_of_int (Seq.length sq))
+      |> List.of_seq |> String.concat "\t"
 
 let problemize p = Problem p
 
@@ -100,10 +118,20 @@ let rec expression_to_string exp =
 
 let monoform (lst : expression list) =
   (* This function turns a diverse list into a single type, type normalisation
-     For example, if a list is a mix of floats and streams, everything is made into a stream.
-     If something starts with a float, but along the way there is a single stream, it will be stream list, since that is the more fundamental type in Cisp.
+      For example, if a list is a mix of floats and streams, everything is made into a stream.
+      If something starts with a float, but along the way there is a single stream, it will be stream list, since that is the more fundamental type in Cisp.
+
+     float float float
+
+     float fin float
+     >>
+     fin fin fin (should fin be extended to fit the shortest ???)
+
+
+     float inf fin
   *)
   let rec find_type xs state =
+    (* this goes over the list *)
     match xs with
     | [] -> state
     | x :: rest -> (
@@ -336,14 +364,13 @@ let cycle lst =
 let st lst =
   match lst with
   | [] -> Result.Error (Problem "st [] makes no sense")
-  | [ Stream (FinStream seq) ] -> Stream (FinStreams (Infseq.repeat seq)) |> Result.ok
+  | [ Stream (FinStream seq) ] ->
+      Stream (FinStreams (Infseq.repeat seq)) |> Result.ok
   | [ Constant value ] ->
-      value 
-      |> Parser.number_to_float 
-      |>  (fun flt -> Stream (InfStream (Infseq.repeat flt))) 
+      value |> Parser.number_to_float
+      |> (fun flt -> Stream (InfStream (Infseq.repeat flt)))
       |> Result.ok
-  | _ ->
-    Result.Error (Problem "st cannot accept this argument")
+  | _ -> Result.Error (Problem "st cannot accept this argument")
 
 let ch lst =
   let handle_lst lst =
@@ -355,6 +382,20 @@ let ch lst =
         fin_stream_lst |> Array.of_list |> Cisp.choice_seq |> fin_stream
   in
   lst |> monoform |> Result.map handle_lst
+
+let take lst =
+  match lst with
+  | [ Constant number; Stream str ] -> (
+      let n = number |> number_to_float |> truncate in
+      match str with
+      | InfStream inf_str ->
+          Result.ok (Stream (FinStream (Infseq.take n inf_str)))
+      | FinStream fin_str ->
+          Result.ok (Stream (FinStream (Cisp.take n fin_str)))
+      | FinStreams _ -> Result.error (problemize "todo take for finstreams")
+      | FinFinStreams _ ->
+          Result.error (problemize "todo take for finfinstream"))
+  | _ -> Result.error (problemize "\"take\", takes a number and a stream")
 
 let lst_of_two_streams lst =
   let st a = InfStream (Infseq.repeat (Parser.number_to_float a)) in
@@ -474,8 +515,7 @@ let plus_st lst =
       float_lst |> lst_of_two_streams |> result_and_then plus_fun
       |> Result.map stream
 
-let one_leg start steps = steps |> Seq.map (fun stp -> stp +. start) 
-
+let one_leg start steps = steps |> Seq.map (fun stp -> stp +. start)
 
 let walk lst =
   let walk_fun = function
@@ -485,11 +525,13 @@ let walk lst =
         let ws = Seq.map2 one_leg starts (Infseq.toSeq steps) |> Cisp.concat in
         Ok (Stream (FinStream ws))
     | FinStream starts, FinFinStreams steps ->
-        let ws =
-          Seq.map2 one_leg starts steps |> Cisp.concat
-        in
+        let ws = Seq.map2 one_leg starts steps |> Cisp.concat in
         Ok (Stream (FinStream ws))
-    | e1,e2 -> Error (Problem ("walk does not know what to do with this:\n" ^ (stream_to_string e1) ^ "-" ^ (stream_to_string e2) ))
+    | e1, e2 ->
+        Error
+          (Problem
+             ("walk does not know what to do with this:\n" ^ stream_to_string e1
+            ^ "-" ^ stream_to_string e2))
   in
   lst |> lst_of_two_streams_finite |> result_and_then walk_fun
 
@@ -570,6 +612,7 @@ let initial_vars =
     ("plus", Function plus_st);
     ("st", Function st);
     ("ch", Function ch);
+    ("take", Function take);
     (* ("map", Function quipmap); *)
   ]
   |> vars_from_list
@@ -774,32 +817,43 @@ let eval_string str =
   | Parser.Problem (prob, _) ->
       Parser.problem_to_string (fun _ -> "prob") prob |> print_string
 
-let eval_string_to_stream strng =
-  let print_stream exp =
-    match exp with
-    | Stream (InfStream infstr) ->
-        infstr |> Infseq.take 100 |> Cisp.for_example
-        |> List.iter (fun x ->
-               print_float x;
-               print_string "\t");
-        print_newline ()
-    | Stream (FinStream finstr) ->
-        finstr |> Cisp.for_example
-        |> List.iter (fun x ->
-               print_float x;
-               print_string "\t";
-               print_newline ())
-    | _ ->
-        print_string "sorry no stream to print!";
-        print_newline ()
+let print_stream stream =
+  let print_tabbed_float str =
+    str
+    |> List.iter (fun x ->
+           print_float x;
+           print_string "\t");
+    print_newline ();
+    flush stdout
   in
+  match stream with
+  | InfStream inf_str ->
+      print_endline "inf stream:";
+      inf_str |> Infseq.take 40 |> Cisp.for_example |> print_tabbed_float
+  | FinStream fin_str ->
+      print_endline "finite stream:";
+      fin_str |> Cisp.for_example |> print_tabbed_float
+  | _ ->
+      print_string "Sorry cannot print FinFinStreams or FinInfStreams";
+      print_newline ()
+
+let eval_string_to_stream strng =
   let parse_result =
     Parser.parse_str (expression_list |> Parser.fmap (eval initial_env)) strng
   in
   match parse_result with
-  | Parser.Good (Ok (exp, _), _) -> print_stream exp
+  | Parser.Good (Ok (exp, _), _) -> (
+      match exp with
+      | Stream str -> print_stream str
+      | _ -> print_string "sorry not a string")
   | Parser.Good (Error (Problem problem), _) -> print_string problem
   | Parser.Problem (prob, _) ->
       Parser.problem_to_string (fun _ -> "prob") prob |> print_string
 
 (* utop # eval_string_to_stream "(seq 1.0 (seq 11.0 12.0) 3)";; *)
+
+
+let suminfs infsqss =
+  infsqss |> Seq.map Infseq.toSeq |> Seq.transpose |> Seq.map (Seq.fold_left ( +. ) 0.0) |> Infseq.cycleSq
+  
+

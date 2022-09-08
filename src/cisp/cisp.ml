@@ -418,16 +418,10 @@ let tailsOfStreams sq () = Seq.fold_left foldTail Nil sq
 
    There is also an explicit InfSeq version of this function.
 *)
-let rec transpose sq () =
-  match sq () with
-  | Nil -> Nil
-  | Cons (sqs, sqss) -> (
-      match sqs () with
-      | Cons (x, xs) ->
-          Cons
-            ( (fun () -> Cons (x, headsOfStreams sqss)),
-              transpose <| thunk (Cons (xs, tailsOfStreams sqss)) )
-      | Nil -> transpose sqss ())
+let transpose xss =
+  Seq.transpose xss
+
+
 
 (*
   [[a]] -> [a] .. [[1;2;3];[1;2];[11;12];[99]] -> [1;1;11;99]  *)
@@ -448,7 +442,7 @@ let sq_lst_transcat lstOfSq =
 let sq_lst_tranpose lstOfSq =
   list_fold_heads_with Seq.empty (fun x y () -> Seq.Cons (x, y)) lstOfSq
 
-let transcat sq = sq |> transpose |> concat
+let transcat sq = sq |> transpose |> concat 
 let transList lst = lst |> ofList |> transcat
 
 let effect_lst (first : unit Seq.t) (rest : unit Seq.t list) =

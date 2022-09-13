@@ -408,6 +408,21 @@
   osc_unix))
 
 (executable
+ (name cispOsc3)
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules cispOsc3)
+ (libraries
+  quip
+  threads
+  infseq
+  midi
+  cisp
+  jack
+  osc_unix))
+
+(executable
  (name sendOsc)
  (link_flags
   (-cclib -ljack -cclib -lsndfile))

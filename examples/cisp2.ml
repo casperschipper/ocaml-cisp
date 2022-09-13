@@ -11,15 +11,14 @@ let walkFromN stepSq startSq numberSq =
 (* interseting note, the steps are consumed and so should be passed on to the next session *)
 
 let generator =
-  let combin =  
+  (*let combin =  
     let starts = walkFromN (seq [7;5]) (seq [0;2;0;1;0;-1]) (seq [2;3;4]) |> hold (seq [2;3;1;1;1]) in
     let number = seq [5;4;5;2;2] in 
     let step = seq [-12;12] |> hold (seq [10;1;1;1;1;1;1;2]) in
     walkFromN step starts number
-  in
+  in*)
   MidiNoteGen
-    { pitch= 
-        (st 60) +~ combin
+    { pitch= (st 60)
     ; velo= seq [80;60;60] 
     ; durInSec= seq [0.8;0.3;0.2]
     ; channel= st 1 }

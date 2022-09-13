@@ -117,9 +117,11 @@ let rec expression_to_string exp =
   | Stream stream -> stream_to_string stream
 
 let monoform (lst : expression list) =
-  (* This function turns a diverse list into a single type, type normalisation
+  (* 
+       This function turns a diverse list into a single type, type normalisation
       For example, if a list is a mix of floats and streams, everything is made into a stream.
       If something starts with a float, but along the way there is a single stream, it will be stream list, since that is the more fundamental type in Cisp.
+      We assume that the most longest type is the intented type
 
      float float float
 
@@ -385,7 +387,7 @@ let ch lst =
 
 let take lst =
   match lst with
-  | [ Constant number; Stream str ] -> (
+  | [ Stream str; Constant number ] -> (
       let n = number |> number_to_float |> truncate in
       match str with
       | InfStream inf_str ->
@@ -418,15 +420,15 @@ let lst_of_two_streams_finite lst =
 let hold lst =
   let hold_stream two_streams =
     match two_streams with
-    | InfStream repeats, InfStream source ->
+    | InfStream source, InfStream repeats ->
         Ok (InfStream (Infseq.hold (Infseq.map int_of_float repeats) source))
-    | InfStream repeats, FinStream source ->
+    | FinStream source, InfStream repeats ->
         let finite_repeats = Infseq.to_seq repeats |> Cisp.intify in
         Ok (FinStream (Cisp.hold finite_repeats source))
-    | FinStream repeats, InfStream source ->
+    | InfStream source, FinStream repeats ->
         let finite_source = Infseq.to_seq source in
         Ok (FinStream (Cisp.hold (repeats |> Cisp.intify) finite_source))
-    | FinStream repeats, FinStream source ->
+    | FinStream source, FinStream repeats ->
         Ok (FinStream (Cisp.hold (Cisp.intify repeats) source))
     | _ -> Error (Problem "Hold does not support streams of streams as args")
   in
@@ -844,14 +846,24 @@ let eval_string_to_stream strng =
   match parse_result with
   | Parser.Good (Ok (exp, _), _) -> (
       match exp with
-      | Stream str -> print_stream str
-      | _ -> print_string "sorry not a string")
-  | Parser.Good (Error (Problem problem), _) -> print_string problem
+      | Stream str -> Some str
+      | _ -> (ignore (print_string "sorry not a stream")); None)
+  | Parser.Good (Error (Problem problem), _) -> ignore (print_string problem); None
   | Parser.Problem (prob, _) ->
-      Parser.problem_to_string (fun _ -> "prob") prob |> print_string
+      Parser.problem_to_string (fun _ -> "prob") prob |> print_string |> ignore ; None
 
 (* utop # eval_string_to_stream "(seq 1.0 (seq 11.0 12.0) 3)";; *)
 
+(* The question is, do we want explicit concat at the end or not 
+  (transcat (seq 11 12 13) (seq 1 2 3) (seq 100 200)) -> 
+
+  I think a sequence should always be of one type:
+  Seq.t
+  Infseq.t
+
+  If there is a an Infseq.t it should just be converted to Seq.t, but the end result is an Infseq.t
+  
+*)
 
 let suminfs infsqss =
   infsqss |> Seq.map Infseq.toSeq |> Seq.transpose |> Seq.map (Seq.fold_left ( +. ) 0.0) |> Infseq.cycleSq

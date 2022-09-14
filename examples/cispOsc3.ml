@@ -6,10 +6,8 @@ Idea: send a string to ocaml, have it parsed and replace the existing stream.arr
 
 Steps needed:
 
-- have some midi loop running
-- receive a string and have it change a parameter 
-- receive a string representing a list and have it inserted
-- support more varients
+- implement transcat in quip
+- support more varients 
 - have multiple streams
 - merge jack, osc and jackmidi into one client
 
@@ -130,4 +128,5 @@ let () =
   (* Install sendosc command tool and run
   sendosc 127.0.0.1 4568 /test s "(hold (ch 72 84) (cycle 1 2 3))"   
   
+  sendosc 127.0.0.1 4568 /test s "(transcat (hold (rv 3 5) (cycle 60 64 67)) (hold (rv 5 10) (cycle 67 69 72)) (hold (rv 5 10) (cycle 53 59 52)))"
   *)

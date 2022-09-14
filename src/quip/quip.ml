@@ -116,6 +116,9 @@ let rec expression_to_string exp =
   | TrueExpression -> "#true"
   | Stream stream -> stream_to_string stream
 
+let expressions_to_string lst =
+  Ok (Symbol (lst |> List.map expression_to_string |> String.concat "\n"))
+
 let monoform (lst : expression list) =
   (* 
        This function turns a diverse list into a single type, type normalisation
@@ -387,7 +390,7 @@ let ch lst =
 
 let take lst =
   match lst with
-  | [ Stream str; Constant number ] -> (
+  | [ Constant number; Stream str ] -> (
       let n = number |> number_to_float |> truncate in
       match str with
       | InfStream inf_str ->
@@ -398,6 +401,23 @@ let take lst =
       | FinFinStreams _ ->
           Result.error (problemize "todo take for finfinstream"))
   | _ -> Result.error (problemize "\"take\", takes a number and a stream")
+
+
+let transcat lst =
+  let handle_fin_stream lst =
+    lst |> List.to_seq |> Seq.transpose |> Seq.concat |> fun catted -> Ok (Stream (FinStream catted ))
+  in
+  let handle_inf_stream lst =
+    lst |> List.to_seq |> Infseq.transpose |> Infseq.concatSq |> fun catted -> Ok (Stream (InfStream catted))
+  in
+    lst 
+      |> monoform
+      |> result_and_then (fun mono_lst ->
+           match mono_lst with
+           | FloatLst flt_lst -> Ok (Stream (InfStream (Infseq.seq flt_lst)))
+           | FinStreamLst fin_str_lst -> handle_fin_stream fin_str_lst
+           | InfStreamLst inf_str_lst -> handle_inf_stream inf_str_lst)
+               
 
 let lst_of_two_streams lst =
   let st a = InfStream (Infseq.repeat (Parser.number_to_float a)) in
@@ -420,15 +440,15 @@ let lst_of_two_streams_finite lst =
 let hold lst =
   let hold_stream two_streams =
     match two_streams with
-    | InfStream source, InfStream repeats ->
+    | InfStream repeats, InfStream source  ->
         Ok (InfStream (Infseq.hold (Infseq.map int_of_float repeats) source))
-    | FinStream source, InfStream repeats ->
+    | InfStream repeats, FinStream source  ->
         let finite_repeats = Infseq.to_seq repeats |> Cisp.intify in
         Ok (FinStream (Cisp.hold finite_repeats source))
-    | InfStream source, FinStream repeats ->
+    | FinStream repeats, InfStream source ->
         let finite_source = Infseq.to_seq source in
         Ok (FinStream (Cisp.hold (repeats |> Cisp.intify) finite_source))
-    | FinStream source, FinStream repeats ->
+    | FinStream repeats, FinStream source ->
         Ok (FinStream (Cisp.hold (Cisp.intify repeats) source))
     | _ -> Error (Problem "Hold does not support streams of streams as args")
   in
@@ -615,6 +635,8 @@ let initial_vars =
     ("st", Function st);
     ("ch", Function ch);
     ("take", Function take);
+    ("transcat", Function transcat);
+    ("print", Function expressions_to_string);
     (* ("map", Function quipmap); *)
   ]
   |> vars_from_list

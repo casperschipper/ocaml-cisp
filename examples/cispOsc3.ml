@@ -126,3 +126,8 @@ let () =
   while true do
     Unix.sleep 60
   done
+
+  (* Install sendosc command tool and run
+  sendosc 127.0.0.1 4568 /test s "(hold (ch 72 84) (cycle 1 2 3))"   
+  
+  *)

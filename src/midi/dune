@@ -1,5 +1,5 @@
 (library
- (libraries bigarray cisp fqueue jackMidi)
+ (libraries bigarray cisp fqueue jackMidi infseq)
  (name            midi)
  (ocamlopt_flags -O3)	
 )

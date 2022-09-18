@@ -1190,6 +1190,26 @@ type midiNoteGenerator =
       channel : int Seq.t;
     }
 
+let genWithPitch sq (MidiNoteGen gen)  = MidiNoteGen { gen with pitch = Cisp.intify sq }
+let genWithVelo sq (MidiNoteGen gen)  = MidiNoteGen { gen with velo = Cisp.intify sq }
+let genWithDur sq (MidiNoteGen gen)  = MidiNoteGen { gen with durInSec = sq }
+let genWithChannel sq (MidiNoteGen gen)  = MidiNoteGen { gen with channel = Cisp.intify sq }
+
+let sec_to_samps s = 
+  s |> ( *. ) !Process.sample_rate |> int_of_float
+(* could also use infseq, but for now use finseq *)
+(* instead of using Seq.t, where the input is (), 
+   we are explicitely requiring the user to provide the previous midi generator state,
+   so it can be changed by the user "on-the-fly"
+*)
+let play_note (MidiNoteGen { pitch; velo; durInSec; channel}) =
+  let ( >>= ) a f = Option.bind a f in 
+  uncons pitch >>= fun (p,p_tail) ->
+  uncons velo >>= fun (v,v_tail) ->
+  uncons durInSec |> Option.map (mapFst sec_to_samps) >>= fun (d,d_tail) ->
+  uncons channel >>= fun (c,c_tail) ->
+  Option.Some (makeNoteOfInts p v d c,MidiNoteGen { pitch = p_tail; velo = v_tail; durInSec = d_tail; channel = c_tail })
+
 let fromGenerator (MidiNoteGen { pitch; velo; durInSec; channel }) input =
   let durInSamp =
     map
@@ -1198,3 +1218,26 @@ let fromGenerator (MidiNoteGen { pitch; velo; durInSec; channel }) input =
   in
   let stream = makeNoteOfInts <$> pitch <*> velo <*> durInSamp <*> channel in
   input |> trigger stream |> serialize |> map toRaw
+
+let from_dynamic_generator generator custom_update input =
+  (* something is wrong, note off's not being played... maybe somethign is missing !*)
+  let rec aux midi_generator midi_input () =
+    match midi_input () with
+    | Nil -> Nil
+    | Cons(inp,tl) ->
+      if isNoteOn inp then
+        let opt =
+          play_note midi_generator 
+        in 
+        match opt with
+        | None -> Nil
+        | Some (note,state) ->
+          let new_state = custom_update state in 
+          Cons(note,aux new_state tl)
+      else
+        Cons (SilenceEvent,aux (custom_update midi_generator) tl)  
+  in 
+  aux generator input |> serialize |> map toRaw
+
+
+

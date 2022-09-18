@@ -16,10 +16,13 @@ type 'p problem =
   | ExpectedEnd
   | YourProblem of 'p
 
+let quote s =
+  "\"" ^ s ^ "\""
+
 let problem_to_string to_string problem =
   match problem with
   | EndOfString -> "reached unexpected end"
-  | Expecting str -> "I expected str: " ^ str
+  | Expecting str -> "I expected a " ^ (quote str)
   | WrongCharClass (expected, instead) ->
       "I expected charclass " ^ class_as_string expected ^ "but got "
       ^ class_as_string instead ^ " instead."

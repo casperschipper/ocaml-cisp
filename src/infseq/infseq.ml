@@ -46,6 +46,12 @@ let rec andMap sqa sqf () =
 
 let map2 f sqa sqb = map f sqa |> andMap sqb
 
+let ( <*> ) fab fa =
+  andMap fa fab
+
+let ( <$> ) f fa =
+  map f fa
+
 let hold repetitions source =
   let f src n = src |> repeat |> take n in
   map2 f source repetitions |> concatSq

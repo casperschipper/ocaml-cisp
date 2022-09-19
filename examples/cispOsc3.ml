@@ -6,8 +6,9 @@ Idea: send a string to ocaml, have it parsed and replace the existing stream.arr
 
 Steps needed:
 
-- support more variants 
-- have multiple streams
+- walks ?
+- busses ?
+
 - merge jack, osc and jackmidi into one client
 
 How to build sum types:
@@ -71,7 +72,7 @@ let custom_update model =
       match arg with
       | Stream_message (Pitch,p) -> Midi.genWithPitch p model 
       | Stream_message (Velo,v) -> Midi.genWithVelo v model
-      | Stream_message (Duration,d) -> Midi.genWithVelo d model
+      | Stream_message (Duration,d) -> Midi.genWithDur d model
       | Stream_message (Channel,c) -> Midi.genWithChannel c model
 
 let option_and_then f opt = Option.bind opt f

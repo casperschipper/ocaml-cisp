@@ -316,7 +316,9 @@ let length lst =
   | [ List list ] -> Ok (Constant (Integer (List.length list)))
   | _ -> Error (Problem "Invalid argument for length")
 
-(* Cisp functions *)
+(* ************** * * * * *********** **** ** * * * * ***** * *  * * * * * * * ** ** * * * * * * * *** * * * * * * ** * * ** * * *  
+Cisp functions 
+*)
 
 let result_and_then f res = Result.bind res f
 
@@ -556,6 +558,26 @@ let walk lst =
             ^ "-" ^ stream_to_string e2))
   in
   lst |> lst_of_two_streams_finite |> result_and_then walk_fun
+(*
+index lst indexer (stream)
+
+*)
+let index_inf_indexer exprs idxr =
+  let int_idxr = Infseq.map (fun x -> floor x |> int_of_float) idxr in
+  let handle_exprs = function
+    | FloatLst lst -> lst 
+      |> Array.of_list 
+      |> fun arr -> Stream (InfStream (Infseq.index arr int_idxr))
+      |> Result.ok
+    | _ -> Result.error (problemize "Not supported yet")
+  in
+  exprs |> monoform |> result_and_then handle_exprs
+
+let index = function
+    |  [List exprs; Stream (InfStream idxr)] -> 
+      index_inf_indexer exprs idxr
+    | _ -> Result.error (problemize "sorry index does not support this...")
+  
 
 let chunks lst =
   let chunk_fun = function
@@ -637,6 +659,7 @@ let initial_vars =
     ("take", Function take);
     ("transcat", Function transcat);
     ("print", Function expressions_to_string);
+    ("index", Function index)
     (* ("map", Function quipmap); *)
   ]
   |> vars_from_list

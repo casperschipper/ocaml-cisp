@@ -302,14 +302,17 @@ let is_space = function ' ' | '\n' | '\t' | '\r' -> true | _ -> false
 let digitP = satisfy is_digit "digit"
 let natural = int_of_char_seq <$> some (satisfy is_digit "digit")
 let spaces = many (one_of_string " \n\r")
-let chainl p op a = chainl1 p op <|> return a
 
-let chainl1 p op =
+(* let chainl1 p op =
   let rec rest a =
     op >>= fun f ->
     p >>= fun b -> rest (f a b) <|> return a
   in
-  p >>= fun a -> rest a
+  p >>= fun a -> rest a *)
+let chainl p op a = chainl1 p op <|> return a
+
+
+
 
 let between openSymbol closeSymbol p =
   openSymbol >> p >>= fun x -> closeSymbol >> return x
@@ -394,6 +397,19 @@ let reached_end =
 let of_char_list lst = lst |> List.to_seq |> String.of_seq
 let parse_while f = many (satisfy f "match")
 let parens m = reserved "(" >> m >>= fun n -> reserved ")" >> return n
+
+(* 
+one_of_parsers [ string "pitch" >> (succeed Pitch)
+    ;string "velo" >> (succeed Velo)
+    ;string "duration" >> (succeed Duration) 
+    ;string "channel" >> (succeed Channel)])   
+*)
+
+let string2sumtype (lst : (string * 'a) List.t) =
+  let make (match_str,constructor) =
+    (string match_str) >> (succeed constructor) 
+  in
+  lst |> List.map make  |> one_of_parsers
 
 let test () =
   parse_str

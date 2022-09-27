@@ -33,7 +33,9 @@ let notes channel =
   <*> (st 60)
   <*> (st 60)
   <*> (seci 0.1 |> st)
-  <*> (st 0)
+  <*> (st channel)
+
+let rhythm () = List.init 8 (fun _ -> pickOne [|true;false|]) |> List.to_seq |> Seq.cycle
 
 (* syncOverClock *)
 let ofTrigger trig channel =

@@ -1,6 +1,6 @@
 (library
  (name infseq)
- (libraries toolkit)
+ (libraries toolkit time)
  (ocamlopt_flags -O3)	
 )
 

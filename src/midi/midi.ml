@@ -81,10 +81,17 @@ let addToBundle (Bundle (fst, rest)) note =
   | ControlEvent (ch, co, va) ->
       Bundle (ControlEvent (ch, co, va), appendToEnd note rest)
 
+let addOptToBundle opt bundle =
+  match opt with
+  | Some evt -> addToBundle bundle evt
+  | None -> bundle
+      
+
 let chord noteSeq =
   match noteSeq () with
   | Cons (note, rest) -> Bundle (note, rest)
   | Nil -> Bundle (SilenceEvent, Seq.empty)
+
 
 type note = Note of midiChannel * pitch * velocity
 type noteEvt = NoteEvt of midiChannel * pitch * velocity * deltaT
@@ -1220,7 +1227,6 @@ let fromGenerator (MidiNoteGen { pitch; velo; durInSec; channel }) input =
   input |> trigger stream |> serialize |> map toRaw
 
 let from_dynamic_generator generator custom_update input =
-  (* something is wrong, note off's not being played... maybe somethign is missing !*)
   let rec aux midi_generator midi_input () =
     match midi_input () with
     | Nil -> Nil
@@ -1238,6 +1244,28 @@ let from_dynamic_generator generator custom_update input =
         Cons (SilenceEvent,aux (custom_update midi_generator) tl)  
   in 
   aux generator input |> serialize |> map toRaw
+
+
+
+  (* todo make all of this use infseq *)
+let from_dynamic_generators (generators : midiNoteGenerator Option.t Array.t) custom_update input =
+  let rec aux midi_generators midi_input () =
+    match midi_input () with
+    | Nil -> Nil
+    | Cons(inp,tl) ->
+      begin
+        if isNoteOn inp then
+          let notes_generators = (* playnote produces (note, generator) Option.t *)
+            Array.map (fun opt -> Option.bind opt play_note) midi_generators
+          in 
+          let notes = Array.map (fun opt -> opt |> Option.map Cisp.fst) notes_generators in
+          let states = Array.map (fun opt -> opt |> Option.map Cisp.snd) notes_generators in
+          Cons(Array.fold_left (Cisp.flip addOptToBundle) emptyBundle notes, aux states tl)
+        else
+          Cons (emptyBundle, aux (custom_update midi_generators) tl)
+      end
+  in
+  aux generators input |> serializeBundles |> map toRaw 
 
 
 

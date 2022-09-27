@@ -12,7 +12,7 @@ let rec generator f () = InfCons (f (), generator f)
 let head sq = match sq () with InfCons (x, _) -> x
 let tail sq = match sq () with InfCons (_, ts) -> ts
 
-(* use sparingly ! *)
+(* use sparingly ! *) 
 let rec toSeq infSq () =
   match infSq () with InfCons (h, tl) -> Seq.Cons (h, toSeq tl)
 
@@ -151,3 +151,78 @@ let rec transpose (sqqss : (('a t) Seq.t)) () =
     sqqss |> Seq.map (fun sq -> match sq () with
   | InfCons (x,xs) -> (x,xs)) in
   InfCons( Seq.map fst uncons, transpose (Seq.map snd uncons) )
+
+
+let rec self_chain sq () = 
+  match sq () with  
+  | InfCons(h1,tl1) ->
+    match tl1 () with
+    | InfCons(h2,_) ->
+    InfCons((h1,h2),self_chain tl1)
+
+type 'a tLineState = {
+  oldT : 'a Time.t ;
+  oldX : float;
+  targetT : 'a Time.t;
+  targetX : float;
+  control : ('a Time.t * float) t;
+}
+  
+let tline_start clock startX timeToNext sq  =
+  let evaluate { oldT; oldX; targetT; targetX; _ } =
+    let now = clock () in
+    if now = targetT then targetX
+    else
+      let segmentDur = Time.sub targetT oldT in
+      let timeSinceOldT = Time.sub now oldT in
+      let diffX = targetX -. oldX in
+      let progress = Time.divt timeSinceOldT segmentDur |> max 0.0 |> min 1.0 in
+      match Float.classify_float progress with
+      | Float.FP_nan -> oldX
+      | Float.FP_infinite -> oldX
+      | _ -> oldX +. (progress *. diffX)
+  in
+  let rec updateControl now oldT ctrl =
+    (* let _ = print_string "\n-----update control-----\n" in *)
+    match ctrl () with
+    | InfCons ((tDelta, newX), ctrl_tail) ->
+        let newT = Time.add oldT tDelta in
+        if newT >= now then ((newT, newX), ctrl_tail)
+        else
+          (* let _ = print_string "newT is not bigger than now: "; flush stdout in *)
+          updateControl now newT ctrl_tail
+  in
+  let initial =
+    let ctrl = zip timeToNext sq in
+    let now = clock () in
+    let (targetT_, targetX), ctrlTail = updateControl now now ctrl in
+    {
+      oldT = now;
+      oldX = startX;
+      targetT = targetT_;
+      targetX;
+      control = ctrlTail;
+    }
+  in
+  let update state =
+    let now = clock () in
+    let newState =
+      if state.targetT > now then state (* no changes *)
+      else
+        let (newT, newX), tail =
+          updateControl now state.targetT state.control
+        in
+        {
+          oldT = state.targetT;
+          oldX = state.targetX;
+          targetT = newT;
+          targetX = newX;
+          control = tail;
+        }
+    in
+    (* print_tline_state newState ;  *)
+    newState
+  in
+ unfold (fun state -> (evaluate state,update state)) initial
+
+(* question: how to deal with in between values ? *)

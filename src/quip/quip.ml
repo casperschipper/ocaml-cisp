@@ -120,20 +120,20 @@ let expressions_to_string lst =
   Ok (Symbol (lst |> List.map expression_to_string |> String.concat "\n"))
 
 let monoform (lst : expression list) =
-  (* 
-       This function turns a diverse list into a single type, type normalisation
-      For example, if a list is a mix of floats and streams, everything is made into a stream.
-      If something starts with a float, but along the way there is a single stream, it will be stream list, since that is the more fundamental type in Cisp.
-      We assume that the most longest type is the intented type
+  (*
+        This function turns a diverse list into a single type, type normalisation
+       For example, if a list is a mix of floats and streams, everything is made into a stream.
+       If something starts with a float, but along the way there is a single stream, it will be stream list, since that is the more fundamental type in Cisp.
+       We assume that the most longest type is the intented type
 
-     float float float
+      float float float
 
-     float fin float
-     >>
-     fin fin fin (should fin be extended to fit the shortest ???)
+      float fin float
+      >>
+      fin fin fin (should fin be extended to fit the shortest ???)
 
 
-     float inf fin
+      float inf fin
   *)
   let rec find_type xs state =
     (* this goes over the list *)
@@ -316,8 +316,8 @@ let length lst =
   | [ List list ] -> Ok (Constant (Integer (List.length list)))
   | _ -> Error (Problem "Invalid argument for length")
 
-(* ************** * * * * *********** **** ** * * * * ***** * *  * * * * * * * ** ** * * * * * * * *** * * * * * * ** * * ** * * *  
-Cisp functions 
+(* ************** * * * * *********** **** ** * * * * ***** * *  * * * * * * * ** ** * * * * * * * *** * * * * * * ** * * ** * * *
+   Cisp functions
 *)
 
 let result_and_then f res = Result.bind res f
@@ -404,22 +404,21 @@ let take lst =
           Result.error (problemize "todo take for finfinstream"))
   | _ -> Result.error (problemize "\"take\", takes a number and a stream")
 
-
 let transcat lst =
   let handle_fin_stream lst =
-    lst |> List.to_seq |> Seq.transpose |> Seq.concat |> fun catted -> Ok (Stream (FinStream catted ))
+    lst |> List.to_seq |> Seq.transpose |> Seq.concat |> fun catted ->
+    Ok (Stream (FinStream catted))
   in
   let handle_inf_stream lst =
-    lst |> List.to_seq |> Infseq.transpose |> Infseq.concatSq |> fun catted -> Ok (Stream (InfStream catted))
+    lst |> List.to_seq |> Infseq.transpose |> Infseq.concatSq |> fun catted ->
+    Ok (Stream (InfStream catted))
   in
-    lst 
-      |> monoform
-      |> result_and_then (fun mono_lst ->
-           match mono_lst with
-           | FloatLst flt_lst -> Ok (Stream (InfStream (Infseq.seq flt_lst)))
-           | FinStreamLst fin_str_lst -> handle_fin_stream fin_str_lst
-           | InfStreamLst inf_str_lst -> handle_inf_stream inf_str_lst)
-               
+  lst |> monoform
+  |> result_and_then (fun mono_lst ->
+         match mono_lst with
+         | FloatLst flt_lst -> Ok (Stream (InfStream (Infseq.seq flt_lst)))
+         | FinStreamLst fin_str_lst -> handle_fin_stream fin_str_lst
+         | InfStreamLst inf_str_lst -> handle_inf_stream inf_str_lst)
 
 let lst_of_two_streams lst =
   let st a = InfStream (Infseq.repeat (Parser.number_to_float a)) in
@@ -442,9 +441,9 @@ let lst_of_two_streams_finite lst =
 let hold lst =
   let hold_stream two_streams =
     match two_streams with
-    | InfStream repeats, InfStream source  ->
+    | InfStream repeats, InfStream source ->
         Ok (InfStream (Infseq.hold (Infseq.map int_of_float repeats) source))
-    | InfStream repeats, FinStream source  ->
+    | InfStream repeats, FinStream source ->
         let finite_repeats = Infseq.to_seq repeats |> Cisp.intify in
         Ok (FinStream (Cisp.hold finite_repeats source))
     | FinStream repeats, InfStream source ->
@@ -558,6 +557,7 @@ let walk lst =
             ^ "-" ^ stream_to_string e2))
   in
   lst |> lst_of_two_streams_finite |> result_and_then walk_fun
+
 (*
 index lst indexer (stream)
 
@@ -565,19 +565,27 @@ index lst indexer (stream)
 let index_inf_indexer exprs idxr =
   let int_idxr = Infseq.map (fun x -> floor x |> int_of_float) idxr in
   let handle_exprs = function
-    | FloatLst lst -> lst 
-      |> Array.of_list 
-      |> fun arr -> Stream (InfStream (Infseq.index arr int_idxr))
-      |> Result.ok
-    | _ -> Result.error (problemize "Not supported yet")
+    | FloatLst lst ->
+        lst |> Array.of_list |> fun arr ->
+        Stream (InfStream (Infseq.index arr int_idxr)) |> Result.ok
+    | _ -> Result.error (problemize "Only float list is supported")
   in
   exprs |> monoform |> result_and_then handle_exprs
 
 let index = function
-    |  [List exprs; Stream (InfStream idxr)] -> 
-      index_inf_indexer exprs idxr
-    | _ -> Result.error (problemize "sorry index does not support this...")
-  
+  | [ List exprs; Stream (InfStream idxr) ] -> index_inf_indexer exprs idxr
+  | _ -> Result.error (problemize "index expects list of exprs and Infstream")
+
+let line = function
+  | [ Stream (InfStream targets); Stream (InfStream time) ] ->
+      Ok
+        (Stream
+           (InfStream
+              (Infseq.cycleSq
+                 (Cisp.line (Infseq.to_seq targets) (Infseq.to_seq time)))))
+  | _ ->
+      Result.error
+        (problemize "line does not support anythign else than infinite lines")
 
 let chunks lst =
   let chunk_fun = function
@@ -659,8 +667,8 @@ let initial_vars =
     ("take", Function take);
     ("transcat", Function transcat);
     ("print", Function expressions_to_string);
-    ("index", Function index)
-    (* ("map", Function quipmap); *)
+    ("index", Function index);
+    ("line", Function line) (* ("map", Function quipmap); *);
   ]
   |> vars_from_list
 
@@ -892,25 +900,29 @@ let eval_string_to_stream strng =
   | Parser.Good (Ok (exp, _), _) -> (
       match exp with
       | Stream str -> Some str
-      | _ -> (ignore (print_string "sorry not a stream")); None)
-  | Parser.Good (Error (Problem problem), _) -> ignore (print_string problem); None
+      | _ ->
+          ignore (print_string "sorry not a stream");
+          None)
+  | Parser.Good (Error (Problem problem), _) ->
+      ignore (print_string problem);
+      None
   | Parser.Problem (prob, _) ->
-      Parser.problem_to_string (fun _ -> "prob") prob |> print_string |> ignore ; None
+      Parser.problem_to_string (fun _ -> "prob") prob |> print_string |> ignore;
+      None
 
 (* utop # eval_string_to_stream "(seq 1.0 (seq 11.0 12.0) 3)";; *)
 
-(* The question is, do we want explicit concat at the end or not 
-  (transcat (seq 11 12 13) (seq 1 2 3) (seq 100 200)) -> 
+(* The question is, do we want explicit concat at the end or not
+   (transcat (seq 11 12 13) (seq 1 2 3) (seq 100 200)) ->
 
-  I think a sequence should always be of one type:
-  Seq.t
-  Infseq.t
+   I think a sequence should always be of one type:
+   Seq.t
+   Infseq.t
 
-  If there is a an Infseq.t it should just be converted to Seq.t, but the end result is an Infseq.t
-  
+   If there is a an Infseq.t it should just be converted to Seq.t, but the end result is an Infseq.t
 *)
 
 let suminfs infsqss =
-  infsqss |> Seq.map Infseq.toSeq |> Seq.transpose |> Seq.map (Seq.fold_left ( +. ) 0.0) |> Infseq.cycleSq
-  
-
+  infsqss |> Seq.map Infseq.toSeq |> Seq.transpose
+  |> Seq.map (Seq.fold_left ( +. ) 0.0)
+  |> Infseq.cycleSq

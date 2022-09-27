@@ -75,7 +75,7 @@ let ( <*> ) = applySq
 let ( <$> ) f ma = map f ma
 
 let syncEffect sq effectSq =
-  (* This is a way to synchronize effects with a stream of values:
+  (* This is a way to synchronize (side)effects with a stream of values:
      an "effectSq" is a Seq.t of unit, that (may) mutate some state.
      sq is the actual result stream, effect the side effect.
   *)

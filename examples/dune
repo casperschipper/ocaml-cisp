@@ -420,7 +420,8 @@
   midi
   cisp
   jack
-  osc_unix))
+  osc_unix
+  parser))
 
 (executable
  (name sendOsc)

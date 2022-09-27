@@ -97,4 +97,5 @@ val reached_end : (unit, 'a problem) parser
 val of_char_list : char list -> String.t
 val parse_while : (char -> bool) -> (char list, 'a problem) parser
 val parens : ('a, 'b problem) parser -> ('a, 'b problem) parser
+val string2sumtype : (string * 'a) list -> ('a, 'b problem) parser
 val test : unit -> String.t list option

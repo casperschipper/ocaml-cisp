@@ -231,6 +231,9 @@ let zero_or_more p =
 
 let many p = zero_or_more p
 
+let string_of_list lst =
+  lst |> List.to_seq |> String.of_seq
+
 let lookahead p =
   Parser
     (fun input ->
@@ -279,9 +282,7 @@ let one_of_str str =
 
 let one_of_string str = str |> explode_lst |> one_of
 
-let chainl1 p op =
-  let rec rest a = op >>= (fun f -> p >>= fun b -> rest (f a b)) <|> return a in
-  p >>= fun a -> rest a
+
 
 let opt_int_of_string str =
   try Option.Some (int_of_string str) with Failure _ -> None
@@ -303,7 +304,29 @@ let digitP = satisfy is_digit "digit"
 let natural = int_of_char_seq <$> some (satisfy is_digit "digit")
 let spaces = many (one_of_string " \n\r")
 
-(* let chainl1 p op =
+let tillEnd =
+  zero_or_more (satisfy (fun _ -> true) "expected any char") |> fmap (fun result -> result |> List.to_seq |> String.of_seq)
+
+let split_at_first_space = 
+    one_or_more (satisfy (fun c -> c != ' ') "expected a non-space character") >>= fun first_part ->
+      spaces >>
+      tillEnd >>= fun tail ->
+        let s = string_of_list first_part in
+        return [s;tail]
+         
+
+      
+
+  
+
+let chainl1 p op =
+  let rec rest a =
+    op >>= (fun f -> p >>= fun b -> rest (f a b)) 
+    <|> return a 
+  in
+  p >>= fun a -> rest a
+(* 
+let chainl1 p op =
   let rec rest a =
     op >>= fun f ->
     p >>= fun b -> rest (f a b) <|> return a
@@ -334,6 +357,8 @@ let number_to_string n =
 let number_to_float = function
   | Float f -> f
   | Integer i -> float_of_int i
+
+
 
 let number =
   let construct f l = string_of_int f ^ "." ^ string_of_int l in

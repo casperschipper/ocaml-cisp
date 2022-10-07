@@ -421,7 +421,8 @@
   cisp
   jack
   osc_unix
-  parser))
+  parser
+  ws))
 
 (executable
  (name sendOsc)

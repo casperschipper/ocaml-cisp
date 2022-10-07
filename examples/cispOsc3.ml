@@ -40,7 +40,7 @@ let try_exec instruction =
   | Some (Quip.FinStream sq) -> Some sq
   | _ -> None
 
-
+(*
 let handle_osc_argument arg =
   match arg with
   | Osc.OscTypes.String value ->
@@ -51,6 +51,7 @@ let handle_osc_argument arg =
          
   | _ -> ignore (print_endline "some unexpected argument occured");
       Result.error "...ignoring a non-string arg..."
+*)
 
 type parameter = 
   | Pitch
@@ -108,8 +109,31 @@ let parse_address (address : string) =
   in
   Parser.parse_str parser address
   
+  let string_of_client client =
+    client |> Ws.Client.id |> Ws.Client.Id.to_int |> string_of_int
+  
+  let server = Ws.Server.create ~port:3000
+  
+  let on_connect client =
+    Ws.Client.send client {|Commands:
+      parameter = pitch/velo/duration/channel
+      /cisp/[channel]/[parameter] "[cisp string]"
+      for example:
+      /cisp/1/pitch (seq 60 64 67)
+    |}
+  
+  let handler client message =
+    match String.split_on_char ' ' message with
+    | [ args; cispString ] -> 
+      let instruction = try_exec cispString
+      parse_address args 
+      Lwt.return ()
+    | _ -> Lwt.return ()
+    
+  
+  let () = Lwt_main.run (Ws.Server.run ~on_connect server handler)
 
-
+(*
 let handle_packet packet socket =
   ignore socket;
   match packet with
@@ -159,7 +183,7 @@ let oscReceiver  =
     loop ()
   in
   Thread.create server_receive_thread 
-
+*)
 (* 
   how to have good multichannel options
   There can be an array of 16 generators, each generating one of the channels, which are flattened into a bundle ?

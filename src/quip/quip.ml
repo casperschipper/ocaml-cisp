@@ -68,7 +68,11 @@ type quiplist =
 *)
 
 let stream_to_string = function
-  | InfStream _ -> "inf stream"
+  | InfStream infsq ->
+      "first 12 values of infstream\n"
+      ^ (infsq |> Infseq.take 12 |> Seq.map string_of_float |> List.of_seq
+       |> String.concat " ")
+      ^ "..."
   | FinStream sq ->
       "finstream: "
       ^ (Seq.map string_of_float sq |> List.of_seq |> String.concat "\t")
@@ -124,7 +128,7 @@ let monoform (lst : expression list) =
         This function turns a diverse list into a single type, type normalisation
        For example, if a list is a mix of floats and streams, everything is made into a stream.
        If something starts with a float, but along the way there is a single stream, it will be stream list, since that is the more fundamental type in Cisp.
-       We assume that the most longest type is the intented type
+       We assume that the most longest type is the intented type. Not all functions require type normalisation, walks can also deal with different types.
 
       float float float
 
@@ -390,6 +394,17 @@ let ch lst =
   in
   lst |> monoform |> Result.map handle_lst
 
+let series lst =
+  let handle_lst lst =
+    match lst with
+    | FloatLst flst -> Cisp.series flst |> fin_stream
+    | InfStreamLst inf_stream_lst ->
+        inf_stream_lst |> Array.of_list |> Infseq.ch_seq |> inf_stream
+    | FinStreamLst fin_stream_lst ->
+        fin_stream_lst |> Array.of_list |> Cisp.choice_seq |> fin_stream
+  in
+  lst |> monoform |> Result.map handle_lst
+
 let take lst =
   match lst with
   | [ Constant number; Stream str ] -> (
@@ -404,7 +419,32 @@ let take lst =
           Result.error (problemize "todo take for finfinstream"))
   | _ -> Result.error (problemize "\"take\", takes a number and a stream")
 
+let concat lst =
+  (*
+    concat a bunch of streams
+  *)
+  let handle_fin_stream lst =
+    lst |> List.to_seq |> Seq.concat |> fun catted ->
+    Ok (Stream (FinStream catted))
+  in
+  lst |> monoform
+  |> result_and_then (fun mono_lst ->
+         match mono_lst with
+         | FloatLst flt_lst -> Ok (Stream (InfStream (Infseq.seq flt_lst)))
+         | FinStreamLst fin_str_lst -> handle_fin_stream fin_str_lst
+         | InfStreamLst _ ->
+             Error
+               (Problem
+                  "You are trying to concat an infinite stream to another, are \
+                   you sure?"))
+
 let transcat lst =
+  (*
+     * Make the list of streams monoform.
+     * Transcat is the old CISP seq. The idea is that you can weave the input streams together.
+     * Streams are transposed
+     * a b c
+  *)
   let handle_fin_stream lst =
     lst |> List.to_seq |> Seq.transpose |> Seq.concat |> fun catted ->
     Ok (Stream (FinStream catted))
@@ -430,6 +470,7 @@ let lst_of_two_streams lst =
   | _ -> Error (Problem "I expected two streams")
 
 let lst_of_two_streams_finite lst =
+  (* parses 2 arguments and turns them in to Seq lists, whatever they really are *)
   let st a = FinStream (Seq.return (Parser.number_to_float a)) in
   match lst with
   | [ Stream a; Stream b ] -> Ok (a, b)
@@ -556,11 +597,21 @@ let walk lst =
              ("walk does not know what to do with this:\n" ^ stream_to_string e1
             ^ "-" ^ stream_to_string e2))
   in
-  lst |> lst_of_two_streams_finite |> result_and_then walk_fun
+  lst |> lst_of_two_streams |> result_and_then walk_fun
+
+let list_walk lst =
+    match lst with
+    | [ List lst_expr; Stream (InfStream stepper) ] ->
+      let mono_lst = monoform lst_expr in
+      (match mono_lst with
+      | Ok (FloatLst flt_lst) ->
+        Ok (Stream (InfStream (Infseq.index (Array.of_list flt_lst) (Infseq.walki 0 (Infseq.map int_of_float stepper)))))
+      | _ ->
+        Error (problemize "walklist: I expected a list of floats and a infinite stepper"))
+    | _ -> Error (problemize "walklist: I expected a list of floats and a infinite stepper")
 
 (*
 index lst indexer (stream)
-
 *)
 let index_inf_indexer exprs idxr =
   let int_idxr = Infseq.map (fun x -> floor x |> int_of_float) idxr in
@@ -568,7 +619,7 @@ let index_inf_indexer exprs idxr =
     | FloatLst lst ->
         lst |> Array.of_list |> fun arr ->
         Stream (InfStream (Infseq.index arr int_idxr)) |> Result.ok
-    | _ -> Result.error (problemize "Only float list is supported")
+    | _ -> Result.error (problemize "Index: only float list is supported")
   in
   exprs |> monoform |> result_and_then handle_exprs
 
@@ -660,12 +711,15 @@ let initial_vars =
     ("rv", Function rv);
     ("hold", Function hold);
     ("walk", Function walk);
+    ("listwalk", Function list_walk);
     ("chunks", Function chunks);
     ("plus", Function plus_st);
     ("st", Function st);
     ("ch", Function ch);
+    ("series", Function series);
     ("take", Function take);
     ("transcat", Function transcat);
+    ("concat", Function concat);
     ("print", Function expressions_to_string);
     ("index", Function index);
     ("line", Function line) (* ("map", Function quipmap); *);
@@ -926,3 +980,9 @@ let suminfs infsqss =
   infsqss |> Seq.map Infseq.toSeq |> Seq.transpose
   |> Seq.map (Seq.fold_left ( +. ) 0.0)
   |> Infseq.cycleSq
+
+let for_example qp =
+  qp |> eval_string_to_stream
+  |> Option.map stream_to_string
+  |> Option.value ~default:"err"
+  |> print_string

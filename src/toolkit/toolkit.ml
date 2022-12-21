@@ -38,6 +38,11 @@ let wrap low high x =
   let r = abs (high - low) in
   l + ((x - l) |> modBy r)
 
+let shuffle d =
+  let nd = List.map (fun c -> (Random.bits (), c)) d in
+  let sond = List.sort compare nd in
+  List.map snd sond
+
 let%test "modBy mod x" =
   let input = [0;1;2;3;4;5;6] in
   let expect = [0;1;2;0;1;2;0] in 

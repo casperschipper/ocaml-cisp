@@ -56,10 +56,7 @@ let rec takeLst n lst =
 
 let rec listRepeat n x = if n <= 0 then [] else x :: listRepeat (n - 1) x
 
-let shuffle d =
-  let nd = List.map (fun c -> (Random.bits (), c)) d in
-  let sond = List.sort compare nd in
-  List.map snd sond
+
 
 (* List a -> (List a -> b) -> List b *)
 
@@ -188,30 +185,28 @@ let rec appendAlt a b () =
   | Cons (h, tl) -> fun () -> Cons(h, appendAlt tl b)
 *)
 
-(* When the seq reaches Nil, restart from the beginning. This is an implicit infinite stream, may be better use InfSeq if you want this 
-let rec cycle a () =
-  let rec cycle_append current_a () =
-    match current_a () with
-    | Nil -> cycle a ()
-    | Cons (this_a, rest) -> Cons (this_a, cycle_append rest)
-  in
-  cycle_append a ()
-  *)
+(* When the seq reaches Nil, restart from the beginning. This is an implicit infinite stream, may be better use InfSeq if you want this
+   let rec cycle a () =
+     let rec cycle_append current_a () =
+       match current_a () with
+       | Nil -> cycle a ()
+       | Cons (this_a, rest) -> Cons (this_a, cycle_append rest)
+     in
+     cycle_append a ()
+*)
 
 let rec cyclen_nonempty n xs () =
-  if n < 1 then
-    Nil 
-  else
-    Seq.append xs (cyclen_nonempty (n -1) xs) ()
+  if n < 1 then Nil else Seq.append xs (cyclen_nonempty (n - 1) xs) ()
 
 let cyclen n xs () =
-  if n < 1 then
-    Nil
-  else 
+  if n < 1 then Nil
+  else
     match xs () with
     | Nil -> Nil
-    | Cons(this_a,rest) ->  (fun () -> Cons (this_a, Seq.append rest (cyclen_nonempty (n-1) xs)))  ()
-  
+    | Cons (this_a, rest) ->
+        (fun () -> Cons (this_a, Seq.append rest (cyclen_nonempty (n - 1) xs)))
+          ()
+
 let rec range a b () = if a >= b then Nil else Cons (a, range (a +. 1.0) b)
 
 let rangei a b =
@@ -418,10 +413,7 @@ let tailsOfStreams sq () = Seq.fold_left foldTail Nil sq
 
    There is also an explicit InfSeq version of this function.
 *)
-let transpose xss =
-  Seq.transpose xss
-
-
+let transpose xss = Seq.transpose xss
 
 (*
   [[a]] -> [a] .. [[1;2;3];[1;2];[11;12];[99]] -> [1;1;11;99]  *)
@@ -442,7 +434,7 @@ let sq_lst_transcat lstOfSq =
 let sq_lst_tranpose lstOfSq =
   list_fold_heads_with Seq.empty (fun x y () -> Seq.Cons (x, y)) lstOfSq
 
-let transcat sq = sq |> transpose |> concat 
+let transcat sq = sq |> transpose |> concat
 let transList lst = lst |> ofList |> transcat
 
 let effect_lst (first : unit Seq.t) (rest : unit Seq.t list) =
@@ -615,32 +607,31 @@ let sumlist lst = List.fold_left ( +.~ ) (st 0.0) lst
 
 let clip low high x = if x < low then low else if x > high then high else x
 let tanh_clip = Seq.map tanh
-(* 
-let modBy y x =
-  match y with
-  | 0 -> x (* safety first ! *)
-  | nonZeroY ->
-      let result = x mod nonZeroY in
-      if result >= 0 then result else result + y
+(*
+   let modBy y x =
+     match y with
+     | 0 -> x (* safety first ! *)
+     | nonZeroY ->
+         let result = x mod nonZeroY in
+         if result >= 0 then result else result + y
 
-let modByf y x =
-  match y with
-  | 0.0 -> x
-  | nonZeroY -> 
-    let result = mod_float x nonZeroY in
-    if result >= 0.0 then result else result +. y
+   let modByf y x =
+     match y with
+     | 0.0 -> x
+     | nonZeroY ->
+       let result = mod_float x nonZeroY in
+       if result >= 0.0 then result else result +. y
 
-let wrapf low high x =
-  let l = min low high in
-  let r = abs_float (high -. low) in
-  l +. (x -. l) |> modByf r
+   let wrapf low high x =
+     let l = min low high in
+     let r = abs_float (high -. low) in
+     l +. (x -. l) |> modByf r
 
-let wrap low high x =
-  let l = min low high in
-  let r = abs (high - low) in
-  l + (x - l) |> modBy r 
-  
-  *)
+   let wrap low high x =
+     let l = min low high in
+     let r = abs (high - low) in
+     l + (x - l) |> modBy r
+*)
 
 (* Inspired by the Elm architecture. I guess this is some distant form of Functional Reactive Programming.
  *
@@ -671,7 +662,7 @@ let rec recursive1 control init update evaluate () =
       Cons (evaluate next, recursive1 xs next update evaluate)
 
 (* recursive no control seq. Allows for non-trivial control update (you have to take care of the update of control in update function yourself)
- * this is almost the same as unfold, except it may never end.
+ * this is almost the same as unfold, except it will never end.
  *)
 let rec simpleRecursive init update evaluate () =
   let nextState = update init in
@@ -994,6 +985,19 @@ let pickOne arr =
 let ch arr =
   let picker = rv (st 0) (st (Array.length arr)) in
   index arr picker
+
+let series lst =
+  match lst with
+  | [] -> Seq.repeat 0.0
+  | x :: xs ->
+      let update (current, _) =
+        match current with
+        | [] -> (
+            let newList = Toolkit.shuffle lst in
+            match newList with [] -> ([], 0.0) | x :: xs -> (xs, x))
+        | x :: xs -> (xs, x)
+      in
+      simpleRecursive (xs, x) update (fun (_, curX) -> curX)
 
 (* select from seqs *)
 let choice_seq arr =

@@ -29,7 +29,7 @@ let write_split () =
   let a = Toolkit.rvi 1 (max - 1) in
   let stream = 
     Infseq.ch_seq [|(Cisp.ch [|idx;idx;idx;idx;a|] |> Infseq.cycleSq);Infseq.repeat idx|] 
-  in
+ in
   steps.(idx) <- stream
 
 let write_normal idx =

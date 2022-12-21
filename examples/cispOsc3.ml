@@ -25,6 +25,7 @@ But if there is only one ref, this is fine.
 
 (* This creates a stream out of a ref *)
 
+Process.sample_rate := 48000.0;
 
 type model = 
   Midi.midiNoteGenerator Option.t Array.t
@@ -105,9 +106,9 @@ let parse_address (address : string) =
       "channel",Channel;
       "duration", Duration
     ]) >>= fun para ->
-    succeed (Slot channel,para) 
+    succeed (Slot channel,para)
   in
-  Parser.parse_str parser address
+  Parser.parse_str parser address |> Parser.getParsed
   
   let string_of_client client =
     client |> Ws.Client.id |> Ws.Client.Id.to_int |> string_of_int
@@ -116,22 +117,43 @@ let parse_address (address : string) =
   
   let on_connect client =
     Ws.Client.send client {|Commands:
-      parameter = pitch/velo/duration/channel
-      /cisp/[channel]/[parameter] "[cisp string]"
+      Address should be formatted as:
+      /[channel]/[parameter] [cisp-program]
+
+      where:
+      channel = int between 1-16
+      parameter = pitch|velo|duration|channel
+      cisp-program = cisp as s-expression 
+      
       for example:
-      /cisp/1/pitch (seq 60 64 67)
+      /1/pitch (seq 60 64 67)
     |}
   
-  let handler client message =
-    match String.split_on_char ' ' message with
-    | [ args; cispString ] -> 
-      let instruction = try_exec cispString
-      parse_address args 
-      Lwt.return ()
-    | _ -> Lwt.return ()
-    
-  
-  let () = Lwt_main.run (Ws.Server.run ~on_connect server handler)
+let opt_map2 f opt1 opt2 =
+    match (opt1,opt2) with
+    | (Some x,Some y) -> Some (f x y)
+    | (_,_) -> None
+
+let handler client message =
+  ignore (print_endline message);
+  let r = Parser.parse_str Parser.split_at_first_space message in
+  match r with
+  | Parser.Good (["/quit"],_) -> Ws.Server.close server client
+  | Parser.Good ([address;cispString],_) ->
+    begin
+    let cisp_stream = try_exec cispString in
+    let slot_par_tuple = parse_address address in
+    let opt_msg = opt_map2 (fun (slot,parameter) c_str -> Stream_message (slot,parameter,c_str)) slot_par_tuple cisp_stream in
+    match opt_msg with
+    | Some msg -> current_msg := Some msg; Lwt.return () 
+    | None -> Lwt.return ()
+    end
+  | Parser.Problem (problem,_) -> 
+    ignore (Parser.problem_to_string (fun _ -> "no problem") problem |> print_endline);
+    Lwt.return ()
+  | _ -> 
+    Lwt.return ()
+
 
 (*
 let handle_packet packet socket =
@@ -212,14 +234,15 @@ let () =
       Unix.sleep 60 
     done
   in
-  let _ = Thread.create oscReceiver () in
   let _ = Thread.create f () in
-  let _ =
+  let _ = 
     Sys.command "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1"
   in
   let _ =
     Sys.command "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in"
   in
+  let _ = Lwt_main.run (Ws.Server.run ~on_connect server handler) in
+ 
   while true do
     Unix.sleep 60
   done

@@ -16,13 +16,12 @@ type 'p problem =
   | ExpectedEnd
   | YourProblem of 'p
 
-let quote s =
-  "\"" ^ s ^ "\""
+let quote s = "\"" ^ s ^ "\""
 
 let problem_to_string to_string problem =
   match problem with
   | EndOfString -> "reached unexpected end"
-  | Expecting str -> "I expected a " ^ (quote str)
+  | Expecting str -> "I expected a " ^ quote str
   | WrongCharClass (expected, instead) ->
       "I expected charclass " ^ class_as_string expected ^ "but got "
       ^ class_as_string instead ^ " instead."
@@ -68,7 +67,7 @@ type ('a, 'problem) pstep =
     }
 *)
 
-type ('a, 'b) parser = Parser of (char Seq.t -> ('a, 'b) pstep)
+type ('a, 'problem) parser = Parser of (char Seq.t -> ('a, 'problem) pstep)
 
 let succeed a = Parser (fun s -> Good (a, s))
 let fail_with p = Parser (fun s -> Problem (YourProblem p, s))
@@ -82,6 +81,11 @@ let lazyp (thunk : unit -> ('a, 'b) parser) =
 
 let getParsed parseResult =
   match parseResult with Good (a, _) -> Some a | Problem (_, _) -> None
+
+let to_result step =
+  match step with
+  | Good (value, _) -> Ok value
+  | Problem (error, _) -> Error error
 
 let mapProblem parsed f =
   match parsed with Good (a, _) -> a | Problem (prob, chars) -> f (prob, chars)
@@ -230,9 +234,7 @@ let zero_or_more p =
   loop [] callback
 
 let many p = zero_or_more p
-
-let string_of_list lst =
-  lst |> List.to_seq |> String.of_seq
+let string_of_list lst = lst |> List.to_seq |> String.of_seq
 
 let lookahead p =
   Parser
@@ -257,7 +259,7 @@ let one_or_more = some
 
 (* [predicate] is just a function that checks if the char is what you want
    [expecting] is a string that is displayed when the character is not found
-  *)
+*)
 
 let satisfy predicate expecting =
   item >>= fun c ->
@@ -282,8 +284,6 @@ let one_of_str str =
 
 let one_of_string str = str |> explode_lst |> one_of
 
-
-
 let opt_int_of_string str =
   try Option.Some (int_of_string str) with Failure _ -> None
 
@@ -305,37 +305,28 @@ let natural = int_of_char_seq <$> some (satisfy is_digit "digit")
 let spaces = many (one_of_string " \n\r")
 
 let tillEnd =
-  zero_or_more (satisfy (fun _ -> true) "expected any char") |> fmap (fun result -> result |> List.to_seq |> String.of_seq)
+  zero_or_more (satisfy (fun _ -> true) "expected any char")
+  |> fmap (fun result -> result |> List.to_seq |> String.of_seq)
 
-let split_at_first_space = 
-    one_or_more (satisfy (fun c -> c != ' ') "expected a non-space character") >>= fun first_part ->
-      spaces >>
-      tillEnd >>= fun tail ->
-        let s = string_of_list first_part in
-        return [s;tail]
-         
-
-      
-
-  
+let split_at_first_space =
+  one_or_more (satisfy (fun c -> c != ' ') "expected a non-space character")
+  >>= fun first_part ->
+  spaces >> tillEnd >>= fun tail ->
+  let s = string_of_list first_part in
+  return [ s; tail ]
 
 let chainl1 p op =
-  let rec rest a =
-    op >>= (fun f -> p >>= fun b -> rest (f a b)) 
-    <|> return a 
-  in
+  let rec rest a = op >>= (fun f -> p >>= fun b -> rest (f a b)) <|> return a in
   p >>= fun a -> rest a
-(* 
-let chainl1 p op =
-  let rec rest a =
-    op >>= fun f ->
-    p >>= fun b -> rest (f a b) <|> return a
-  in
-  p >>= fun a -> rest a *)
+
+(*
+   let chainl1 p op =
+     let rec rest a =
+       op >>= fun f ->
+       p >>= fun b -> rest (f a b) <|> return a
+     in
+     p >>= fun a -> rest a *)
 let chainl p op a = chainl1 p op <|> return a
-
-
-
 
 let between openSymbol closeSymbol p =
   openSymbol >> p >>= fun x -> closeSymbol >> return x
@@ -354,21 +345,29 @@ type number = Float of float | Integer of int
 let number_to_string n =
   match n with Float f -> string_of_float f | Integer i -> string_of_int i
 
-let number_to_float = function
-  | Float f -> f
-  | Integer i -> float_of_int i
+let number_to_float = function Float f -> f | Integer i -> float_of_int i
 
-
+type signature = Positive | Negative
 
 let number =
-  let construct f l = string_of_int f ^ "." ^ string_of_int l in
+  let hyphenOrNot s = match s with Positive -> "" | Negative -> "-" in
+  let construct s f l =
+    hyphenOrNot s ^ string_of_int f ^ "." ^ string_of_int l
+  in
+  let constructInt s i =
+    match s with Positive -> Integer i | Negative -> Integer (-i)
+  in
+  let hyphen =
+    one_of_parsers [ char '-' >> succeed Negative; succeed Positive ]
+  in
+  hyphen >>= fun posOrNeg ->
   natural >>= fun firstDigits ->
   one_of_parsers
     [
       ( char '.' >> natural >>= fun lastDigits ->
-        Float (construct firstDigits lastDigits |> float_of_string) |> succeed
-      );
-      succeed (Integer firstDigits);
+        Float (construct posOrNeg firstDigits lastDigits |> float_of_string)
+        |> succeed );
+      succeed (constructInt posOrNeg firstDigits);
     ]
 
 let list_end n1 =
@@ -423,18 +422,16 @@ let of_char_list lst = lst |> List.to_seq |> String.of_seq
 let parse_while f = many (satisfy f "match")
 let parens m = reserved "(" >> m >>= fun n -> reserved ")" >> return n
 
-(* 
-one_of_parsers [ string "pitch" >> (succeed Pitch)
-    ;string "velo" >> (succeed Velo)
-    ;string "duration" >> (succeed Duration) 
-    ;string "channel" >> (succeed Channel)])   
+(*
+   one_of_parsers [ string "pitch" >> (succeed Pitch)
+       ;string "velo" >> (succeed Velo)
+       ;string "duration" >> (succeed Duration)
+       ;string "channel" >> (succeed Channel)])
 *)
 
 let string2sumtype (lst : (string * 'a) List.t) =
-  let make (match_str,constructor) =
-    (string match_str) >> (succeed constructor) 
-  in
-  lst |> List.map make  |> one_of_parsers
+  let make (match_str, constructor) = string match_str >> succeed constructor in
+  lst |> List.map make |> one_of_parsers
 
 let test () =
   parse_str

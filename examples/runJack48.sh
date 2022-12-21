@@ -1,4 +1,4 @@
 #!/bin/bash
 
-jackd -X coremidi -d coreaudio -r 48000 &
+jackd -R -X coremidi -d coreaudio -r 48000 -p 1024 &
 echo $!

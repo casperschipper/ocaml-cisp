@@ -12,7 +12,7 @@ let rec generator f () = InfCons (f (), generator f)
 let head sq = match sq () with InfCons (x, _) -> x
 let tail sq = match sq () with InfCons (_, ts) -> ts
 
-(* use sparingly ! *) 
+(* use sparingly ! *)
 let rec toSeq infSq () =
   match infSq () with InfCons (h, tl) -> Seq.Cons (h, toSeq tl)
 
@@ -45,12 +45,8 @@ let rec andMap sqa sqf () =
   | InfCons (x, xs), InfCons (f, fs) -> InfCons (f x, andMap xs fs)
 
 let map2 f sqa sqb = map f sqa |> andMap sqb
-
-let ( <*> ) fab fa =
-  andMap fa fab
-
-let ( <$> ) f fa =
-  map f fa
+let ( <*> ) fab fa = andMap fa fab
+let ( <$> ) f fa = map f fa
 
 let hold repetitions source =
   let f src n = src |> repeat |> take n in
@@ -58,7 +54,6 @@ let hold repetitions source =
 
 let cycleSq sq = repeat sq |> concatSq
 let seq lst = lst |> List.to_seq |> cycleSq
-
 let of_list = seq
 
 let rec unfold f seed () =
@@ -103,10 +98,8 @@ let rec zipWith f sqa sqb () =
   | InfCons (x, xs), InfCons (y, ys) -> InfCons (f x y, zipWith f xs ys)
 
 let applySq fSq sq = zip fSq sq |> map (fun (f, x) -> f x)
+let wrap = Toolkit.wrap
 
-let wrap =
-  Toolkit.wrap 
-  
 let index array indexer =
   let len = Array.length array in
   let f index = index |> wrap 0 len |> Array.get array in
@@ -128,7 +121,7 @@ let index_seq (arr : 'a t Array.t) indexer =
 
 let rec sometimes x y p () =
   let head () =
-    let rnd = if p < 1 then (-1) else Random.int p in
+    let rnd = if p < 1 then -1 else Random.int p in
     if rnd = 0 then y else x
   in
   InfCons (head (), sometimes x y p)
@@ -139,36 +132,47 @@ let ch_seq (arr : 'a t Array.t) =
   let indexer = generator f in
   index_seq arr indexer
 
+let rec simpleRecursive init update evaluate () =
+  let nextState = update init in
+  InfCons (evaluate init, simpleRecursive nextState update evaluate)
 
-let fst (x,_) =
-  x
+let series_infSq arr =
+  let lst = Array.to_list arr in
+  match lst with
+  | [] -> repeat (repeat 0.0)
+  | x :: xs ->
+      let update (current, _) =
+        match current with
+        | [] -> (
+            let newList = Toolkit.shuffle lst in
+            match newList with [] -> ([], repeat 0.0) | x :: xs -> (xs, x))
+        | x :: xs -> (xs, x)
+      in
+      simpleRecursive (xs, x) update (fun (_, curX) -> curX)
 
-let snd (_,y) =
-  y
+let fst (x, _) = x
+let snd (_, y) = y
 
-let rec transpose (sqqss : (('a t) Seq.t)) () =
-  let uncons = 
-    sqqss |> Seq.map (fun sq -> match sq () with
-  | InfCons (x,xs) -> (x,xs)) in
-  InfCons( Seq.map fst uncons, transpose (Seq.map snd uncons) )
+let rec transpose (sqqss : 'a t Seq.t) () =
+  let uncons =
+    sqqss |> Seq.map (fun sq -> match sq () with InfCons (x, xs) -> (x, xs))
+  in
+  InfCons (Seq.map fst uncons, transpose (Seq.map snd uncons))
 
-
-let rec self_chain sq () = 
-  match sq () with  
-  | InfCons(h1,tl1) ->
-    match tl1 () with
-    | InfCons(h2,_) ->
-    InfCons((h1,h2),self_chain tl1)
+let rec self_chain sq () =
+  match sq () with
+  | InfCons (h1, tl1) -> (
+      match tl1 () with InfCons (h2, _) -> InfCons ((h1, h2), self_chain tl1))
 
 type 'a tLineState = {
-  oldT : 'a Time.t ;
+  oldT : 'a Time.t;
   oldX : float;
   targetT : 'a Time.t;
   targetX : float;
   control : ('a Time.t * float) t;
 }
-  
-let tline_start clock startX timeToNext sq  =
+
+let tline_start clock startX timeToNext sq =
   let evaluate { oldT; oldX; targetT; targetX; _ } =
     let now = clock () in
     if now = targetT then targetX
@@ -223,6 +227,6 @@ let tline_start clock startX timeToNext sq  =
     (* print_tline_state newState ;  *)
     newState
   in
- unfold (fun state -> (evaluate state,update state)) initial
+  unfold (fun state -> (evaluate state, update state)) initial
 
 (* question: how to deal with in between values ? *)

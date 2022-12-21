@@ -21,6 +21,7 @@ val fail_with : 'a -> ('b, 'a problem) parser
 val parse : ('a, 'b) parser -> char Seq.t -> ('a, 'b) pstep
 val lazyp : (unit -> ('a, 'b) parser) -> ('a, 'b) parser
 val getParsed : ('a, 'b) pstep -> 'a option
+val to_result : ('a, 'b) pstep -> ('a,'b) Result.t
 val mapProblem : ('a, 'b) pstep -> ('b * char Seq.t -> 'a) -> 'a
 val getRemainChars : ('a, 'b) pstep -> char Seq.t option
 val bind : ('a, 'b) parser -> ('a -> ('c, 'b) parser) -> ('c, 'b) parser

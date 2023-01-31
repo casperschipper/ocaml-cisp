@@ -21,5 +21,5 @@ let () =
   let signal () = index amp_array (walk 0.0 (ch [|-1.0;1.0|] |> hold holder) |> Seq.map int_of_float) |> hold duras in 
   let effs = effect_lst masterClock [a;b;c;d] in 
   let eff = effect masterClock effs in
-  let channels = rangei 0 14 |> Seq.map (fun _ -> signal ()) |> List.of_seq in 
+  let channels = rangei 0 1 |> Seq.map (fun _ -> signal ()) |> List.of_seq in 
   Jack.playSeqs 0 Process.sample_rate ((effect eff (signal ())) :: channels)

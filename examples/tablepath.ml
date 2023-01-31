@@ -17,11 +17,11 @@ let play_index_table arr =
       (match stream () with
       | Infseq.InfCons(nextIdx,tail) -> Array.set arr idx tail ;Infseq.InfCons(idx,aux arr nextIdx))
     | None ->
-      Infseq.InfCons(0,aux arr 0)
+      Infseq.InfCons(0,aux arr 0) 
   in
   aux arr 0
 
-let write_split () =
+let write_split () = 
   let idx = Toolkit.rvi 1 (max - 1) in
   let a = Toolkit.rvi 1 (max - 1) in
   let b = Toolkit.rvi 1 (max - 1) in

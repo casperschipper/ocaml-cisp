@@ -386,7 +386,7 @@ let st lst =
 let ch lst =
   let handle_lst lst =
     match lst with
-    | FloatLst flst -> Cisp.ch (Array.of_list flst) |> fin_stream
+    | FloatLst flst -> Cisp.ch (Array.of_list flst) |> Infseq.cycleSq |> inf_stream
     | InfStreamLst inf_stream_lst ->
         inf_stream_lst |> Array.of_list |> Infseq.ch_seq |> inf_stream
     | FinStreamLst fin_stream_lst ->
@@ -397,7 +397,7 @@ let ch lst =
 let series lst =
   let handle_lst lst =
     match lst with
-    | FloatLst flst -> Cisp.series flst |> fin_stream
+    | FloatLst flst -> Cisp.series flst |> Infseq.cycleSq |> inf_stream
     | InfStreamLst inf_stream_lst ->
         inf_stream_lst |> Array.of_list |> Infseq.ch_seq |> inf_stream
     | FinStreamLst fin_stream_lst ->

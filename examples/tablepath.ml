@@ -4,10 +4,10 @@ let tone size freq = Cisp.osc freq |> Cisp.take size
 
 let noise =
   let fromPitch p =
-    p |> ( + ) 36 |> float_of_int |> Cisp.mtof
+    p |> ( +. ) 24. |> Cisp.mtof
   in
   let ps = 
-    Cisp.walk 0.0 (Cisp.rvf (Cisp.st 6.5) (Cisp.st 7.1)) |> Seq.take 12 |> List.of_seq
+    Cisp.walk 0.0 (Cisp.rvf (Cisp.st 6.9) (Cisp.st 7.1)) |> Seq.take 12 |> List.of_seq
   in
   let n = List.length ps in
   let slice = max / n in
@@ -22,7 +22,7 @@ let steps =
       Infseq.repeat next)
 
 let get_table arr idx =
-  if idx > Array.length arr || idx < 0 then None else Some arr.(idx)
+  if idx > (Array.length arr -1) || idx < 0 then None else Some arr.(idx)
 
 let play_index_table arr =
   let rec aux arr idx () =
@@ -48,6 +48,13 @@ let write_split () =
   in
   steps.(idx) <- stream
 
+  let write_line () =
+    let idx = Toolkit.rvi 1 (max - 1) in
+    let stream =
+      Cisp.line (Cisp.seq [0.0;max |> float_of_int]) (Cisp.st 41.0) |> Infseq.cycleSq |> Infseq.map int_of_float
+    in
+    steps.(idx) <- stream
+
 let write_normal idx =
   let next = Infseq.repeat (idx + 1) in
   steps.(idx) <- next
@@ -57,7 +64,7 @@ let () =
   let chaos =
     timed
       (fractRandTimer (ch [| 0.1; 0.5; 1.0; 2.0; 3.0; 4.0 |]))
-      (st write_split |> Seq.map (fun x -> x ()))
+      (st write_line |> Seq.map (fun x -> x ()))
   in
   let peace =
     timed

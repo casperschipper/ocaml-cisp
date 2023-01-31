@@ -4,7 +4,7 @@ let tone size freq = Cisp.osc freq |> Cisp.take size
 
 let noise =
   let fromPitch p =
-    p |> ( +. ) 24. |> Cisp.mtof
+    p |> ( +. ) 48. |> Cisp.mtof
   in
   let ps = 
     Cisp.walk 0.0 (Cisp.rvf (Cisp.st 6.9) (Cisp.st 7.1)) |> Seq.take 12 |> List.of_seq
@@ -49,9 +49,10 @@ let write_split () =
   steps.(idx) <- stream
 
   let write_line () =
+    let open Cisp in 
     let idx = Toolkit.rvi 1 (max - 1) in
     let stream =
-      Cisp.line (Cisp.seq [0.0;max |> float_of_int]) (Cisp.st 41.0) |> Infseq.cycleSq |> Infseq.map int_of_float
+      Cisp.tline (rvf (st 0.0) (st (max |> float))) (Cisp.ch [|0.1;0.03;0.5;0.01;5.0|]) |> Infseq.cycleSq |> Infseq.map int_of_float
     in
     steps.(idx) <- stream
 
@@ -63,17 +64,17 @@ let () =
   let open Cisp in
   let chaos =
     timed
-      (fractRandTimer (ch [| 0.1; 0.5; 1.0; 2.0; 3.0; 4.0 |]))
+      (fractRandTimer (ch [| 0.01 |]))
       (st write_line |> Seq.map (fun x -> x ()))
   in
   let peace =
     timed
-      (fractRandTimer (ch [|0.1; 0.5|]))
+      (fractRandTimer (ch [|0.01;0.1;0.4; 0.5;4.0|]))
       (countTill 255 |> Seq.map write_normal)
   in
   let eff = effect_lst masterClock [ chaos; peace ] in
   let signal () =
     play_index_table steps |> Infseq.index noise |> Infseq.to_seq
   in
-  let channels = rangei 0 14 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
+  let channels = rangei 0 1 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
   Jack.playSeqs 0 Process.sample_rate (effect eff (signal ()) :: channels)

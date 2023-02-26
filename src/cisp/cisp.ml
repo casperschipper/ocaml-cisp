@@ -199,6 +199,7 @@ let rec cyclen_nonempty n xs () =
   if n < 1 then Nil else Seq.append xs (cyclen_nonempty (n - 1) xs) ()
 
 let cyclen n xs () =
+  (* repeats a finite cycle n times *)
   if n < 1 then Nil
   else
     match xs () with
@@ -1044,11 +1045,13 @@ let rec selfChain sq () =
       | Nil -> Nil
       | Cons (h2, _) -> Cons ((h, h2), selfChain tail))
 
-(* this is making it implicitely infinite, use Infseq instead *)
 let seq lst = lst |> ofList |> cycle
+(** this is making it implicitely infinite, use Infseq instead *)
 
-(* this is a finite seq constructed of a list, if used as an argument to walk, will be finite as well *)
+
 let row = ofList
+(** this is a finite seq constructed of a list, if used as an argument to walk, will be finite as well *)
+
 
 let lin ns targets =
   let targs = selfChain targets in

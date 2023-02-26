@@ -251,6 +251,14 @@
  (modules midiStartFile)
  (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
 
+ (executable
+ (name midiStartFile2)
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules midiStartFile2)
+ (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
+
 (executable
  (name cisp2)
  (link_flags

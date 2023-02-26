@@ -1,10 +1,10 @@
 open Cisp
 open Seq
 
-(*
-   I use a reader module to easily extract multiple properties at once from one midi input stream.
-*)
 module Reader = struct
+  (**
+   I use a reader module to easily extract multiple properties at once from one midi input stream.
+  *)
   type ('e, 'a) t = Reader of ('e -> 'a)
 
   let run = function Reader r -> r
@@ -82,16 +82,12 @@ let addToBundle (Bundle (fst, rest)) note =
       Bundle (ControlEvent (ch, co, va), appendToEnd note rest)
 
 let addOptToBundle opt bundle =
-  match opt with
-  | Some evt -> addToBundle bundle evt
-  | None -> bundle
-      
+  match opt with Some evt -> addToBundle bundle evt | None -> bundle
 
 let chord noteSeq =
   match noteSeq () with
   | Cons (note, rest) -> Bundle (note, rest)
   | Nil -> Bundle (SilenceEvent, Seq.empty)
-
 
 type note = Note of midiChannel * pitch * velocity
 type noteEvt = NoteEvt of midiChannel * pitch * velocity * deltaT
@@ -377,8 +373,8 @@ module MidiState = struct
       currentPitch = Pitch 60;
     }
 
+  (** map.add = x y m = item key map *)
   let update midiMsg state =
-    (* map.add = x y m = item key map *)
     match midiMsg with
     | NoteOn (midiCh, pitch, v) ->
         let (PitchMapKey key) = chanPitchToKey midiCh pitch in
@@ -580,9 +576,10 @@ let printRaw (status, data1, data2) =
     ()
   else ()
 
-(* intersperce a Seq with silence 
- * M...M...M...M...  
- * *)
+(** intersperce a Seq with silence 
+  M...M...M...M... 
+  Note that the time is provided as samples
+  *)
 let withInterval (interval : deltaT Seq.t) (fillerEvent : 'a) (sq : 'a Seq.t) =
   let ctrl = zip sq interval in
   ctrl
@@ -591,27 +588,6 @@ let withInterval (interval : deltaT Seq.t) (fillerEvent : 'a) (sq : 'a Seq.t) =
 let withInt interval fillerEvent sq =
   let ctrl = zip sq interval in
   concatMap (fun (src, n) () -> Cons (src, fun () -> repeat n fillerEvent)) ctrl
-
-(* does not work: *
-   let intervalNotesOnly interval sq =
-     let rec aux interval sq curr () =
-       if curr < 1 then
-         match interval () with
-         | Nil -> Nil
-         | Cons (newinterval, itl) -> (
-           match sq () with
-           | Cons (NoteEvent (c, p, v, d), tail) ->
-               Cons (NoteEvent (c, p, v, d), aux itl tail newinterval)
-           | any -> any )
-       else
-         match sq () with
-         | Cons (NoteEvent (_, _, _, _), _) ->
-             Cons (SilenceEvent, aux interval sq (curr - 1))
-         | Cons (evt, tail) -> Cons (evt, aux interval tail curr)
-         | Nil -> Nil
-     in
-     aux interval sq 0
-*)
 
 type ordering = Greater | Smaller | Equal
 
@@ -1167,10 +1143,10 @@ let trigger event midiIn =
 
 let testmidi midi = midi |> take 80 |> serialize |> iter (toRaw >> printRaw)
 
-(* midiSq is a function that takes an input seq as argument and retuns a raw midi seuence. 
- * You also pass in a samplerateRef, which can be used for samplerate dependent calculations.
- *)
 let playMidi midiSq samplerateRef =
+  (* midiSq is a function that takes an input seq as argument and retuns a raw midi seuence.
+     * You also pass in a samplerateRef, which can be used for samplerate dependent calculations.
+  *)
   let state = justSilence in
   (* the sq state var *)
   let inputRef = ref MidiSilence in
@@ -1197,25 +1173,35 @@ type midiNoteGenerator =
       channel : int Seq.t;
     }
 
-let genWithPitch sq (MidiNoteGen gen)  = MidiNoteGen { gen with pitch = Cisp.intify sq }
-let genWithVelo sq (MidiNoteGen gen)  = MidiNoteGen { gen with velo = Cisp.intify sq }
-let genWithDur sq (MidiNoteGen gen)  = MidiNoteGen { gen with durInSec = sq }
-let genWithChannel sq (MidiNoteGen gen)  = MidiNoteGen { gen with channel = Cisp.intify sq }
+let genWithPitch sq (MidiNoteGen gen) =
+  MidiNoteGen { gen with pitch = Cisp.intify sq }
 
-let sec_to_samps s = 
-  s |> ( *. ) !Process.sample_rate |> int_of_float
-(* could also use infseq, but for now use finseq *)
-(* instead of using Seq.t, where the input is (), 
-   we are explicitely requiring the user to provide the previous midi generator state,
-   so it can be changed by the user "on-the-fly"
-*)
-let play_note (MidiNoteGen { pitch; velo; durInSec; channel}) =
-  let ( >>= ) a f = Option.bind a f in 
-  uncons pitch >>= fun (p,p_tail) ->
-  uncons velo >>= fun (v,v_tail) ->
-  uncons durInSec |> Option.map (mapFst sec_to_samps) >>= fun (d,d_tail) ->
-  uncons channel >>= fun (c,c_tail) ->
-  Option.Some (makeNoteOfInts p v d c,MidiNoteGen { pitch = p_tail; velo = v_tail; durInSec = d_tail; channel = c_tail })
+let genWithVelo sq (MidiNoteGen gen) =
+  MidiNoteGen { gen with velo = Cisp.intify sq }
+
+let genWithDur sq (MidiNoteGen gen) = MidiNoteGen { gen with durInSec = sq }
+
+let genWithChannel sq (MidiNoteGen gen) =
+  MidiNoteGen { gen with channel = Cisp.intify sq }
+
+let sec_to_samps s = s |> ( *. ) !Process.sample_rate |> int_of_float
+
+(** could also use infseq, but for now use finseq
+   instead of using Seq.t, where the input is (),
+     we are explicitely requiring the user to provide the previous midi generator state,
+     so it can be changed by the user "on-the-fly"
+  *)
+let play_note (MidiNoteGen { pitch; velo; durInSec; channel }) =
+  let ( >>= ) a f = Option.bind a f in
+  uncons pitch >>= fun (p, p_tail) ->
+  uncons velo >>= fun (v, v_tail) ->
+  uncons durInSec |> Option.map (mapFst sec_to_samps) >>= fun (d, d_tail) ->
+  uncons channel >>= fun (c, c_tail) ->
+  Option.Some
+    ( makeNoteOfInts p v d c,
+      MidiNoteGen
+        { pitch = p_tail; velo = v_tail; durInSec = d_tail; channel = c_tail }
+    )
 
 let fromGenerator (MidiNoteGen { pitch; velo; durInSec; channel }) input =
   let durInSamp =
@@ -1230,42 +1216,39 @@ let from_dynamic_generator generator custom_update input =
   let rec aux midi_generator midi_input () =
     match midi_input () with
     | Nil -> Nil
-    | Cons(inp,tl) ->
-      if isNoteOn inp then
-        let opt =
-          play_note midi_generator 
-        in 
-        match opt with
-        | None -> Nil
-        | Some (note,state) ->
-          let new_state = custom_update state in 
-          Cons(note,aux new_state tl)
-      else
-        Cons (SilenceEvent,aux (custom_update midi_generator) tl)  
-  in 
+    | Cons (inp, tl) ->
+        if isNoteOn inp then
+          let opt = play_note midi_generator in
+          match opt with
+          | None -> Nil
+          | Some (note, state) ->
+              let new_state = custom_update state in
+              Cons (note, aux new_state tl)
+        else Cons (SilenceEvent, aux (custom_update midi_generator) tl)
+  in
   aux generator input |> serialize |> map toRaw
 
-
-
-  (* todo make all of this use infseq *)
-let from_dynamic_generators (generators : midiNoteGenerator Option.t Array.t) custom_update input =
+(* todo make all of this use infseq *)
+let from_dynamic_generators (generators : midiNoteGenerator Option.t Array.t)
+    custom_update input =
   let rec aux midi_generators midi_input () =
     match midi_input () with
     | Nil -> Nil
-    | Cons(inp,tl) ->
-      begin
+    | Cons (inp, tl) ->
         if isNoteOn inp then
-          let notes_generators = (* playnote produces (note, generator) Option.t *)
+          let notes_generators =
+            (* playnote produces (note, generator) Option.t *)
             Array.map (fun opt -> Option.bind opt play_note) midi_generators
-          in 
-          let notes = Array.map (fun opt -> opt |> Option.map Cisp.fst) notes_generators in
-          let states = Array.map (fun opt -> opt |> Option.map Cisp.snd) notes_generators in
-          Cons(Array.fold_left (Cisp.flip addOptToBundle) emptyBundle notes, aux states tl)
-        else
-          Cons (emptyBundle, aux (custom_update midi_generators) tl)
-      end
+          in
+          let notes =
+            Array.map (fun opt -> opt |> Option.map Cisp.fst) notes_generators
+          in
+          let states =
+            Array.map (fun opt -> opt |> Option.map Cisp.snd) notes_generators
+          in
+          Cons
+            ( Array.fold_left (Cisp.flip addOptToBundle) emptyBundle notes,
+              aux states tl )
+        else Cons (emptyBundle, aux (custom_update midi_generators) tl)
   in
-  aux generators input |> serializeBundles |> map toRaw 
-
-
-
+  aux generators input |> serializeBundles |> map toRaw

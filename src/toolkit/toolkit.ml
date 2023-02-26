@@ -67,6 +67,18 @@ let%test "wrap 0" =
   let input = [0;1;2;3;4] in
   let expect = [0;0;0;0;0] in
   List.equal Int.equal (input |> List.map (wrap 0 0)) expect
+(* 
+let get_safe arr idx =
+  let len = Array.length arr in
+  if idx >= len then
+    None
+  else
+    Some (Array.get arr idx) *)
 
 
-      
+let choice first rest =
+  let arr = first :: rest |> Array.of_list in
+  let random_index = rvi 0 (Array.length arr) in
+  Array.get arr random_index
+
+

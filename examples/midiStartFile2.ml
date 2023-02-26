@@ -27,14 +27,14 @@ let mkChord lst start dur =
            |> withDur (Samps (sec_to_samps dur))
            |> withVelo (mkVelocityClip (Toolkit.rvi 80 120))))
 
-let durpat = Infseq.seq [ 0.01; 0.3; 0.3 ]
+let durpat = Infseq.seq [ 0.01; 0.02; 0.02 ]
 
 let chordStream =
   (* generate a sequence of chords *)
-  let a = [ 0; 3; 7; 9; 14; 17 ] in
-  let b = [ 0; 5; 7; 12; 17; 19 ] in
-  let c = [ 0; 5; 10; 15 ] in
-  let d = [ 0 ] in
+  let a = [ 0;1;2;3 ] in
+  let b = [ 0;4; 7 ] in
+  let c = [ 0;7;9;12;14] in
+  let d = [ 0;] in
   [ a; d; b; d; c; d ] |> List.to_seq
   |> Cisp.hold (Cisp.rv (st 1) (st 2))
   |> Infseq.cycleSq

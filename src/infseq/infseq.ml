@@ -48,13 +48,22 @@ let map2 f sqa sqb = map f sqa |> andMap sqb
 let ( <*> ) fab fa = andMap fa fab
 let ( <$> ) f fa = map f fa
 
+let map3 f sqa sqb sqc = map f sqa |> andMap sqb |> andMap sqc
+
 let hold repetitions source =
   let f src n = src |> repeat |> take n in
   map2 f source repetitions |> concatSq
 
 let cycleSq sq = repeat sq |> concatSq
 let seq lst = lst |> List.to_seq |> cycleSq
+(** 
+  repeat a list forever, seq [1;2;3] will result in 1 2 3 1 2 3 1 2 ...
+*)
+
 let of_list = seq
+(**
+  Will repeat list forever
+*)
 
 let rec unfold f seed () =
   let current, nextSeed = f seed in
@@ -158,6 +167,12 @@ let rec transpose (sqqss : 'a t Seq.t) () =
     sqqss |> Seq.map (fun sq -> match sq () with InfCons (x, xs) -> (x, xs))
   in
   InfCons (Seq.map fst uncons, transpose (Seq.map snd uncons))
+
+let transcat sqqs =
+  sqqs |> transpose |> concatSq
+   (**
+    Take a finite Seq of Infseqs and join it all together for infinite length
+  *)
 
 let rec self_chain sq () =
   match sq () with

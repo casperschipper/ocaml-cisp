@@ -268,10 +268,28 @@ let withDurSq = map2 withDur
 let withChannelSq = map2 withChannel
 let withVeloSq = map2 withVelo
 
+type pitchBend = Pitchbend of int (* -8192 to 8191 *)
+
+let pb_to_int (Pitchbend pb) = pb
+let getFirstSevenBits v = v land 0b01111111
+let getSecondSevenBits v = (v lsr 7) land 0b01111111
+
+let pitchBendToRaw (Pitchbend pb) =
+  let shift = pb + 8192 in
+  let lsb = getFirstSevenBits shift in
+  let msb = getSecondSevenBits shift in
+  (0xe0, lsb, msb)
+
+let pitchBendFromRaw (lsb, msb) =
+  let shift = (msb lsl 7) lor lsb in
+  Pitchbend (shift - 8192)
+
 type midiMessage =
   | NoteOn of midiChannel * pitch * velocity
   | NoteOff of midiChannel * pitch * velocity
   | Control of midiChannel * controller * midiValue
+  | PitchBend of midiChannel * pitchBend
+  | PolyAftertouch of midiChannel * pitch * midiValue
   | ClockTick
   | ClockStart
   | ClockStop
@@ -519,6 +537,11 @@ let midiToString = function
   | NoteOff (MidiCh ch, Pitch p, Velo v) ->
       List.map Int.to_string [ ch; p; v ]
       |> String.concat "-" |> prepend "NoteOff "
+  | PitchBend (MidiCh ch, pb) ->
+      Int.to_string ch ^ "pitch bend" ^ " " ^ Int.to_string (pb_to_int pb)
+  | PolyAftertouch (MidiCh ch, Pitch p, MidiVal v) ->
+      Int.to_string ch ^ "poly aftertouch" ^ " " ^ Int.to_string p ^ " "
+      ^ "pressure" ^ " " ^ Int.to_string v
   | Control (MidiCh ch, MidiCtrl ctrl, MidiVal v) ->
       List.map Int.to_string [ ch; ctrl; v ]
       |> String.concat "-" |> prepend "Control"
@@ -532,6 +555,9 @@ let toRaw midiMessage =
   | NoteOn (MidiCh ch, Pitch p, Velo v) -> (0x90 lor ch, p, v)
   | NoteOff (MidiCh ch, Pitch p, Velo v) -> (0x80 lor ch, p, v)
   | Control (MidiCh ch, MidiCtrl ctrl, MidiVal v) -> (0xb0 lor ch, ctrl, v)
+  | PitchBend (MidiCh ch, Pitchbend pbint) ->
+      (0xe0 lor ch, getFirstSevenBits pbint, getSecondSevenBits pbint)
+  | PolyAftertouch (MidiCh ch, Pitch p, MidiVal v) -> (0xa0 lor ch, p, v)
   | ClockTick -> (0xf8, 0, 0)
   | ClockStart -> (0xf6, 0, 0)
   | ClockStop -> (0xfa, 0, 0)

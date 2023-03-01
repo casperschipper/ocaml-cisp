@@ -18,5 +18,39 @@ Core modules:
 This all was written while learning ocaml, there is some duplication of functionality throughout, I hope to simplify in the near future once I have decided which patterns I like best.
 The jack bindings work, but only jackMidi works with ocaml threads at the moment.
 
+# Running
+
+You will need:
+
+* [opam](https://ocaml.org/docs/up-and-running)
+
+Opam allows you to install a ocaml compiler and packeges.
+* ocaml 4.14 + flambda
+
+You will also need the c library jacklib (brew has a package)
+
+# packages used
+
+`opam install *package-name*`
+
+* dune
+* utop (optional, but nice)
+* (ctypes)
+* ctypes-foreign
+* bigarray
+* [lwt](https://opam.ocaml.org/packages/lwt/) 
+* lwt.unix
+* [lo](https://opam.ocaml.org/packages/lo/) for OSC support
+
+# Build and run
+
+You need to have a running jack server (there is also a runJack.sh script I use for this).
+
+Make any of the examples by doing dune exec ./cisp1.exe 
+*note the local `./` path prepnding the program name*
+
+for example:
+`dune exec ./cisp1.exe`
+
 
 

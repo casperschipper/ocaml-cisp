@@ -27,12 +27,14 @@ let assert_equal label a b =
 type problem = Problem of string
 
 (* Stream of Stream is just stream Seq.t *)
+(* This type differentiates between infinite sequences, finite sequences and nested versions of those *)
 type stream =
   | InfStream of float Infseq.t
   | FinStream of float Seq.t
   | FinStreams of float Seq.t Infseq.t
   | FinFinStreams of float Seq.t Seq.t
 
+(* Same types, but now as list *)
 type list_type = FloatList | FinList | InfList | Impossible of string
 
 type quiplist =
@@ -128,7 +130,7 @@ let monoform (lst : expression list) =
         This function turns a diverse list into a single type, type normalisation
        For example, if a list is a mix of floats and streams, everything is made into a stream.
        If something starts with a float, but along the way there is a single stream, it will be stream list, since that is the more fundamental type in Cisp.
-       We assume that the most longest type is the intented type. Not all functions require type normalisation, walks can also deal with different types.
+       Quip assumes that the most longest type is the intented type. Not all functions require type normalisation, walks can also deal with different lenghts.
 
       float float float
 
@@ -374,7 +376,7 @@ let cycle lst =
 
 let st lst =
   match lst with
-  | [] -> Result.Error (Problem "st [] makes no sense")
+  | [] -> Result.Error (Problem "st [] makes no sense") (* why not ? *)
   | [ Stream (FinStream seq) ] ->
       Stream (FinStreams (Infseq.repeat seq)) |> Result.ok
   | [ Constant value ] ->
@@ -386,7 +388,8 @@ let st lst =
 let ch lst =
   let handle_lst lst =
     match lst with
-    | FloatLst flst -> Cisp.ch (Array.of_list flst) |> Infseq.cycleSq |> inf_stream
+    | FloatLst flst ->
+        Cisp.ch (Array.of_list flst) |> Infseq.cycleSq |> inf_stream
     | InfStreamLst inf_stream_lst ->
         inf_stream_lst |> Array.of_list |> Infseq.ch_seq |> inf_stream
     | FinStreamLst fin_stream_lst ->
@@ -440,7 +443,11 @@ let concat lst =
 
 let transcat lst =
   (*
-     * Make the list of streams monoform.
+     * Make the list of streams monoform. It is the exact same thing as a matrix transpose:
+    [[1,2,3][4,5,6][7,8,9]]
+    * becomes:
+    [[1,4,7][2,5,8][3,6,9]]
+    * the lists being transposed can also be infinite, but the lists containing the list.
      * Transcat is the old CISP seq. The idea is that you can weave the input streams together.
      * Streams are transposed
      * a b c
@@ -548,6 +555,7 @@ let fold_quiplist_cartesian operator (lst : quiplist) =
       Result.Error
         (Problem "You probably do not want to cartesian map the infinite")
 
+(* *)        
 let op_cartesian op lst =
   let mono = lst |> monoform in
   mono |> result_and_then (fold_quiplist_cartesian op)
@@ -600,15 +608,24 @@ let walk lst =
   lst |> lst_of_two_streams |> result_and_then walk_fun
 
 let list_walk lst =
-    match lst with
-    | [ List lst_expr; Stream (InfStream stepper) ] ->
+  match lst with
+  | [ List lst_expr; Stream (InfStream stepper) ] -> (
       let mono_lst = monoform lst_expr in
-      (match mono_lst with
+      match mono_lst with
       | Ok (FloatLst flt_lst) ->
-        Ok (Stream (InfStream (Infseq.index (Array.of_list flt_lst) (Infseq.walki 0 (Infseq.map int_of_float stepper)))))
+          Ok
+            (Stream
+               (InfStream
+                  (Infseq.index (Array.of_list flt_lst)
+                     (Infseq.walki 0 (Infseq.map int_of_float stepper)))))
       | _ ->
-        Error (problemize "walklist: I expected a list of floats and a infinite stepper"))
-    | _ -> Error (problemize "walklist: I expected a list of floats and a infinite stepper")
+          Error
+            (problemize
+               "walklist: I expected a list of floats and a infinite stepper"))
+  | _ ->
+      Error
+        (problemize
+           "walklist: I expected a list of floats and a infinite stepper")
 
 (*
 index lst indexer (stream)
@@ -682,6 +699,7 @@ let debug_env context env =
 
 let vars_from_list lst = lst |> List.to_seq |> Dict.of_seq
 
+(* this is the actual keywords available in quip *)
 let initial_vars =
   [
     ("+", Function plus);
@@ -789,7 +807,7 @@ let quote env lst =
   | _ -> Error (Problem "Quote only accepts 1 argument")
 
 let lambda (env : environment) lst =
-  debug_env "lamdba" env;
+  (* debug_env "lamdba" env; *)
   match lst with
   | [ List vars; exp ] -> Ok (Lambda (vars, exp), env)
   | _ -> Error (Problem "Invalid lamdba expression")
@@ -981,6 +999,7 @@ let suminfs infsqss =
   |> Seq.map (Seq.fold_left ( +. ) 0.0)
   |> Infseq.cycleSq
 
+  (* handy tool from ac-toolbox *)
 let for_example qp =
   qp |> eval_string_to_stream
   |> Option.map stream_to_string

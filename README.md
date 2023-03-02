@@ -14,6 +14,9 @@ Core modules:
 - midi (parse and generate midi)
 - jack (to play audio)
 - jackMidi (to play midi)
+- parser, a parser combinator
+- quip 
+
 
 This all was written while learning ocaml, there is some duplication of functionality throughout, I hope to simplify in the near future once I have decided which patterns I like best.
 The jack bindings work, but only jackMidi works with ocaml threads at the moment.
@@ -47,7 +50,7 @@ You will also need the c library jacklib (brew has a package)
 You need to have a running jack server (there is also a runJack.sh script I use for this).
 
 Make any of the examples by doing dune exec ./cisp1.exe 
-*note the local `./` path prepnding the program name*
+*note the local `./` path prepending the program name*
 
 for example:
 `dune exec ./cisp1.exe`

@@ -555,7 +555,7 @@ let fold_quiplist_cartesian operator (lst : quiplist) =
       Result.Error
         (Problem "You probably do not want to cartesian map the infinite")
 
-(* *)        
+(* *)
 let op_cartesian op lst =
   let mono = lst |> monoform in
   mono |> result_and_then (fold_quiplist_cartesian op)
@@ -999,7 +999,7 @@ let suminfs infsqss =
   |> Seq.map (Seq.fold_left ( +. ) 0.0)
   |> Infseq.cycleSq
 
-  (* handy tool from ac-toolbox *)
+(* handy tool from ac-toolbox *)
 let for_example qp =
   qp |> eval_string_to_stream
   |> Option.map stream_to_string

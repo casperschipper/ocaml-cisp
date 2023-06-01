@@ -244,11 +244,37 @@
   euclid))
 
 (executable
+ (name graphpath)
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules  graphpath)
+ (libraries
+  infseq
+  lwt.unix
+  oscStream
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  euclid))
+
+(executable
  (name midiStartFile)
  (link_flags
   (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules midiStartFile)
+ (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
+
+(executable
+ (name simpleMidi)
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules simpleMidi)
  (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
 
  (executable

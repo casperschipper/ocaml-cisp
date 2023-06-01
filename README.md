@@ -15,11 +15,16 @@ Core modules:
 - jack (to play audio)
 - jackMidi (to play midi)
 - parser, a parser combinator
-- quip 
+- quip, a lisp compiler, for on-the-fly coding intended to be used through a web interface ([cisp-lab](https://github.com/casperschipper/cisplab), writtin in Elm).
 
+
+# limitations
 
 This all was written while learning ocaml, there is some duplication of functionality throughout, I hope to simplify in the near future once I have decided which patterns I like best.
-The jack bindings work, but only jackMidi works with ocaml threads at the moment.
+
+The jack bindings work, but only jackMidi works with ocaml threads at the moment. There is a bit of statefullness there, that I no longer believe is necessary, but it works ok.
+
+Ocaml has a garbage collector, and although it is not as aggresive as those in Java or javascript, this still will cause bottlenecks when writing heavy audio. This library is aimed at making it easy to do non-standard synthesis experiments, if you want optimization, look elsewhere (Supercollider, Rust?).
 
 # Running
 

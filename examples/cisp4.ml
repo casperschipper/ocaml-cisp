@@ -30,7 +30,7 @@ let midiReader =
 
 let notes channel =
   st makeNoteOfInts 
-  <*> (st 60)
+  <*> (map2 Toolkit.rvi (st 10) (st 100))
   <*> (st 60)
   <*> (seci 0.1 |> st)
   <*> (st channel)

@@ -1163,6 +1163,11 @@ let midiInputTestFun input =
 
 let overTrigger events trigger = weavePattern trigger events (st SilenceEvent)
 
+(**
+  * note this function was updated
+  * @event is the note events you want to generate
+  * @midiIn is the sync input, so any note on, will trigger midiEvents
+  *)
 let trigger event midiIn =
   let t = map isNoteOn midiIn in
   weave t event (st SilenceEvent)
@@ -1278,3 +1283,4 @@ let from_dynamic_generators (generators : midiNoteGenerator Option.t Array.t)
         else Cons (emptyBundle, aux (custom_update midi_generators) tl)
   in
   aux generators input |> serializeBundles |> map toRaw
+

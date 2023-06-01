@@ -25,7 +25,7 @@ But if there is only one ref, this is fine.
 
 (* This creates a stream out of a ref *)
 
-Process.sample_rate := 48000.0;
+Process.sample_rate := 44100.0;
 
 type model = 
   Midi.midiNoteGenerator Option.t Array.t

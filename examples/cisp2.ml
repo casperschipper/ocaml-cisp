@@ -18,7 +18,7 @@ let generator =
     walkFromN step starts number
   in*)
   MidiNoteGen
-    { pitch= (st 60)
+    { pitch= (st 99)
     ; velo= seq [80;60;60] 
     ; durInSec= seq [0.8;0.3;0.2]
     ; channel= st 1 }

@@ -1,12 +1,12 @@
 open Cisp
 open Seq
 
-module Reader = struct
-  (**
+(**
    I use a reader module to easily extract multiple properties at once from one midi input stream.
   *)
+module Reader = struct
   type ('e, 'a) t = Reader of ('e -> 'a)
-
+  (** run the reader *)
   let run = function Reader r -> r
   let map f m = Reader (fun env -> f (run m env))
   let bind f m = Reader (fun env -> run (f (run m env)) env)
@@ -35,8 +35,7 @@ module Reader = struct
   end
 end
 
-(* Protected newtypes, so we are sure we have valid midi data instead of arbitrary ints *)
-
+(** Protected newtypes, so we are sure we have valid midi data instead of arbitrary ints *)
 type midiValue = MidiVal of int
 type velocity = Velo of int
 type pitch = Pitch of int
@@ -45,17 +44,22 @@ type midiChannel = MidiCh of int
 let isChannel (MidiCh a) (MidiCh b) = a == b
 
 type controller = MidiCtrl of int
+(** deltaT is always in samples, so we can be sample accurate, there are functions to convert from other time units*)
 type deltaT = Samps of int
 
 let oneTick (Samps x) = Samps (x + 1)
 let compareSamps (Samps sA) (Samps sB) = sA == sB
 let offsetSamps (Samps offset) (Samps dT) = Samps (offset + dT)
 
+(** midievents have a defined duration *)
 type midiEvent =
   | NoteEvent of midiChannel * pitch * velocity * deltaT
   | ControlEvent of midiChannel * controller * midiValue
   | SilenceEvent
 
+(** midi bundles are a way to achieve chords or simultanious midi events 
+ they need to be sequenced to be played back
+*)
 type midiBundle = Bundle of midiEvent * midiEvent Seq.t
 
 let bundleAsSeq (Bundle (head, tail)) () = Seq.Cons (head, tail)
@@ -1170,7 +1174,7 @@ let overTrigger events trigger = weavePattern trigger events (st SilenceEvent)
   *)
 let trigger event midiIn =
   let t = map isNoteOn midiIn in
-  weave t event (st SilenceEvent)
+  Cisp.weavePattern t event (st SilenceEvent)
 
 let testmidi midi = midi |> take 80 |> serialize |> iter (toRaw >> printRaw)
 

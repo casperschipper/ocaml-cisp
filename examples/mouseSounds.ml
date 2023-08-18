@@ -16,7 +16,7 @@ let noise =
 
 let steps =
   Array.init max (fun idx ->
-      let next = (idx + 1) mod max in
+      let next = (idx + 1) mod max in 
       Infseq.repeat next)
 
 let get_table arr idx =

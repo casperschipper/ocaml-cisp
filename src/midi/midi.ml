@@ -126,6 +126,7 @@ let filterControl midiEvt =
 
 let optionToEvent = function Some evt -> evt | None -> SilenceEvent
 
+(** pretty printing *)
 let midiEventToString evt =
   match evt with
   | NoteEvent (MidiCh mc, Pitch p, Velo v, Samps s) ->
@@ -865,6 +866,8 @@ let pitchVelo midiRef midiCh =
   in
   aux (0, 0)
 
+
+(** deprecated, these could be replaced by Seq.map2 withPitch ? *)
 let rec overwritePitch pitchSq evtSeq () =
   match evtSeq () with
   | Cons (NoteEvent (c, _, v, d), tl) -> (
@@ -875,15 +878,6 @@ let rec overwritePitch pitchSq evtSeq () =
       | Nil -> Nil)
   | Cons (otherEvent, tl) -> Cons (otherEvent, overwritePitch pitchSq tl)
   | Nil -> Nil
-
-(*| Cons (NoteEvent (c, _, v, d), tl) -> (
-    match pitchSq () with
-    | Cons (_, ptl) ->
-       let p = mkPitchClip 60 in
-       Cons (NoteEvent (c, p, v, d), overwritePitch ptl tl)
-    | Nil -> Nil )
-  | Cons (SilenceEvent, tl) -> Cons (SilenceEvent, tl)
-  | _ -> Nil*)
 
 let rec overwriteDur durSq sq () =
   match sq () with

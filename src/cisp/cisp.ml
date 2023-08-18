@@ -670,7 +670,7 @@ let rec simpleRecursive init update evaluate () =
   Cons (evaluate init, simpleRecursive nextState update evaluate)
 
 (* integer walk, note this is implicitely Infseq *)
-let walki start steps = recursive1 steps start (fun x start -> x + start) id
+let walki start steps = recursive steps start (fun x start -> x + start) id
 
 let walki2 start stepsSq =
   let f (previous, steps) =
@@ -1000,7 +1000,7 @@ let series lst =
       in
       simpleRecursive (xs, x) update (fun (_, curX) -> curX)
 
-(* select from seqs *)
+(** select from seqs *)
 let choice_seq arr =
   let indexer =
     let f () = Some (Toolkit.rvi 0 (Array.length arr)) in
@@ -1014,7 +1014,7 @@ let ftom freq = (12.0 *. log (freq /. 440.0)) +. 69.0
 
 (* input -> state -> (state, value) *)
 
-(* one of my favorate math sequences ! *)
+(** one of my favorate math sequences ! *)
 let rec collatz n () =
   if n = 1 then Nil (* lets end it here, normally loops 1 4 2 1 4 2.. *)
   else
@@ -1022,7 +1022,7 @@ let rec collatz n () =
     let next = if even n then n / 2 else (n * 3) + 1 in
     Cons (next, collatz next)
 
-(* use floats as arguments to somethign that expects streams *)
+(** use floats as arguments to somethign that expects streams *)
 let lift f a b = f (st a) (st b)
 let pair a b = (a, b)
 let triple a b c = (a, b, c)
@@ -1869,3 +1869,32 @@ let dwalk start steps boundary1 boundary2 =
   in
   let eval state = state.out in
   recursive ctrlSq init update eval
+
+  (**
+  This is something that slices sections of count sequences.
+    For example toumani_lst [3;3;2] results in :
+    0 1 2. 0 1 2. 0 1. 0 1 2. 0 1 2. 0 1.
+    
+    Or toumani_lst [3;3;2;2;2] is
+    0 1 2 0 1 2 0 1 0 1 0 1 etc..
+  *)
+let toumani_lst lst =
+  let one_walk n = countFrom 0 |> take n in
+  Seq.cycle (List.to_seq lst) |> Seq.map one_walk |> concat
+
+
+  (**
+    This will allow you to do reich like patterns, for example clapping music basic pattern is:
+    count_decoder [(1,3);(0,1);(1,2),(0,1),(1,1),(0,1)]
+    1 1 1 0 1 1 0 1 0 1 1 0 
+    or briefer 
+
+    Seq.interleave (List.to_seq [3;2;1;2] |> Seq.map (fun x -> (1,x))) (st )
+
+  *)
+let count_decoder lst =
+  lst 
+    |> List.to_seq
+    |> cycle
+    |> Seq.map (fun (value,n) -> repeat value n)
+    |> Seq.concat 

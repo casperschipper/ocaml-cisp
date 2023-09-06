@@ -929,8 +929,9 @@ let testSequence =
 let justSilence = ref (st (toRaw MidiSilence))
 let makeNote pitch velo dur channel = (pitch, velo, dur, channel)
 
+  (** pitch, velocity, duration, channel*)
 let makeNoteOfInts p v d ch =
-  (* pitch, velocity, duration, channel*)
+
   NoteEvent (mkChannelClip ch, mkPitchClip p, mkVelocityClip v, mkSampsClip d)
 
 let filterEvents f sq =

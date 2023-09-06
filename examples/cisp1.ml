@@ -1,25 +1,73 @@
+open Midi
 open Cisp
+open Plugface
 
-(* 
-let () = 
-  let env = triangle (st 50.0) |> Seq.map (linlin (-1.0) 1.0 400.0 12000.0) in
-  let oscil () = osc env in
-  Jack.playSeqs 0 Process.sample_rate [effect masterClock (oscil ());oscil ();oscil ();oscil ()]
-*)
+let load_plug fname =
+  let fname = Dynlink.adapt_filename fname in
+  if Sys.file_exists fname then
+    try Dynlink.loadfile fname with
+    | Dynlink.Error err as e ->
+        print_endline ("ERROR loading plugin: " ^ Dynlink.error_message err);
+        raise e
+    | _ -> failwith "Unknow error while loading plugin"
+  else failwith "Plugin file does not exist"
 
-let topD, bottomD = ref 0.0, ref 0.0
-let topAmp,bottomAmp = ref 1.0, ref 1.0 
-let a = triangle (st 0.006) |> wrRef topD
-let b = triangle (st 0.007) |> wrRef bottomD
-let c = triangle (st 0.005) |> wrRef topAmp
-let d = triangle (st 0.003) |> wrRef bottomAmp
+let seq () =
+  load_plug "myplugin.cmxs";
+  let module M = (val get_plugin () : PLUG) in
+  M.pattern
 
-let () = 
-  let amp_array = lift rvf (-1.0) (1.0) |> take 128 |> Array.of_seq in
-  let duras = rvf (rdRef bottomD) (rdRef topD) |> lookup_signal_array [|1;2;3;4;5;6;7;8;9;10;11;15;105;1024;7050|] in
-  let holder = rvf (rdRef bottomD) (rdRef topD) |> lookup_signal_array [|1;2;3;4;5;6;7;8;9;10;11;12|] in
-  let signal () = index amp_array (walk 0.0 (ch [|-1.0;1.0|] |> hold holder) |> Seq.map int_of_float) |> hold duras in 
-  let effs = effect_lst masterClock [a;b;c;d] in 
-  let eff = effect masterClock effs in
-  let channels = rangei 0 1 |> Seq.map (fun _ -> signal ()) |> List.of_seq in 
-  Jack.playSeqs 0 Process.sample_rate ((effect eff (signal ())) :: channels)
+let get_last_changed_date file = Unix.stat file |> fun stats -> stats.st_mtime
+
+let dynamic_seq =
+  let _ = print_endline "tick ." in
+  let rec aux tail previous_stamp () =
+    let new_date = get_last_changed_date "myplugin.cmxs" in
+    if new_date = previous_stamp then
+      match tail () with
+      | Seq.Cons (h, tl) -> Seq.Cons (h, aux tl previous_stamp)
+      | Seq.Nil -> Seq.Nil
+    else
+      let new_seq = seq () in
+      match new_seq () with
+      | Seq.Cons (h, tl) -> Seq.Cons (h, aux tl new_date)
+      | Seq.Nil -> Seq.Nil
+  in
+  aux (Seq.repeat 90) (get_last_changed_date "myplugin.cmxs")
+
+let f inp =
+  (* let _ = List.iter print_string (Dynlink.all_units ()) in *)
+  let pitch =
+    let arr =
+      [|
+        (* Cisp.listWalk [| 60; 72; 65; 55 |] (Cisp.ch [| -1; 0; 0; 0; 1 |]) ();
+           Cisp.listWalk [| 65; 67; 63 |] (Cisp.ch [| -1; 0; 0; 0; 1 |]) ();
+           Cisp.listWalk [| 65; 67; 63 |] (Cisp.ch [| -1; 0; 0; 0; 1 |]) (); *)
+        dynamic_seq;
+      |]
+    in
+    toumani_lst [ 3; 1; 2; 2; 1; 3 ] |> index_seq arr
+  in
+  inp
+  |> trigger (makeNoteOfInts <$> pitch <*> st 100 <*> st 2000 <*> st 1)
+  |> serialize |> Seq.map toRaw
+
+let () =
+  let f () =
+    Midi.playMidi f Process.sample_rate;
+    while true do
+      Unix.sleep 60
+    done
+  in
+  let _ = Thread.create f () in
+  let _ =
+    print_int
+      (Sys.command
+         "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1");
+    print_int
+      (Sys.command "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in");
+    ignore (Sys.command "jack_lsp -c -A | grep ocaml")
+  in
+  while true do
+    Unix.sleep 30
+  done

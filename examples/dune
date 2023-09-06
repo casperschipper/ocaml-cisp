@@ -229,11 +229,9 @@
  (name cisp1)
  (link_flags
   (-cclib -ljack))
- (ocamlopt_flags -O3)
  (modules cisp1)
  (libraries
   infseq
-  lwt.unix
   oscStream
   midi
   cisp
@@ -241,7 +239,10 @@
   ctypes
   jack
   jackMidi
-  euclid))
+  euclid
+  dynlink
+  plugface
+  ))
 
 (executable
  (name graphpath)

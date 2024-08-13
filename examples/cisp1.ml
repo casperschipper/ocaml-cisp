@@ -1,73 +1,39 @@
-open Midi
 open Cisp
-open Plugface
 
-let load_plug fname =
-  let fname = Dynlink.adapt_filename fname in
-  if Sys.file_exists fname then
-    try Dynlink.loadfile fname with
-    | Dynlink.Error err as e ->
-        print_endline ("ERROR loading plugin: " ^ Dynlink.error_message err);
-        raise e
-    | _ -> failwith "Unknow error while loading plugin"
-  else failwith "Plugin file does not exist"
+let f = resetWalk mupWalk 440.0
+let ar = Array.of_list
 
-let seq () =
-  load_plug "myplugin.cmxs";
-  let module M = (val get_plugin () : PLUG) in
-  M.pattern
-
-let get_last_changed_date file = Unix.stat file |> fun stats -> stats.st_mtime
-
-let dynamic_seq =
-  let _ = print_endline "tick ." in
-  let rec aux tail previous_stamp () =
-    let new_date = get_last_changed_date "myplugin.cmxs" in
-    if new_date = previous_stamp then
-      match tail () with
-      | Seq.Cons (h, tl) -> Seq.Cons (h, aux tl previous_stamp)
-      | Seq.Nil -> Seq.Nil
-    else
-      let new_seq = seq () in
-      match new_seq () with
-      | Seq.Cons (h, tl) -> Seq.Cons (h, aux tl new_date)
-      | Seq.Nil -> Seq.Nil
+let makeIntervals =
+  let intervals =
+    rangei 1 4 |> floatify |> Seq.map (fun x -> x /. (x +. 1.0))
   in
-  aux (Seq.repeat 90) (get_last_changed_date "myplugin.cmxs")
+  let inverse = intervals |> Seq.map (fun x -> 1.0 /. x) in
+  append intervals inverse |> Array.of_seq
 
-let f inp =
-  (* let _ = List.iter print_string (Dynlink.all_units ()) in *)
-  let pitch =
-    let arr =
-      [|
-        (* Cisp.listWalk [| 60; 72; 65; 55 |] (Cisp.ch [| -1; 0; 0; 0; 1 |]) ();
-           Cisp.listWalk [| 65; 67; 63 |] (Cisp.ch [| -1; 0; 0; 0; 1 |]) ();
-           Cisp.listWalk [| 65; 67; 63 |] (Cisp.ch [| -1; 0; 0; 0; 1 |]) (); *)
-        dynamic_seq;
-      |]
-    in
-    toumani_lst [ 3; 1; 2; 2; 1; 3 ] |> index_seq arr
+let table =
+  [ st 1; st 2; st 3; st 4; st 5; [ 0; 0; 0; 3 ] |> ar |> ch ] |> Array.of_list
+
+let graph_synth =
+  let interv = makeIntervals in
+  let update () state =
+    let next = table.(state) in
+    match next () with
+    | Nil -> 0
+    | Cons (x, xs) ->
+        table.(state) <- xs;
+        x
   in
-  inp
-  |> trigger (makeNoteOfInts <$> pitch <*> st 100 <*> st 2000 <*> st 1)
-  |> serialize |> Seq.map toRaw
+  let indexer = recursive (st ()) 0 update (fun x -> x) in
+  indexer
+  |> Seq.map (fun i -> interv.(i))
+  |> f
+  |> hold (st 100)
+  |> Seq.map (fun x -> 4410 / int_of_float (x +. 1.0) |> sineseg)
+  |> concat
 
 let () =
-  let f () =
-    Midi.playMidi f Process.sample_rate;
-    while true do
-      Unix.sleep 60
-    done
-  in
-  let _ = Thread.create f () in
-  let _ =
-    print_int
-      (Sys.command
-         "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1");
-    print_int
-      (Sys.command "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in");
-    ignore (Sys.command "jack_lsp -c -A | grep ocaml")
-  in
-  while true do
-    Unix.sleep 30
-  done
+  Jack.playSeqs 0 Process.sample_rate
+    [ Cisp.effect Cisp.masterClock graph_synth; graph_synth ];
+  Unix.sleep 1;
+  ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0");
+  ignore (Unix.sleep 1000)

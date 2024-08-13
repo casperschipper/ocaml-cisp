@@ -1,10 +1,14 @@
-(* ocamlc -I /Users/casperschipper/.opam/4.11.1+flambda/lib/lo -i oscParser.ml >> oscParse2.mli *)
-
 type data = Lo.Message.data
 
 module R = Result
 
-type 'a t = OscParser of (data Seq.t -> ('a * data Seq.t, string) Result.t)
+type floats = float array
+
+val set : int -> float -> floats -> unit
+
+val get : int -> floats -> float
+
+type 'a t = OscParser of (data Seq.t -> ('a * data Seq.t, string) result)
 
 val ofData :
      [> `Double of float
@@ -15,7 +19,7 @@ val ofData :
      | `True ]
   -> string
 
-val run : 'a t -> data Seq.t -> ('a * data Seq.t, string) Result.t
+val run : 'a t -> data Seq.t -> ('a * data Seq.t, string) result
 
 val return : 'a -> 'a t
 
@@ -43,6 +47,10 @@ val float : float t
 
 val int : int t
 
+val string : string t
+
+val bool : bool t
+
 val flt_par : string -> float t
 
 val int_par : string -> int t
@@ -50,3 +58,5 @@ val int_par : string -> int t
 val str_par : string -> string t
 
 val bool_par : string -> bool t
+
+(* ocamlc -I /Users/casperschipper/.opam/4.11.1+flambda/lib/lo -i oscParser.ml >> oscParse2.mli  *)

@@ -3,8 +3,8 @@
 		"fileversion" : 1,
 		"appversion" : 		{
 			"major" : 8,
-			"minor" : 3,
-			"revision" : 2,
+			"minor" : 5,
+			"revision" : 5,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
@@ -40,6 +40,17 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-2",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 222.0, 198.0, 100.0, 22.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"id" : "obj-11",
 					"linecount" : 3,
 					"maxclass" : "message",
@@ -47,7 +58,6 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 502.0, 307.0, 704.0, 49.0 ],
-					"presentation_linecount" : 3,
 					"text" : "1/pitch \"(hold \n(ch 2 1 3)\n(transcat (hold (rv 3 5) (cycle (seq 74 76 79) 64 67 60 64 67 69)) (hold (rv 5 10) (cycle 67 69 72)) (hold (rv 5 10) (cycle 53 59 52))))\""
 				}
 
@@ -132,7 +142,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 280.0, 303.0, 50.0, 22.0 ],
-					"text" : "67 0"
+					"text" : "126 0"
 				}
 
 			}

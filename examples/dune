@@ -106,14 +106,13 @@
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
- (executable
+(executable
  (name tablepathsplitnew)
  (modules tablepathsplitnew)
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
-
- (executable
+(executable
  (name tablepathnew)
  (modules tablepathnew)
  (ocamlopt_flags -O3)
@@ -155,6 +154,8 @@
 
 (executable
  (name simplecasper)
+ (flags
+  (:standard -w -32))
  (link_flags
   (-cclib -ljack))
  (ocamlopt_flags -O3)
@@ -241,15 +242,14 @@
   jackMidi
   euclid
   dynlink
-  plugface
-  ))
+  plugface))
 
 (executable
  (name graphpath)
  (link_flags
   (-cclib -ljack))
  (ocamlopt_flags -O3)
- (modules  graphpath)
+ (modules graphpath)
  (libraries
   infseq
   lwt.unix
@@ -278,7 +278,7 @@
  (modules simpleMidi)
  (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
 
- (executable
+(executable
  (name midiStartFile2)
  (link_flags
   (-cclib -ljack))
@@ -448,16 +448,7 @@
   (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules cispOsc3)
- (libraries
-  quip
-  threads
-  infseq
-  midi
-  cisp
-  jack
-  osc_unix
-  parser
-  ws))
+ (libraries quip threads infseq midi cisp jack osc_unix parser ws))
 
 (executable
  (name sendOsc)
@@ -490,7 +481,6 @@
 
 (executable
  (name receiveOscTest)
-
  (ocamlopt_flags -O3)
  (modules receiveOscTest)
  (libraries threads lo midi cisp jackMidi))

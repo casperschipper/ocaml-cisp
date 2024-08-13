@@ -1,4 +1,4 @@
-(library
- (name myplugin)
- (libraries plugface)
-)
+
+  (library
+  (name random_7Pyv0ZX08P)
+    (libraries plugface cisp))

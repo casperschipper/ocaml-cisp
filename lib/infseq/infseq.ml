@@ -12,7 +12,7 @@ let rec generator f () = InfCons (f (), generator f)
 let head sq = match sq () with InfCons (x, _) -> x
 let tail sq = match sq () with InfCons (_, ts) -> ts
 
-(* use sparingly ! *)
+(* use sparingly, it will create implicit infinity *)
 let rec toSeq infSq () =
   match infSq () with InfCons (h, tl) -> Seq.Cons (h, toSeq tl)
 
@@ -47,7 +47,6 @@ let rec andMap sqa sqf () =
 let map2 f sqa sqb = map f sqa |> andMap sqb
 let ( <*> ) fab fa = andMap fa fab
 let ( <$> ) f fa = map f fa
-
 let map3 f sqa sqb sqc = map f sqa |> andMap sqb |> andMap sqc
 
 let hold repetitions source =
@@ -55,15 +54,16 @@ let hold repetitions source =
   map2 f source repetitions |> concatSq
 
 let cycleSq sq = repeat sq |> concatSq
-let seq lst = lst |> List.to_seq |> cycleSq
+
 (** 
   repeat a list forever, seq [1;2;3] will result in 1 2 3 1 2 3 1 2 ...
 *)
+let seq lst = lst |> List.to_seq |> cycleSq
 
-let of_list = seq
 (**
   Will repeat list forever
 *)
+let of_list = seq
 
 let rec unfold f seed () =
   let current, nextSeed = f seed in
@@ -168,11 +168,10 @@ let rec transpose (sqqss : 'a t Seq.t) () =
   in
   InfCons (Seq.map fst uncons, transpose (Seq.map snd uncons))
 
-let transcat sqqs =
-  sqqs |> transpose |> concatSq
-   (**
+(**
     Take a finite Seq of Infseqs and join it all together for infinite length
   *)
+let transcat sqqs = sqqs |> transpose |> concatSq
 
 let rec self_chain sq () =
   match sq () with

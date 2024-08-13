@@ -56,8 +56,6 @@ let rec takeLst n lst =
 
 let rec listRepeat n x = if n <= 0 then [] else x :: listRepeat (n - 1) x
 
-
-
 (* List a -> (List a -> b) -> List b *)
 
 let rec zip a b () =
@@ -225,9 +223,7 @@ let tail ll = match ll () with Nil -> None | Cons (_, tl) -> Some tl
      List.fold_right (fun x acc -> Cons (x, acc |> thunk)) list Nil
 *)
 
-let ofList l =
-  let rec aux l () = match l with [] -> Nil | x :: l' -> Cons (x, aux l') in
-  aux l
+let ofList l = List.to_seq l
 
 let rec toList sq =
   match sq () with Nil -> [] | Cons (h, ts) -> h :: toList ts
@@ -236,12 +232,13 @@ let rec take n sq () =
   if n <= 0 then Nil
   else match sq () with Nil -> Nil | Cons (h, ts) -> Cons (h, take (n - 1) ts)
 
-let for_example lst = lst |> take 40 |> toList
+let for_example sq = sq |> take 40 |> toList
 
 let rec drop n lst () =
   if n <= 0 then lst ()
   else match lst () with Nil -> Nil | Cons (_, tail) -> drop (n - 1) tail ()
 
+(* chunkSize: the size of the chunks, sq is input *)
 let rec group chunkSize sq () =
   match chunkSize () with
   | Nil -> Nil
@@ -592,6 +589,8 @@ let linlin inA inB outA outB input =
   let d = maximum outA outB in
   ((input -. a) /. (b -. a) *. (d -. c)) +. c
 
+let rec uzi f n () = if n < 1 then Seq.Nil else Seq.Cons (f (), uzi f (n - 1))
+
 let mapLinlin inA inB outA outB input =
   map linlin inA |> andMap inB |> andMap outA |> andMap outB |> andMap input
 
@@ -634,18 +633,21 @@ let tanh_clip = Seq.map tanh
      l + (x - l) |> modBy r
 *)
 
-(* Inspired by the Elm architecture. I guess this is some distant form of Functional Reactive Programming.
- *
+(**
+ * This can be used to produce a stream of values, where consecuative may depend on previous input.
  * You start with a state (init).
- * This state is updated through the control stream using the update function.
- * init : state (you define whatever you need)
- * control : Seq.t msg
- * update : msg -> state -> state
- * evaluate : state -> output (this allows you to ignore some part of the state, or interperet it
+ * This state is updated through a control stream using the update function.
+ * @control : Seq.t msg
+ * @init : state (you define whatever you need)
+ * @update : msg -> state -> state
+ * @evaluate : state -> output (this allows you to ignore some part of the state, or interperet it
  *
  * In fact, this is similar to Seq.unfold, but control is a parameter, instead of 
- * stored in the state. This garantees that control is updated/consumed on each tick (useful when it is a live input!) 
- * 
+ * stored in the state. This garantees that control is updated/consumed on each tick (useful when it is a live input!)
+ * Inspired by the Elm architecture. I guess this is some distant form of Functional Reactive Programming. 
+ *
+ * For example, you can make a counter as follows
+ * [recursive (st ()) 0 (fun () state -> state + 1) (identity)]
  *)
 let rec recursive control init update evaluate () =
   match control () with
@@ -654,7 +656,9 @@ let rec recursive control init update evaluate () =
       let nextState = update x init in
       Cons (evaluate init, recursive xs nextState update evaluate)
 
-(* first run update, then evaluate new state *)
+(**
+ first run update, then evaluate new state 
+ *)
 let rec recursive1 control init update evaluate () =
   match control () with
   | Nil -> Nil
@@ -664,6 +668,9 @@ let rec recursive1 control init update evaluate () =
 
 (* recursive no control seq. Allows for non-trivial control update (you have to take care of the update of control in update function yourself)
  * this is almost the same as unfold, except it will never end.
+ * @init : state
+ * @update : what will be the next state based on the current
+ * @evaluate : filter out the part of state that we are interested in
  *)
 let rec simpleRecursive init update evaluate () =
   let nextState = update init in
@@ -925,9 +932,9 @@ let indexCub arr indexer =
   in
   map f indexer
 
-(* segmod like: a (finite) full phase cycle of a sinewave
-   https://github.com/lucdoebereiner/segmod
-*)
+(** segmod like: a (finite) full phase cycle of a sinewave
+  * https://github.com/lucdoebereiner/segmod
+  **)
 let sineseg wavesamps =
   let incr = 1.0 /. Float.of_int wavesamps in
   let f x = 2.0 *. Float.pi *. x |> sin in
@@ -942,6 +949,13 @@ let arr_of_seq str = Array.of_seq str
 
 let rec repeat n x () = if n > 0 then Cons (x, repeat (n - 1) x) else Nil
 
+(**
+* Sample and hold for streams
+* the stream is hold for n times 
+* @repeats stream that controls repeats
+* @source stream that is the being repeated
+* 
+*)
 let hold repeats source =
   let ctrl = zip repeats source in
   map (fun (n, src) -> repeat n src) ctrl |> concat
@@ -1024,6 +1038,7 @@ let rec collatz n () =
 
 (** use floats as arguments to somethign that expects streams *)
 let lift f a b = f (st a) (st b)
+
 let pair a b = (a, b)
 let triple a b c = (a, b, c)
 
@@ -1045,13 +1060,13 @@ let rec selfChain sq () =
       | Nil -> Nil
       | Cons (h2, _) -> Cons ((h, h2), selfChain tail))
 
-let seq lst = lst |> ofList |> cycle
 (** this is making it implicitely infinite, use Infseq instead *)
+let seq lst = lst |> ofList |> cycle
 
+let cycle = Seq.cycle
 
-let row = ofList
 (** this is a finite seq constructed of a list, if used as an argument to walk, will be finite as well *)
-
+let row = ofList
 
 let lin ns targets =
   let targs = selfChain targets in
@@ -1510,9 +1525,14 @@ let bouncyWalk start lower higher stepSq =
 let rec until condition sq () =
   match sq () with
   | Nil -> Nil
-  | Cons (x, xs) -> if condition x then Cons (x, until condition xs) else Nil
+  | Cons (x, xs) -> if condition x then Nil else Cons (x, until condition xs)
 
-let resetWalk walk stepSq resetN source =
+let sqwhile condition sq = until (fun x -> not (condition x)) sq
+
+(**
+  
+*)
+let resetWalk walk stepSq source resetN =
   let control = zip resetN source in
   let rec controlWithSteps ctrl stepSeq () =
     match ctrl () with
@@ -1870,7 +1890,7 @@ let dwalk start steps boundary1 boundary2 =
   let eval state = state.out in
   recursive ctrlSq init update eval
 
-  (**
+(**
   This is something that slices sections of count sequences.
     For example toumani_lst [3;3;2] results in :
     0 1 2. 0 1 2. 0 1. 0 1 2. 0 1 2. 0 1.
@@ -1882,19 +1902,16 @@ let toumani_lst lst =
   let one_walk n = countFrom 0 |> take n in
   Seq.cycle (List.to_seq lst) |> Seq.map one_walk |> concat
 
-
-  (**
+(**
     This will allow you to do reich like patterns, for example clapping music basic pattern is:
     count_decoder [(1,3);(0,1);(1,2),(0,1),(1,1),(0,1)]
     1 1 1 0 1 1 0 1 0 1 1 0 
     or briefer 
-
+ 
     Seq.interleave (List.to_seq [3;2;1;2] |> Seq.map (fun x -> (1,x))) (st )
 
   *)
 let count_decoder lst =
-  lst 
-    |> List.to_seq
-    |> cycle
-    |> Seq.map (fun (value,n) -> repeat value n)
-    |> Seq.concat 
+  lst |> List.to_seq |> cycle
+  |> Seq.map (fun (value, n) -> repeat value n)
+  |> Seq.concat

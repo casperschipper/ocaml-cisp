@@ -1,22 +1,21 @@
 external caml_snd_write :
-     (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
-  -> string
-  -> int * int * int * int
-  -> unit = "caml_snd_write"
+  (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t ->
+  string ->
+  int * int * int * int ->
+  unit = "caml_snd_write"
 
 external caml_snd_read :
   string -> (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
   = "caml_snd_read"
 
 external caml_n_channels : string -> int = "caml_n_channels"
-
 external caml_n_samplerate : string -> int = "caml_n_samplerate"
 
-type t =
-  { channels: int
-  ; sr: int
-  ; buffer: (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t
-  }
+type t = {
+  channels : int;
+  sr : int;
+  buffer : (float, Bigarray.float32_elt, Bigarray.c_layout) Bigarray.Array1.t;
+}
 
 type format =
   | WAV_8
@@ -56,26 +55,21 @@ let write_buf array string sr chns format =
   caml_snd_write array string (make_format_tuple sr chns format)
 
 let snd_channels = caml_n_channels
-
 let snd_sr = caml_n_samplerate
-
 let snd_read = caml_snd_read
 
 let write snd string format =
   write_buf snd.buffer string snd.sr snd.channels format
 
 let read fname =
-  {channels= snd_channels fname; sr= snd_sr fname; buffer= snd_read fname}
+  { channels = snd_channels fname; sr = snd_sr fname; buffer = snd_read fname }
 
 let idx snd i = snd.buffer.{i}
 
 (* t channel number index -> returns samples*)
 let idx_channel snd c i = snd.buffer.{(snd.channels * i) + c}
-
 let n_frames snd = Bigarray.Array1.dim snd.buffer / snd.channels
-
 let channels snd = snd.channels
-
 let sr snd = snd.sr
 
 let from_seq n sr slst =
@@ -91,10 +85,12 @@ let from_seq n sr slst =
         let buf_i = (i * n_channels) + c in
         match channel_stream () with
         | Nil -> buf.{buf_i} <- 0.
-        | Cons (a, next) -> buf.{buf_i} <- a ; seq.(c) <- next)
+        | Cons (a, next) ->
+            buf.{buf_i} <- a;
+            seq.(c) <- next)
       seq
-  done ;
-  {channels= n_channels; sr; buffer= buf}
+  done;
+  { channels = n_channels; sr; buffer = buf }
 
 let fromProc n sr glst =
   let _ = Process.sample_rate := float_of_int sr in
@@ -109,25 +105,21 @@ let fromProc n sr glst =
         let buf_i = (i * n_channels) + c in
         buf.{buf_i} <- Process.generate_next gen)
       seq
-  done ;
-  {channels= n_channels; sr; buffer= buf}
+  done;
+  { channels = n_channels; sr; buffer = buf }
 
 let toProc snd channel =
   Process.map (idx_channel snd channel) (Process.inc_int 0 1)
 
-  (* TODO this should return a result, if the channel number is incorrect *)
+(* TODO this should return a result, if the channel number is incorrect *)
 let to_seq snd channel =
   let count =
     let number = n_frames snd in
     let rec aux n () =
-      if n == number then
-         Seq.Nil
-      else
-         Seq.Cons(n, aux (n + 1))
+      if n == number then Seq.Nil else Seq.Cons (n, aux (n + 1))
     in
     aux 0
   in
   Seq.map (idx_channel snd channel) count
 
-let n_channels snd =
-  snd.channels
+let n_channels snd = snd.channels

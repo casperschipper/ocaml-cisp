@@ -153,6 +153,14 @@
  (libraries bigarray ctypes jack))
 
 (executable
+ (name simplesineosc)
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules simplesineosc)
+ (libraries cisp lo bigarray ctypes jack))
+
+(executable
  (name simplecasper)
  (flags
   (:standard -w -32))
@@ -160,7 +168,7 @@
   (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules simplecasper)
- (libraries cisp bigarray ctypes jack))
+ (libraries lo cisp bigarray ctypes jack))
 
 (executable
  (name fmfb)

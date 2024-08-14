@@ -1065,6 +1065,9 @@ let seq lst = lst |> ofList |> cycle
 
 let cycle = Seq.cycle
 
+
+
+
 (** this is a finite seq constructed of a list, if used as an argument to walk, will be finite as well *)
 let row = ofList
 
@@ -1124,6 +1127,23 @@ let waveOscStr arr frq =
     state +. nextInr
   in
   recursive frq state update (fun x -> x) |> indexLin arr
+
+let sinosc freqctrl = 
+    zip count freqctrl |> map (fun (i,f) -> 
+      i |> float_of_int |> ( /. ) !Process.sample_rate |> fun phase -> sin ( phase *. two_pi *. f))
+  
+let sinosc2 freq_sq = 
+    let wavetablesize = 65536 in
+    let sinetable = Array.init wavetablesize (fun i -> sin((float_of_int i /. (float_of_int wavetablesize)) *. two_pi)) in
+    let rec aux phase frq =
+      match frq () with
+      | Seq.Nil -> Seq.Nil
+      | Seq.Cons (frequency, next_freq_seq) ->
+        let phase_increment = (float_of_int wavetablesize *. frequency) /. !Process.sample_rate in
+        let new_phase = mod_float (phase +. phase_increment) (float_of_int wavetablesize) in
+        Seq.Cons (sinetable.(int_of_float new_phase), fun () -> aux new_phase next_freq_seq)
+    in
+    fun () -> aux 0.0 freq_sq
 
 let sawtooth freq =
   let upd current_freq phase =

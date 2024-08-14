@@ -1,6 +1,12 @@
 module S = Lo.Server
 
 let buffer_mutex = Mutex.create ()
+(* 
+type controller =
+  { alpha : float
+  ; beta : float
+  ; deposit : float
+  ; evaporation : float } *)
 let current_buffer = ref 0.0 
 let next_buffer = ref 0.0
 
@@ -11,6 +17,12 @@ let swap_buffers () =
   next_buffer := temp;
   Mutex.unlock buffer_mutex
 
+
+let handle_float_arg datas =
+  let data = Array.to_list datas in
+  match data with
+  | [`Float f] | [`Double f] -> Some f
+  | _ -> None
 
 let handle_osc_message path data =
   match path with

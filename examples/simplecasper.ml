@@ -1,3 +1,75 @@
+module S = Lo.Server
+
+let buffer_mutex = Mutex.create ()
+
+type controllers =
+  { alpha : float
+  ; beta : float
+  ; deposit : float
+  ; evaporation : float } 
+
+let initial =
+  { alpha = 1.0
+  ; beta = 2.0
+  ;deposit = 10.0
+  ;evaporation = 0.1 }
+
+let set_alpha a ctrl =
+  { ctrl with alpha = a }
+
+let set_beta b ctrl =
+  { ctrl  with beta = b }
+
+let set_deposit d ctrl = 
+  { ctrl  with deposit = d }
+
+let set_evaporation e ctrl = 
+  { ctrl  with evaporation = e }
+
+
+let current_buffer = ref initial
+let next_buffer = ref initial
+
+let swap_buffers () = 
+  Mutex.lock buffer_mutex;
+  let temp = !current_buffer in
+  current_buffer := !next_buffer;
+  next_buffer := temp;
+  Mutex.unlock buffer_mutex
+
+
+let handle_float_arg datas =
+  let data = Array.to_list datas in
+  match data with
+  | [`Float f] | [`Double f] -> Some f
+  | _ -> None
+
+let update_ref_with_option ~ref ~update opt =
+  match opt with
+  | Some x -> ref := update x !ref 
+  | None -> ()
+
+let handle_osc_message path data =
+  let update = 
+    update_ref_with_option ~ref:next_buffer
+  in
+  match path with
+  | "/alpha" -> data |> handle_float_arg  |> update ~update:set_alpha 
+  | "/beta" -> data |> handle_float_arg  |> update ~update:set_beta
+  | "/evaporation" -> data |> handle_float_arg  |> update ~update:set_evaporation
+  | "/deposit" -> data |> handle_float_arg |> update ~update:set_deposit 
+  | _ -> Printf.printf "Unhandled OSC path or arguments\n"
+
+let osc_thread_function () =
+  let server = S.create 57666 handle_osc_message in
+  while true do
+    S.recv server;
+    swap_buffers ();  (* Swap buffers at a safe point, can be adjusted based on needs *)
+  done
+
+
+
+
 let alpha = 1.0 (* pher paths *)
 let beta = 2.99 (* short paths *)
 let num_nodes = 19
@@ -123,7 +195,7 @@ let evaporate p_arr =
   for i  = 0 to Array.length p_arr - 1 do
     for j = 0  to Array.length p_arr.(i) - 1 do
       let old_p_arr = p_arr.(i).(j) in
-      p_arr.(i).(j) <- old_p_arr *. (1.0 -. evaporation_rate)
+      p_arr.(i).(j) <- old_p_arr *. (1.0 -. !current_buffer.evaporation)
     done
   done
 
@@ -168,12 +240,6 @@ let debug_sequence pher_arr seq =
   in
   seq |> Seq.map debug_f 
 
-let calc_p pher_arr (Edge e) alpha beta =
-  let distance_influence = e.inv in
-  let pher_influence =
-    get_pheromone pher_arr (get_node_id e.start) (get_node_id e.target)
-  in
-  (distance_influence *. alpha) +. (pher_influence *. beta)
 
 type weighted_edge = { edge : edge; weight : float }
 
@@ -188,7 +254,7 @@ let select_next_edge pher_arr edge_arr =
           let target = get_node_id (get_target edge) in
           let pheromone = pher_arr.(start).(target) in
           let heuristic = get_inverse edge in
-          let weight = (pheromone ** alpha) *. (heuristic ** beta) in
+          let weight = (pheromone ** !current_buffer.alpha) *. (heuristic ** !current_buffer.beta) in
           (acc +. weight, { edge; weight } :: lst))
         (0.0, []) edge_arr
     in
@@ -267,7 +333,7 @@ let pheromones = Array.make_matrix num_nodes num_nodes 1.0
 let start_new complete_nodes (State state) =
   let _ =
     deposit_pher pheromones state.visited_edges
-      (pheromone_deposition /. state.total_dist)
+      (!current_buffer.deposit /. state.total_dist)
     (* print_string "best distance ";
        print_float state.best_dist;
        print_endline "" *)
@@ -409,8 +475,7 @@ let line_table =
   table |> Toolkit.shuffle |> Array.of_list
 
 let lookup input = input |> Seq.map (fun idx -> Array.get line_table idx)
-let table = signal () |> lookup |> Cisp.take num_samples |> List.of_seq
-let () = pretty_print_floats pheromones
+let output = signal () |> lookup 
 
 (* let () =
   pretty_print_matrix distance_array;
@@ -421,13 +486,21 @@ let () = pretty_print_floats pheromones
          print_string " "); *)
   flush stdout *)
 
-let () =
+let jackMain () =
    Jack.playSeqs 0 Process.sample_rate
      [
-       Cisp.seq table ; Cisp.seq table
+       output
        (* |> Cisp.hold (Cisp.st 40)
           |> Seq.map (fun x -> (x *. 100.0) +. 28.0 |> Cisp.mtof)
           |> Cisp.osc; *)
-     ];
-   Unix.sleep 1;
-   ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0")
+     ]
+
+
+let () = 
+   let _ = Thread.create jackMain () in
+   let _ = Thread.create osc_thread_function () in
+   let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in
+
+   while(true) do 
+    Unix.sleep 20
+  done

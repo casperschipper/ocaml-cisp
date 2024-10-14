@@ -1,5 +1,6 @@
 (library
  (name ws)
  (libraries websocket-lwt-unix)
+ (flags (:standard -w -32-34-39-69))
  (preprocess
   (pps lwt_ppx)))

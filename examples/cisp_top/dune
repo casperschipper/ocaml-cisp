@@ -1,0 +1,14 @@
+(library
+ (name cisp_top)
+ (libraries
+  infseq
+  oscStream
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  euclid
+  dynlink
+  plugface))

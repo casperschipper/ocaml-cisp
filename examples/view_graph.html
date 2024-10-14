@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Reload Every Second</title>
+    <style>
+        body {
+            width: 100%;
+        }
+        
+        img {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <img width="1000" height="800" id="reloadImage" src="your-image-url.jpg" alt="Reloading Image">
+
+    <script>
+        const img = document.getElementById('reloadImage');
+
+        setInterval(() => {
+            // Adding a random query parameter to force reload even if the image is cached
+            img.src = '/Users/casperschipper/devel/ocaml/ocaml-cisp/examples/ant_state.svg?rand=' + Math.random();
+        }, 1000);
+    </script>
+
+</body>
+</html>

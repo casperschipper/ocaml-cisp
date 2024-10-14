@@ -163,12 +163,12 @@
 (executable
  (name simplecasper)
  (flags
-  (:standard -w -32))
+  (:standard -w -26-32-69-34))
  (link_flags
   (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules simplecasper)
- (libraries lo cisp bigarray ctypes jack))
+ (libraries graphsvg lo cisp bigarray ctypes jack svg_gen))
 
 (executable
  (name fmfb)
@@ -238,10 +238,10 @@
  (name cisp1)
  (link_flags
   (-cclib -ljack))
+ (flags (:standard -w -26-27-32))
  (modules cisp1)
  (libraries
   infseq
-  oscStream
   midi
   cisp
   bigarray
@@ -454,6 +454,7 @@
  (name cispOsc3)
  (link_flags
   (-cclib -ljack))
+ (flags (:standard -w -32-34-39-69))
  (ocamlopt_flags -O3)
  (modules cispOsc3)
  (libraries quip threads infseq midi cisp jack osc_unix parser ws))

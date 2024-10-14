@@ -1,84 +1,95 @@
 module S = Lo.Server
 
+let alpha = 2.0 (*  prefer paths with lots of pheromone *)
+let beta =  1.0(* prefer paths that are shorter *)
+let num_nodes = 20
+let evaporation = 0.1
+let deposit = 100.0
+let num_ants = 3
+let num_samples = 44100 * 40
 let buffer_mutex = Mutex.create ()
 
-type controllers =
-  { alpha : float
-  ; beta : float
-  ; deposit : float
-  ; evaporation : float } 
+type controllers = {
+  alpha : float;
+  beta : float;
+  deposit : float;
+  evaporation : float;
+  num_ants : int;
+}
 
-let initial =
-  { alpha = 1.0
-  ; beta = 2.0
-  ;deposit = 10.0
-  ;evaporation = 0.1 }
-
-let set_alpha a ctrl =
-  { ctrl with alpha = a }
-
-let set_beta b ctrl =
-  { ctrl  with beta = b }
-
-let set_deposit d ctrl = 
-  { ctrl  with deposit = d }
-
-let set_evaporation e ctrl = 
-  { ctrl  with evaporation = e }
-
-
+let initial = { alpha; beta; deposit; evaporation; num_ants }
+let set_alpha a ctrl = { ctrl with alpha = a }
+let set_beta b ctrl = { ctrl with beta = b }
+let set_deposit d ctrl = { ctrl with deposit = d }
+let set_evaporation e ctrl = { ctrl with evaporation = e }
+let set_ants a ctrl = { ctrl with num_ants = a }
 let current_buffer = ref initial
 let next_buffer = ref initial
 
-let swap_buffers () = 
+let pint label i =
+  print_string (label ^ " ");
+  print_int i;
+  print_newline ();
+  i
+
+let pflt label f =
+  print_string (label ^ " ");
+  print_float f;
+  print_newline();
+  f
+
+
+
+let swap_buffers () =
   Mutex.lock buffer_mutex;
   let temp = !current_buffer in
   current_buffer := !next_buffer;
   next_buffer := temp;
   Mutex.unlock buffer_mutex
 
-
 let handle_float_arg datas =
   let data = Array.to_list datas in
-  match data with
-  | [`Float f] | [`Double f] -> Some f
-  | _ -> None
+  match data with [ `Float f ] | [ `Double f ] -> Some f | _ -> None
+
+let handle_int_arg datas =
+  let data = Array.to_list datas in
+  match data with [ `Int32 i ] | [ `Int64 i ] -> Some i | _ -> None
 
 let update_ref_with_option ~ref ~update opt =
-  match opt with
-  | Some x -> ref := update x !ref 
-  | None -> ()
+  match opt with Some x -> ref := update x !ref | None -> ()
 
 let handle_osc_message path data =
-  let update = 
-    update_ref_with_option ~ref:next_buffer
-  in
+  let update = update_ref_with_option ~ref:next_buffer in
   match path with
-  | "/alpha" -> data |> handle_float_arg  |> update ~update:set_alpha 
-  | "/beta" -> data |> handle_float_arg  |> update ~update:set_beta
-  | "/evaporation" -> data |> handle_float_arg  |> update ~update:set_evaporation
-  | "/deposit" -> data |> handle_float_arg |> update ~update:set_deposit 
+  | "/alpha" -> data |> handle_float_arg |> update ~update:set_alpha
+  | "/beta" -> data |> handle_float_arg |> update ~update:set_beta
+  | "/evaporation" -> data |> handle_float_arg |> update ~update:set_evaporation
+  | "/deposit" -> data |> handle_float_arg |> update ~update:set_deposit
+  | "/num_ants" ->
+      data |> handle_int_arg
+      |> update_ref_with_option ~ref:next_buffer ~update:set_ants
   | _ -> Printf.printf "Unhandled OSC path or arguments\n"
 
 let osc_thread_function () =
   let server = S.create 57666 handle_osc_message in
   while true do
     S.recv server;
-    swap_buffers ();  (* Swap buffers at a safe point, can be adjusted based on needs *)
+    swap_buffers ()
+    (* Swap buffers at a safe point, can be adjusted based on needs *)
   done
 
-
-
-
-let alpha = 1.0 (* pher paths *)
-let beta = 2.99 (* short paths *)
-let num_nodes = 19
-let evaporation_rate = 0.25
-let pheromone_deposition = 40.0
-let num_samples = 44100 * 40
-let num_ants = 3
-
 type node = Node of { id : int; x : float; y : float }
+
+let print_node = function
+  | Node { id; x; y } ->
+      Printf.printf "Node {\n";
+      Printf.printf "  id: %d\n" id;
+      Printf.printf "  x: %.2f\n" x;
+      Printf.printf "  y: %.2f\n" y;
+      Printf.printf "}\n"
+
+let get_node_id (Node n) = n.id
+let get_node_x (Node n) = n.x
 
 let default_node = Node { id = 0; x = 0.0; y = 0.0 }
 
@@ -94,9 +105,7 @@ type edge = Edge of { start : node; target : node; dist : float; inv : float }
 
 let get_dist (Edge e) = e.dist
 let get_target (Edge e) = e.target
-
 let get_start (Edge e) = e.start
-
 let get_inverse (Edge e) = e.inv
 
 let mkEdge start target distance =
@@ -133,6 +142,39 @@ type state =
       best_dist : float;
     }
 
+  
+
+let get_node_id (Node n) = n.id
+let get_node_x (Node n) = n.x
+  
+let print_edge (Edge edge) =
+  print_string "start: "; print_node edge.start;
+  print_string "target: "; print_node edge.target;
+  print_string "dist"; print_float edge.dist;
+  print_string "inverse "; print_float edge.inv;
+  print_newline ()
+
+
+let print_state = function
+  | State { 
+      current_ant; 
+      current; 
+      targets; 
+      visited; 
+      visited_edges; 
+      total_dist; 
+      best_dist 
+    } ->
+      Printf.printf "State {\n";
+      Printf.printf "  current_ant: %d\n" current_ant;
+      Printf.printf "  current: %d\n" (get_node_id current);  (* Assuming current is a node, change if necessary *)
+      print_string "  targets: %s\n"; (List.iter print_node targets);
+      print_string "  visited: %s\n"; (List.iter print_node visited);
+      print_string "  visited_edges: %s\n"; (List.iter print_edge visited_edges);
+      Printf.printf "  total_dist: %.2f\n" total_dist;
+      Printf.printf "  best_dist: %.2f\n" best_dist;
+      Printf.printf "}\n"
+
 (* Function to generate an array of random points *)
 let generate_random_points ~seed ~count ~max_x ~max_y =
   (* Set the seed for the random number generator *)
@@ -142,6 +184,11 @@ let generate_random_points ~seed ~count ~max_x ~max_y =
       let x = Random.float max_x in
       let y = Random.float max_y in
       Node { id = idx; x; y })
+
+let get_coords (Node { x ; y ; _ }) =
+  (x,y)
+
+
 
 let logflt label f =
   print_string label;
@@ -155,24 +202,32 @@ let logint label i =
   print_int i;
   print_newline ()
 
+let play_stream stream =
+  (* Create a reference to keep track of the call count *)
+  let stream = ref stream in
+  fun () ->
+    let new_value = Cisp.head !stream |> Option.value ~default:0.0 in
+    let _ =
+      stream := Cisp.tail !stream |> Option.value ~default:(Cisp.st 0.0)
+    in
+    new_value
+
 (* Define a function that takes another function `f` and returns a new function that calls `f` once every 1000 times *)
-let with_throttled_execution n f = 
+let with_throttled_execution n f =
   (* Create a reference to keep track of the call count *)
   let call_count = ref 0 in
-  fun () -> 
+  fun () ->
     (* Increment the call count each time the function is called *)
     (* Check if the call count is a multiple of 1000 *)
     if !call_count >= n then
       (* Call the function `f` *)
-      let _ = (call_count := 0) in
+      let _ = call_count := 0 in
       f ()
-    else
-    incr call_count;
-      (* Do nothing otherwise *)
-      ()
+    else incr call_count;
+    (* Do nothing otherwise *)
+    ()
 
-let get_node_id (Node n) = n.id
-let get_node_x (Node n) = n.x
+
 
 let deposit_pher phero_arr tour pheromone =
   List.iter
@@ -187,13 +242,14 @@ let deposit_pher phero_arr tour pheromone =
 let get_pheromone p_arr start target = p_arr.(start).(target)
 
 let arr_map_inplace f arr =
+  (* destructive map *)
   for i = 0 to Array.length arr - 1 do
     arr.(i) <- f arr.(i)
   done
 
 let evaporate p_arr =
-  for i  = 0 to Array.length p_arr - 1 do
-    for j = 0  to Array.length p_arr.(i) - 1 do
+  for i = 0 to Array.length p_arr - 1 do
+    for j = 0 to Array.length p_arr.(i) - 1 do
       let old_p_arr = p_arr.(i).(j) in
       p_arr.(i).(j) <- old_p_arr *. (1.0 -. !current_buffer.evaporation)
     done
@@ -208,42 +264,48 @@ let calculate_entropy p_arr =
       (fun acc pheromone ->
         if pheromone > 0.0 then
           if total_pheromone > 0.0 then
-            (let probability = pheromone /. total_pheromone in
-            acc -. (probability *. log probability))
-          else 
-            acc
+            let probability = pheromone /. total_pheromone in
+            acc -. (probability *. log probability)
+          else acc
         else acc)
       0.0 p_arr
   in
   entropy
 
-type 'a debug_state =  { results : 'a list; count : int}
+type 'a debug_state = { results : 'a list; count : int }
 
-let debug_state = ref { results = [] ; count = 0 }
-
+let debug_state = ref { results = []; count = 0 }
 
 
 let debug_sequence pher_arr seq =
-  let debug_f x  =
+  let debug_f x =
     let state = !debug_state in
-    if state.count >= 300 then
-      (
-      let entropy = calculate_entropy pher_arr in  
+    if state.count >= 300 then (
+      let entropy = calculate_entropy pher_arr in
       print_string "entropy of row 0 is now: ";
       print_float entropy;
       print_newline ();
-      debug_state := {results = entropy :: state.results; count = 0 };
+      debug_state := { results = entropy :: state.results; count = 0 };
       x)
     else
-      let _ = debug_state := {results = state.results ; count = state.count + 1 } in
+      let _ =
+        debug_state := { results = state.results; count = state.count + 1 }
+      in
       x
   in
-  seq |> Seq.map debug_f 
-
+  seq |> Seq.map debug_f
 
 type weighted_edge = { edge : edge; weight : float }
 
-let select_next_edge pher_arr edge_arr =
+let sometimes_random =
+  let open Cisp in
+  play_stream
+    (Cisp.rvf (Cisp.st 0.0) (Cisp.st 1.0)
+    |> Cisp.hold (Cisp.rv (st 10) (st 100000)))
+
+let always_random max = Random.float max
+
+(* let select_next_edge pher_arr edge_arr =
   (* let () = print_endline "*** _+++ start ***" in *)
   if Array.length edge_arr = 1 then Array.get edge_arr 0
   else
@@ -254,29 +316,80 @@ let select_next_edge pher_arr edge_arr =
           let target = get_node_id (get_target edge) in
           let pheromone = pher_arr.(start).(target) in
           let heuristic = get_inverse edge in
-          let weight = (pheromone ** !current_buffer.alpha) *. (heuristic ** !current_buffer.beta) in
+          let weight =
+            (pheromone ** !current_buffer.alpha)
+            *. (heuristic ** !current_buffer.beta)
+          in
           (acc +. weight, { edge; weight } :: lst))
         (0.0, []) edge_arr
     in
-    let p = Random.float sum in
-    let rec pick_if_bigger sumlst acc =
-      (* logflt "acc" acc;
-         logflt "p" p; *)
-      match sumlst with
-      | { edge; weight } :: xs ->
-          let next_acc = acc +. weight in
-          if next_acc >= p then edge
-          else
-            (* let () = logflt "weight" weight in *)
-            pick_if_bigger xs next_acc
-      | [] ->
-          raise
-            (Invalid_argument
-               ("unexpected error: you have hit an empty list of edges. p: "
-              ^ string_of_float p ^ " acc: " ^ string_of_float acc
-              ^ " - sum -  " ^ string_of_float sum))
-    in
-    pick_if_bigger weighted_edges 0.0
+    if sum = 0.0 then Array.get edge_arr (Random.int (Array.length edge_arr))
+    else
+      let p = Random.float sum in
+      let rec pick_if_bigger sumlst acc =
+        (* logflt "acc" acc;
+           logflt "p" p; *)
+        match sumlst with
+        | { edge; weight } :: xs ->
+            let next_acc = acc +. weight in
+            if p <= next_acc then edge
+            else
+              (* let () = logflt "weight" weight in *)
+              pick_if_bigger xs next_acc
+        | [] ->
+            raise
+              (Invalid_argument
+                 ("unexpected error: you have hit an empty list of edges. p: "
+                ^ string_of_float p ^ " acc: " ^ string_of_float acc
+                ^ " - sum -  " ^ string_of_float sum))
+      in
+      pick_if_bigger weighted_edges 0.0 *)
+
+type 'a weighted = { w : float; item : 'a }
+
+
+
+let pick_weighted lst =
+  let total_weight = List.fold_left (fun acc x -> x.w +. acc) 0.0 lst in
+  let p = Random.float 1.0 in
+  (* let _ = print_float p; print_endline " p" in
+  let _ = print_float total_weight ; print_endline " total" in *)
+  let rec aux current_sum remaining =
+    match remaining with
+    | [] -> None
+    | [x] -> Some x.item
+    | x :: xs ->
+        let next = (x.w /. total_weight) +. current_sum in
+        (* let _ = print_float next ; print_endline " next" in *)
+        if p >= next then aux next xs else Some x.item
+  in
+  aux 0.0 lst
+
+(* let test_weighted () = 
+    let test = [1.0;4.0;2.0] in
+    let foo = test |> List.mapi (fun i x -> {w = x;item = i}) in
+    let bar = Seq.init 100 (fun _-> pick_weighted foo) |> List.of_seq in
+    let result = List.filter_map (fun x -> x) bar in
+    result *)
+
+let select_next_edge_new pher_arr allowed_edges =
+  let p_combi =
+    Array.fold_left
+      (fun acc edge ->
+        let start = edge |> get_start |> get_node_id in
+        let target = edge |> get_target |> get_node_id in
+        let pher_level = get_pheromone pher_arr start target in
+        let heuristic = get_inverse edge in
+        let weight =
+          (pher_level ** !current_buffer.alpha)
+          *. (heuristic ** !current_buffer.beta)
+        in
+        { w = weight; item = edge } :: acc)
+      [] allowed_edges
+  in
+  match pick_weighted p_combi with
+  | Some edge -> edge
+  | None -> raise (Failure "the allowed edges array was empty")
 
 let print_edge (Edge e) =
   print_string "printing edge: ";
@@ -321,11 +434,10 @@ let print_int_lst label ilist =
   print_newline ()
 
 let nodes =
-  generate_random_points ~seed:2 ~count:num_nodes ~max_x:100.0 ~max_y:100.0
+  generate_random_points ~seed:42 ~count:num_nodes ~max_x:100.0 ~max_y:100.0
 
 let distance_array = generate_distance_matrix (Array.to_list nodes)
 let pheromones = Array.make_matrix num_nodes num_nodes 1.0
-
 
 (*
  * complete nodes are all the nodes that are there in the original configuration
@@ -344,18 +456,20 @@ let start_new complete_nodes (State state) =
        print_nodes "state visited (reset): " state.visited;
        print_newline ()
      in *)
-  let first_pick = (* choose a random starting point *)
+  let first_pick =
+    (* choose a random starting point *)
     (* let _ =
          if Array.length reset_targets == 0 then print_endline "OH NO!"
          else print_endline "ok"
        in *)
-    Toolkit.choice_arr_opt (complete_nodes |> Array.of_list) |> Option.value ~default:default_node
+    Toolkit.choice_arr_opt (complete_nodes |> Array.of_list)
+    |> Option.value ~default:default_node
   in
   let updated_ant =
-    if state.current_ant >= num_ants then
+    if state.current_ant >= !current_buffer.num_ants then
       let _ = ignore (evaporate pheromones) in
       0
-    else 
+    else
       (* let _ = logint "current ant : " state.current_ant in *)
       state.current_ant + 1
   in
@@ -376,11 +490,10 @@ let pretty_print_flt_row row =
 
 let pretty_print_floats arr = Array.iter pretty_print_flt_row arr
 
-
-let debug_phers () = 
+let debug_phers () =
   print_string "pher :";
-  (* print_float (calculate_entropy pheromones.(2)); *)
   pretty_print_floats pheromones;
+  print_float (calculate_entropy pheromones.(2));
   print_newline ()
 
 let throttled_pher_func = with_throttled_execution 44100 debug_phers
@@ -412,7 +525,7 @@ let pick_next_point pher_arr original_nodes dist_matrix (State state) =
       if Array.length filtered_edges < 1 then
         start_new original_nodes (State state)
       else
-        let picked_edge = select_next_edge pher_arr filtered_edges in
+        let picked_edge = select_next_edge_new pher_arr filtered_edges in
         let _ = throttled_pher_func () in
         (* let _ = debug_edges "filtered edges" (filtered_edges |> Array.to_list) in *)
         let new_target = picked_edge |> get_target in
@@ -446,9 +559,8 @@ let pretty_print_matrix arr =
   (* Iterate over each row in the 2D array *)
   Array.iter pretty_print_row arr
 
-
-
 (* let get_x (Node n) = n.x *)
+
 
 let signal () =
   let nodes_list = nodes |> Array.to_list in
@@ -475,32 +587,46 @@ let line_table =
   table |> Toolkit.shuffle |> Array.of_list
 
 let lookup input = input |> Seq.map (fun idx -> Array.get line_table idx)
-let output = signal () |> lookup 
+let output = signal () |> lookup
 
 (* let () =
-  pretty_print_matrix distance_array;
-  print_endline "fish";
-  let () = signal () |> Seq.take 100000 |> Seq.iter ignore in
-  (* |> List.iter (fun x ->
-         print_int x;
-         print_string " "); *)
-  flush stdout *)
+   pretty_print_matrix distance_array;
+   print_endline "fish";
+   let () = signal () |> Seq.take 100000 |> Seq.iter ignore in
+   (* |> List.iter (fun x ->
+          print_int x;
+          print_string " "); *)
+   flush stdout *)
 
 let jackMain () =
-   Jack.playSeqs 0 Process.sample_rate
-     [
-       output
-       (* |> Cisp.hold (Cisp.st 40)
-          |> Seq.map (fun x -> (x *. 100.0) +. 28.0 |> Cisp.mtof)
-          |> Cisp.osc; *)
-     ]
+  Jack.playSeqs 0 Process.sample_rate
+    [
+      output
+      (* |> Cisp.hold (Cisp.st 40)
+         |> Seq.map (fun x -> (x *. 100.0) +. 28.0 |> Cisp.mtof)
+         |> Cisp.osc; *);
+    ]
 
 
-let () = 
-   let _ = Thread.create jackMain () in
-   let _ = Thread.create osc_thread_function () in
-   let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in
+let write_to_file filename str = 
+  let oc = open_out filename in
+  output_string oc str;
+  close_out oc
 
-   while(true) do 
+let graphic () =
+  while(true) do
+    Unix.sleep 1; 
+    let svg = Graphsvg.generate_svg (Array.map get_coords nodes) pheromones in
+    write_to_file "/Users/casperschipper/devel/ocaml/ocaml-cisp/examples/ant_state.svg" svg; ()
+  done
+
+
+let () =
+  let _ = Thread.create jackMain () in
+  let _ = Thread.create osc_thread_function () in
+  let _ = Thread.create graphic () in
+  let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in
+
+  while true do
     Unix.sleep 20
   done

@@ -1,0 +1,87 @@
+let generate_random_filename () =
+  Random.self_init ();
+  let charset =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  in
+  let len = String.length charset in
+  let random_char () = charset.[Random.int len] in
+  let random_string length =
+    let buffer = Buffer.create length in
+    for _ = 1 to length do
+      Buffer.add_char buffer (random_char ())
+    done;
+    Buffer.contents buffer
+  in
+  let random_part = random_string 10 in
+  (* You can adjust the length as needed *)
+  "random_" ^ random_part
+
+let execute_command command =
+  let exit_code = Sys.command command in
+  if exit_code = 0 then
+    print_endline ("Command executed successfully: " ^ command)
+  else prerr_endline ("Command failed with exit code " ^ string_of_int exit_code)
+
+let write_to_file filename content =
+  let oc = open_out filename in
+  output_string oc content;
+  close_out oc
+
+let copy_source plugin_name =
+  let source_file = "myplugin" in
+  let destination_file = plugin_name in
+  let cp_command = Printf.sprintf "cp %s %s" source_file destination_file in
+  execute_command cp_command
+
+let copy source_file destination_file =
+  let cp_command = Printf.sprintf "cp %s %s" source_file destination_file in
+  execute_command cp_command
+
+let () =
+  let () = execute_command "rm random*.ml" in
+  let unique_plugin_name = generate_random_filename () in
+  let _ = print_endline ("plugin name: " ^ unique_plugin_name) in
+
+  let print_current_directory () =
+    try
+      let current_dir = Unix.getcwd () in
+      Printf.printf "Current directory: %s\n" current_dir
+    with Unix.Unix_error (err, _, _) ->
+      Printf.eprintf "Error: %s\n" (Unix.error_message err)
+  in
+  let unique_plugin_ml = unique_plugin_name ^ ".ml" in
+  let () = print_current_directory () in
+  let () = copy_source unique_plugin_ml in
+
+  (* dune method *)
+
+  let () =
+    let dune_content =
+      {|
+  (library
+  (name |} ^ unique_plugin_name ^ {|)
+    (libraries plugface cisp))|}
+    in
+    write_to_file
+      "/Users/casperschipper/devel/ocaml/ocaml-cisp/lib/myplugin/dune"
+      dune_content
+  in
+  (* let () = execute_command ("dune build " ^ unique_plugin_name ^ ".cmxs") in
+  let () = print_current_directory () in 
+  let () =
+    write_to_file "current.txt"
+      ("../_build/default/lib/myplugin/" ^ unique_plugin_name ^ ".cmxs")
+  in *)
+  ()
+(* ocamltop method
+   let () =
+     execute_command
+       ("ocamlopt -nodynlink -shared -o " ^ unique_plugin_name ^ ".cmxs"
+      ^ " plugface.mli " ^ unique_plugin_ml)
+   in
+   let () =
+     write_to_file "current.txt"
+       ("../lib/myplugin/" ^ unique_plugin_name ^ ".cmxs")
+   in
+   ()
+*)

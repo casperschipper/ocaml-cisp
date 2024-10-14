@@ -1,0 +1,4 @@
+(library
+ (name svg_gen)
+ (ocamlopt_flags -O3)	
+)

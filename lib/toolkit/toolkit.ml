@@ -8,7 +8,11 @@ let rvfi low high =
 let rvi low high =
   let range = abs (low - high) in
   let offset = min low high in
-  let rnd = match range with 0 -> 0 | x -> Random.int x in
+  let rnd =
+    match range with
+    | 0 -> 0
+    | x -> Random.int x
+  in 
   rnd + offset
 
 let modBy y x =
@@ -46,31 +50,68 @@ let choice first rest =
   Array.get arr random_index
 
 let choice_arr_opt arr =
-  match Array.length arr with 0 -> None | n -> Some (Array.get arr (rvi 0 n))
+  match Array.length arr with
+  | 0 -> None
+  | n -> Some (Array.get arr (rvi 0 n))
+
+let safe_get arr index =
+  if Array.length arr <= index then None else Some (Array.get arr index)
+
+
+let map_vertical f index arr =
+  match Array.length arr with
+  | 0 -> arr
+  | _ ->
+      Array.map
+        (fun horizontal ->
+          if Array.length horizontal >= index then
+            f horizontal.(index)
+          else horizontal )
+        arr
+
+(* In a two dimensional array, map vertically (inplace) *)
+
+(* Function that maps over an array of arrays and updates a specific index in each sub-array *)
+let update_at_index (arr : 'a array array) (index : int) (f : 'a -> 'a) : 'a array array =
+  (* Map over the outer array *)
+  Array.map (fun sub_array ->
+    (* Check if the index is within bounds of the sub-array *)
+    if Array.length sub_array > index then
+      (* Update the element at the given index using the provided function *)
+      let updated_sub_array = Array.copy sub_array in
+      updated_sub_array.(index) <- f sub_array.(index);
+      updated_sub_array
+    else
+      (* If the index is out of bounds, return the original sub-array *)
+      sub_array
+  ) arr
+
+
+let flip f x y = f y x
 
 let%test "modBy mod x" =
-  let input = [ 0; 1; 2; 3; 4; 5; 6 ] in
-  let expect = [ 0; 1; 2; 0; 1; 2; 0 ] in
+  let input = [0; 1; 2; 3; 4; 5; 6] in
+  let expect = [0; 1; 2; 0; 1; 2; 0] in
   List.equal Int.equal (input |> List.map (modBy 3)) expect
 
 let%test "wrap" =
-  let input = [ 0; 1; 2; 3; 4; 5 ] in
-  let expect = [ 0; 1; 2; 0; 1; 2 ] in
+  let input = [0; 1; 2; 3; 4; 5] in
+  let expect = [0; 1; 2; 0; 1; 2] in
   List.equal Int.equal (input |> List.map (wrap 0 3)) expect
 
 let%test "wrap negative" =
-  let input = [ -1; 0; 1; 2; 3; 4 ] in
-  let expect = [ 3; 0; 1; 2; 3; 0 ] in
+  let input = [-1; 0; 1; 2; 3; 4] in
+  let expect = [3; 0; 1; 2; 3; 0] in
   List.equal Int.equal (input |> List.map (wrap 0 4)) expect
 
 let%test "wrap higher" =
-  let input = [ 7; 8; 9; 10; 11; 12; 13 ] in
-  let expect = [ 9; 8; 9; 8; 9; 8; 9 ] in
+  let input = [7; 8; 9; 10; 11; 12; 13] in
+  let expect = [9; 8; 9; 8; 9; 8; 9] in
   List.equal Int.equal (input |> List.map (wrap 8 10)) expect
 
 let%test "wrap 0" =
-  let input = [ 0; 1; 2; 3; 4 ] in
-  let expect = [ 0; 0; 0; 0; 0 ] in
+  let input = [0; 1; 2; 3; 4] in
+  let expect = [0; 0; 0; 0; 0] in
   List.equal Int.equal (input |> List.map (wrap 0 0)) expect
 (*
    let get_safe arr idx =

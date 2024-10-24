@@ -1,3 +1,32 @@
+
+val safe_get : 'a array -> int -> 'a option
+
+
+val map_vertical :
+  ('a -> 'a array) -> int -> 'a array array -> 'a array array
+(** In a two dimensional array, map vertically
+   input = [|
+   [|1;2;3|];
+   [|4;5;6|];
+   [|7;8;9|]
+   |]
+   map_vertical (fun x -> x * 2) 1 input
+   [|
+   [|1;4;3|];
+   [|4;10;6|];
+   [|7;16;9|]
+   |]
+*)
+
+val update_at_index :
+  'a array array ->
+  int ->
+  ('a -> 'a) ->
+  'a array array
+
+
+val flip : ('a -> 'b -> 'c) -> 'b -> 'a -> 'c
+
 val rvfi : float -> float -> float
 (** returns a random float *)
 

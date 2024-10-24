@@ -107,12 +107,14 @@ let test sq = map print_float sq
 let debugi label i =
   print_string (label ^ "int:");
   print_int i;
-  print_newline ()
+  print_newline ();
+  i
 
 let debugf label f =
   print_string (label ^ "int:");
   print_float f;
-  print_newline ()
+  print_newline ();
+  f
 
 (* applicative functor for seq.t
    Note this is treating the seq as a ZipList not as a list.

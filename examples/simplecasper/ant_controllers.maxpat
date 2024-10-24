@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 59.0, 119.0, 640.0, 480.0 ],
+		"rect" : [ 838.0, 147.0, 640.0, 480.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -39,6 +39,67 @@
 		"subpatcher_template" : "",
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-2",
+					"maxclass" : "preset",
+					"numinlets" : 1,
+					"numoutlets" : 5,
+					"outlettype" : [ "preset", "int", "preset", "int", "" ],
+					"patching_rect" : [ 320.0, 154.0, 100.0, 40.0 ],
+					"preset_data" : [ 						{
+							"number" : 1,
+							"data" : [ 5, "obj-21", "flonum", "float", 10.0, 5, "obj-24", "flonum", "float", 0.209999993443489, 5, "obj-29", "flonum", "float", 0.128000006079674, 5, "obj-31", "flonum", "float", 100.0, 5, "obj-36", "number", "int", 0 ]
+						}
+ ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-7",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 213.0, 249.0, 79.0, 20.0 ],
+					"text" : "default = 100"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-6",
+					"linecount" : 2,
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 317.0, 259.5, 79.0, 33.0 ],
+					"text" : "1 = evaporate all"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-5",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 510.0, 266.0, 79.0, 20.0 ],
+					"text" : "Distance"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-4",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 416.0, 262.0, 79.0, 20.0 ],
+					"text" : "Pheromones"
+				}
+
+			}
+, 			{
 				"box" : 				{
 					"id" : "obj-36",
 					"maxclass" : "number",
@@ -124,7 +185,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "", "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 510.0, 291.0, 50.0, 22.0 ]
+					"patching_rect" : [ 510.0, 291.0, 68.0, 22.0 ]
 				}
 
 			}
@@ -237,13 +298,6 @@
 				"patchline" : 				{
 					"destination" : [ "obj-1", 0 ],
 					"source" : [ "obj-34", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-34", 0 ],
-					"source" : [ "obj-36", 0 ]
 				}
 
 			}

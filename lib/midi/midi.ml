@@ -219,6 +219,10 @@ let mkNote c p v d =
 let zipToNoteEvt c p v d =
   zipWith4 (fun ch pi ve du -> NoteEvent (ch, pi, ve, du)) c p v d
 
+(** 
+  * mknote, always succeeds clips if values are incorrect
+  * channel pitch velo duration
+  **)
 let mkNoteClip c p v d =
   (* always returns a note, even if your parameters are out of range
      channel pitch velocity duration

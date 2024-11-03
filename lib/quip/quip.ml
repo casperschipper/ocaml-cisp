@@ -1,4 +1,5 @@
 open Parser
+open Midi
 
 (*
    mainly a port of
@@ -33,6 +34,12 @@ type stream =
   | FinStream of float Seq.t
   | FinStreams of float Seq.t Infseq.t
   | FinFinStreams of float Seq.t Seq.t
+
+type midiStream =
+  Midi.midiMessage Seq.t
+
+type stream_input =
+  | MidiInputStream of (midiStream -> midiStream)
 
 (* Same types, but now as list *)
 type list_type = FloatList | FinList | InfList | Impossible of string

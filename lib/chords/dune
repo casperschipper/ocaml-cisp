@@ -1,0 +1,11 @@
+(library
+ (name chords)
+ (modules chords)
+ (libraries toolkit infseq)
+)
+
+(test
+ (name test_foo)
+ (modules test_foo)
+ (libraries chords ounit2)
+)

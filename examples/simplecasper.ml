@@ -4,7 +4,7 @@ let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
 let beta = 0.5 (* prefer paths that are shorter *)
 
-let num_nodes = 20
+let num_nodes = 40
 
 let evaporation = 0.2
 
@@ -37,7 +37,10 @@ let nodes =
   generate_random_points ~seed ~count:num_nodes ~max_x:100.0 ~max_y:100.0
 
 let distance (Node p1) (Node p2) =
-  sqrt (((p1.x -. p2.x) ** 2.0) +. ((p1.y -. p2.y) ** 2.0))
+  if p1.id = p2.id then 
+    0.0
+  else 
+    sqrt (((p1.x -. p2.x) ** 2.0) +. ((p1.y -. p2.y) ** 2.0))
 
 let get_inverse (Edge e) = e.inv
 
@@ -54,7 +57,7 @@ let generate_distance_matrix points =
     (Array.init n (fun i ->
          Array.init n (fun j ->
              let dist = distance (points.(i)) (points.(j)) in
-             mkEdge (points.(i)) (points.(j)) dist )
+             mkEdge (points.(i)) (points.(j)) dist)
       ) )
 
 let get_distance i j (Distance dists) =
@@ -63,14 +66,44 @@ let get_distance i j (Distance dists) =
 
 let get_line i dists = Array.init num_nodes (fun j -> get_distance i j dists)
 
+let pretty_print_row row =
+  (* Convert each float in the row to a string with specified formatting *)
+  let row_string =
+    Array.map (fun (Edge e) -> e.dist |> Printf.sprintf "%.2f") row
+  in
+  (* Join the formatted strings with spaces and print the row *)
+  Printf.printf "[ %s ]\n" (String.concat "; " (Array.to_list row_string))
+
+(* Function to pretty print a 2D array of floats *)
+let pretty_print_matrix arr =
+  (* Iterate over each row in the 2D array *)
+  Array.iter pretty_print_row arr
+
 (* Function to calculate the index in the condensed matrix *)
 
 let update_matrix point_index new_point points (Distance dist) =
    points.(point_index) <- new_point;
    let old_line = dist.(point_index) in
    dist.(point_index) <- Array.init num_nodes (fun idx -> mkEdge new_point points.(idx) (distance new_point points.(idx) ));
-   Array.iter (fun line -> line.(point_index) <- mkEdge points.(point_index) new_point (distance points.(point_index) new_point)) dist
-  
+   Array.iteri (fun idx line -> line.(point_index) <- mkEdge nodes.(idx) nodes.(point_index) (distance points.(idx) points.(point_index))) dist
+   ; pretty_print_matrix dist
+
+
+(*
+    0 1 2 3
+0     
+1
+2
+3
+
+*)
+
+(* let debug_distance_array arr = 
+  arr |> Array.iter (fun line -> 
+    line |> Array.iter (fun (Edge e) -> print_float e.dist )
+    ; print_newline ()
+  ) *)
+
   
 
 let distance_array = generate_distance_matrix nodes
@@ -594,18 +627,7 @@ let pick_next_point pher_arr original_nodes dist_matrix (State state) =
           ; best_dist= state.best_dist }
   | [] -> start_new original_nodes (State state)
 
-let pretty_print_row row =
-  (* Convert each float in the row to a string with specified formatting *)
-  let row_string =
-    Array.map (fun (Edge e) -> e.dist |> Printf.sprintf "%.2f") row
-  in
-  (* Join the formatted strings with spaces and print the row *)
-  Printf.printf "[ %s ]\n" (String.concat "; " (Array.to_list row_string))
 
-(* Function to pretty print a 2D array of floats *)
-let pretty_print_matrix arr =
-  (* Iterate over each row in the 2D array *)
-  Array.iter pretty_print_row arr
 
 (* let get_x (Node n) = n.x *)
 
@@ -679,7 +701,7 @@ let () =
   let _ = Thread.create jackMain () in
   let _ = Thread.create osc_thread_function () in
   let _ = Thread.create graphic () in
-  let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in
+  (* let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in *)
   while true do
     Unix.sleep 20
   done

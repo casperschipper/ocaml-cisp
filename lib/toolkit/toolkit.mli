@@ -2,6 +2,9 @@
 val safe_get : 'a array -> int -> 'a option
 
 
+val clipf : 'a -> 'a -> 'a -> 'a
+
+
 val map_vertical :
   ('a -> 'a array) -> int -> 'a array array -> 'a array array
 (** In a two dimensional array, map vertically
@@ -17,6 +20,8 @@ val map_vertical :
    [|7;16;9|]
    |]
 *)
+
+val lst_take : int -> 'a list -> 'a list
 
 val update_at_index :
   'a array array ->
@@ -47,5 +52,18 @@ val choice_arr_opt : 'a array -> 'a option
 (** choice array, if empty return none *)
 
 val modBy : int -> int -> int
-val modByf : float -> float -> float
+val modByf : float -> float -> float 
+val update_nth : 'a list -> int -> 'a -> 'a list
 
+
+
+(* tuple *)
+val fst : 'a * 'b -> 'a
+val sec : 'a * 'b -> 'b 
+
+(* flatten array *)
+val flatten : 'a array array -> 'a array
+
+
+
+ 

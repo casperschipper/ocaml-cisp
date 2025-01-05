@@ -88,6 +88,9 @@ let addToBundle (Bundle (fst, rest)) note =
 let addOptToBundle opt bundle =
   match opt with Some evt -> addToBundle bundle evt | None -> bundle
 
+let triggerBundle bundleSeq trigger =
+  weavePattern trigger bundleSeq (st silenceBundle) 
+
 let chord noteSeq =
   match noteSeq () with
   | Cons (note, rest) -> Bundle (note, rest)

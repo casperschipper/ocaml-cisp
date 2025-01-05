@@ -530,7 +530,6 @@ let start_new complete_nodes (State state) =
     match state.visited_edges with
     | [] -> print_string "first time no deposit"
     | vstd ->
-        let complete = add_missing_link vstd in
         deposit_pher pheromones vstd
           (!current_buffer.deposit /. state.total_dist)
   in
@@ -732,13 +731,20 @@ let pathsSignal () =
   in
   path_sq |> Seq.map of_node_list |> concat
 
-let jackMain () = Jack.playSeqs 0 Process.sample_rate [pathsSignal (); output]
+let paths () =
+  let open Cisp in
+  let signal = output |> Seq.map (fun x -> x *. 40.0)  in
+  let scale x = (x /. float_of_int num_nodes *. 72.0) +. 64. |> mtof in
+  signal |> hold (st 100) |> fmap scale |> sinosc2
+
+let jackMain () =
+   Jack.playSeqs 0 Process.sample_rate [paths (); paths (); output]
 
 let write_to_file filename str =
   let oc = open_out filename in
   output_string oc str ; close_out oc
 
-let graphic () =
+(* let graphic () =
   while true do
     Unix.sleepf 0.33 ;
     let svg =
@@ -747,7 +753,7 @@ let graphic () =
     write_to_file
       "/Users/casperschipper/devel/ocaml/cisp/examples/ant_state.svg" svg ;
     ()
-  done
+  done *)
 
 let encode_nodes nodes =
   let lst = Array.to_list nodes in
@@ -769,7 +775,7 @@ let simpleEdgesFrom phers =
   |> Array.mapi (fun i rr ->
          rr
          |> Array.mapi (fun j p -> SimpleEdge {start= i; target= j; weight= p}) )
-         |> Toolkit.flatten
+  |> Toolkit.flatten
 
 let encode_edges edges =
   let open Toolkit in
@@ -783,10 +789,10 @@ let encode_edges edges =
 
 let encode_simple_edges simple_edges =
   let encode (SimpleEdge {start; target; weight}) =
-    `List [`Int start; `Int target; `Float weight]
+    `Assoc
+      [("start", `Int start); ("target", `Int target); ("weight", `Float weight)]
   in
   `List (simple_edges |> Array.map encode |> Array.to_list)
-
 
 let edges_from_arrayarray nodes arrr =
   arrr
@@ -797,7 +803,7 @@ let edges_from_arrayarray nodes arrr =
                   { start= nodes.(i) |> get_coords
                   ; target= nodes.(j) |> get_coords
                   ; weight= strength } ) )
-  |> Toolkit.flatten 
+  |> Toolkit.flatten
 
 let encode_nodes_edges phers nodes =
   let open Yojson in
@@ -807,6 +813,18 @@ let encode_nodes_edges phers nodes =
   in
   try Ok (Safe.to_string yojson_value) with
   | Json_error msg -> Error ("Yojson encoding error: " ^ msg)
+
+let encode_nodes_edges_update phers nodes =
+  let open Yojson in
+  let edges = simpleEdgesFrom phers in
+  let value =
+    `Assoc
+      [ ( "update"
+        , `Assoc
+            [("nodes", encode_nodes nodes); ("edges", encode_simple_edges edges)]
+        ) ]
+  in
+  Safe.to_string value
 
 (* Call the function *)
 
@@ -825,22 +843,13 @@ let dream_thread phers nodes () =
              Dream.websocket (fun websocket ->
                  let rec process_messages () =
                    match%lwt Dream.receive websocket with
-                   | Some "tick" -> (
-                       let result = encode_nodes_edges phers nodes in
-                       match result with
-                       | Ok json ->
-                           let%lwt () =
-                             Dream.send ~text_or_binary:`Text websocket json
-                           in
-                           process_messages () (* Continue looping *)
-                       | Error e ->
-                           let%lwt () =
-                             Dream.send ~text_or_binary:`Text websocket
-                               (json_error e)
-                           in
-                           process_messages () (* Continue looping *) )
+                   | Some "tick" ->
+                       let result = encode_nodes_edges_update phers nodes in
+                       let%lwt () =
+                         Dream.send ~text_or_binary:`Text websocket result
+                       in
+                       process_messages () (* Continue looping *)
                    | Some "init" ->
-                       let num = Array.length nodes in
                        let value =
                          `Assoc
                            [ ( "init"
@@ -869,7 +878,7 @@ let () =
   let _ = pretty_print_distance distance_array in
   let _ = Thread.create jackMain () in
   let _ = Thread.create osc_thread_function () in
-  let _ = Thread.create graphic () in
+  (* let _ = Thread.create graphic () in *)
   let _ = Thread.create (dream_thread pheromones nodes) () in
   (* let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in *)
   while true do

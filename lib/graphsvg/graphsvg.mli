@@ -18,4 +18,4 @@ val svg_line :
 val svg_circle : float * float -> string
 
 val generate_svg :
-  (float * float) array -> float array array -> string
+  (float * float) array -> float array array -> float -> string

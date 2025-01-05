@@ -168,7 +168,9 @@
   (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules simplecasper)
- (libraries graphsvg lo cisp bigarray ctypes jack svg_gen))
+ (libraries lwt lwt.unix graphsvg lo cisp jack svg_gen dream)
+ (preprocess
+  (pps lwt_ppx)))
 
 (executable
  (name fmfb)
@@ -238,7 +240,8 @@
  (name cisp1)
  (link_flags
   (-cclib -ljack))
- (flags (:standard -w -26-27-32))
+ (flags
+  (:standard -w -26-27-32))
  (modules cisp1)
  (libraries
   infseq
@@ -454,7 +457,8 @@
  (name cispOsc3)
  (link_flags
   (-cclib -ljack))
- (flags (:standard -w -32-34-39-69))
+ (flags
+  (:standard -w -32-34-39-69))
  (ocamlopt_flags -O3)
  (modules cispOsc3)
  (libraries quip threads infseq midi cisp jack osc_unix parser ws))

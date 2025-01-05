@@ -2,23 +2,33 @@ module S = Lo.Server
 
 let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
-let beta = 0.5 (* prefer paths that are shorter *)
+let beta = 2.0 (* prefer paths that are shorter *)
 
 let num_nodes = 40
 
 let evaporation = 0.2
 
-let deposit = 100.0
+let deposit = 1.0
 
-let num_ants = 3
+let num_ants = 10
 
 let num_samples = 44100 * 40
 
+(* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
+
+let shortest = ref 0.0
 
 type node = Node of {id: int; x: float; y: float}
 
 type edge = Edge of {start: node; target: node; dist: float; inv: float}
+
+type drawable_edge =
+  | DrawableEdge of {start: float * float; target: float * float; weight: float}
+
+type simple_edge = SimpleEdge of {start: int; target: int; weight: float}
+
+let paths : node list list ref = ref []
 
 let mkNode id x y = Node {id; x; y}
 
@@ -33,19 +43,25 @@ let generate_random_points ~seed ~count ~max_x ~max_y =
       mkNode idx x y )
 
 let nodes =
-  let seed = Random.int 12000 |> Cisp.debugi "myseed" in
-  generate_random_points ~seed ~count:num_nodes ~max_x:100.0 ~max_y:100.0
+  let seed = 121 |> Cisp.debugi "my random seed" in
+  (* let seed = Random.int 12000 |> Cisp.debugi "myseed" in *)
+  generate_random_points ~seed ~count:num_nodes ~max_x:1.0 ~max_y:1.0
 
 let distance (Node p1) (Node p2) =
-  if p1.id = p2.id then 
-    0.0
-  else 
-    sqrt (((p1.x -. p2.x) ** 2.0) +. ((p1.y -. p2.y) ** 2.0))
+  if p1.id = p2.id then 0.0
+  else sqrt (((p1.x -. p2.x) ** 2.0) +. ((p1.y -. p2.y) ** 2.0))
 
 let get_inverse (Edge e) = e.inv
 
 let mkEdge start target distance =
-  Edge {start; target; dist= distance; inv= 1.0 /. distance}
+  Edge
+    { start
+    ; target
+    ; dist= distance
+    ; inv=
+        ( match distance with
+        | 0.0 -> 0.0
+        | noneZero -> 1.0 /. noneZero ) }
 
 type distance1d = Distance of edge Array.t Array.t
 
@@ -56,9 +72,8 @@ let generate_distance_matrix points =
   Distance
     (Array.init n (fun i ->
          Array.init n (fun j ->
-             let dist = distance (points.(i)) (points.(j)) in
-             mkEdge (points.(i)) (points.(j)) dist)
-      ) )
+             let dist = distance points.(i) points.(j) in
+             mkEdge points.(i) points.(j) dist ) ) )
 
 let get_distance i j (Distance dists) =
   let line = dists.(i) in
@@ -79,15 +94,21 @@ let pretty_print_matrix arr =
   (* Iterate over each row in the 2D array *)
   Array.iter pretty_print_row arr
 
-(* Function to calculate the index in the condensed matrix *)
-
 let update_matrix point_index new_point points (Distance dist) =
-   points.(point_index) <- new_point;
-   let old_line = dist.(point_index) in
-   dist.(point_index) <- Array.init num_nodes (fun idx -> mkEdge new_point points.(idx) (distance new_point points.(idx) ));
-   Array.iteri (fun idx line -> line.(point_index) <- mkEdge nodes.(idx) nodes.(point_index) (distance points.(idx) points.(point_index))) dist
-   ; pretty_print_matrix dist
-
+  if point_index >= 0 && point_index < Array.length points then (
+    points.(point_index) <- new_point ;
+    let old_line = dist.(point_index) in
+    dist.(point_index) <-
+      Array.init num_nodes (fun idx ->
+          mkEdge new_point points.(idx) (distance new_point points.(idx)) ) ;
+    Array.iteri
+      (fun idx line ->
+        line.(point_index) <-
+          mkEdge nodes.(idx) nodes.(point_index)
+            (distance points.(idx) points.(point_index)) )
+      dist
+    (* ; pretty_print_matrix dist *) )
+  else ()
 
 (*
     0 1 2 3
@@ -98,17 +119,15 @@ let update_matrix point_index new_point points (Distance dist) =
 
 *)
 
-(* let debug_distance_array arr = 
-  arr |> Array.iter (fun line -> 
-    line |> Array.iter (fun (Edge e) -> print_float e.dist )
-    ; print_newline ()
-  ) *)
-
-  
+(* let debug_distance_array arr =
+   arr |> Array.iter (fun line ->
+     line |> Array.iter (fun (Edge e) -> print_float e.dist )
+     ; print_newline ()
+   ) *)
 
 let distance_array = generate_distance_matrix nodes
 
-let pheromones = Array.make_matrix num_nodes num_nodes 1.0
+let pheromones = Array.make_matrix num_nodes num_nodes 0.0
 
 type controllers =
   {alpha: float; beta: float; deposit: float; evaporation: float; num_ants: int}
@@ -153,6 +172,7 @@ let handle_float_arg datas =
   match data with
   | [`Float f]
    |[`Double f] ->
+      (* let _ = Cisp.debugf "float: " f in *)
       Some f
   | _ -> None
 
@@ -274,6 +294,9 @@ let print_edge (Edge edge) =
   print_float edge.inv ;
   print_newline ()
 
+let pretty_print_distance (Distance arr) =
+  Array.iter (Array.iter print_edge) arr
+
 let print_state = function
   | State
       { current_ant
@@ -348,11 +371,14 @@ let arr_map_inplace f arr =
     arr.(i) <- f arr.(i)
   done
 
+let clipf mini maxi input = max mini input |> min maxi
+
 let evaporate p_arr =
   for i = 0 to Array.length p_arr - 1 do
     for j = 0 to Array.length p_arr.(i) - 1 do
       let old_p_arr = p_arr.(i).(j) in
-      p_arr.(i).(j) <- old_p_arr *. (1.0 -. !current_buffer.evaporation)
+      let clipped = Toolkit.clipf 0.0 1.0 !current_buffer.evaporation in
+      p_arr.(i).(j) <- old_p_arr *. (1.0 -. clipped)
     done
   done
 
@@ -403,70 +429,20 @@ let sometimes_random =
 
 let always_random max = Random.float max
 
-(* let select_next_edge pher_arr edge_arr =
-   (* let () = print_endline "*** _+++ start ***" in *)
-   if Array.length edge_arr = 1 then Array.get edge_arr 0
-   else
-     let sum, weighted_edges =
-       Array.fold_left
-         (fun (acc, lst) edge ->
-           let start = get_node_id (get_start edge) in
-           let target = get_node_id (get_target edge) in
-           let pheromone = pher_arr.(start).(target) in
-           let heuristic = get_inverse edge in
-           let weight =
-             (pheromone ** !current_buffer.alpha)
-             *. (heuristic ** !current_buffer.beta)
-           in
-           (acc +. weight, { edge; weight } :: lst))
-         (0.0, []) edge_arr
-     in
-     if sum = 0.0 then Array.get edge_arr (Random.int (Array.length edge_arr))
-     else
-       let p = Random.float sum in
-       let rec pick_if_bigger sumlst acc =
-         (* logflt "acc" acc;
-            logflt "p" p; *)
-         match sumlst with
-         | { edge; weight } :: xs ->
-             let next_acc = acc +. weight in
-             if p <= next_acc then edge
-             else
-               (* let () = logflt "weight" weight in *)
-               pick_if_bigger xs next_acc
-         | [] ->
-             raise
-               (Invalid_argument
-                  ("unexpected error: you have hit an empty list of edges. p: "
-                 ^ string_of_float p ^ " acc: " ^ string_of_float acc
-                 ^ " - sum -  " ^ string_of_float sum))
-       in
-       pick_if_bigger weighted_edges 0.0 *)
-
 type 'a weighted = {w: float; item: 'a}
 
 let pick_weighted lst =
   let total_weight = List.fold_left (fun acc x -> x.w +. acc) 0.0 lst in
   let p = Random.float 1.0 in
-  (* let _ = print_float p; print_endline " p" in
-     let _ = print_float total_weight ; print_endline " total" in *)
   let rec aux current_sum remaining =
     match remaining with
     | [] -> None
     | [x] -> Some x.item
     | x :: xs ->
         let next = (x.w /. total_weight) +. current_sum in
-        (* let _ = print_float next ; print_endline " next" in *)
         if p >= next then aux next xs else Some x.item
   in
   aux 0.0 lst
-
-(* let test_weighted () =
-    let test = [1.0;4.0;2.0] in
-    let foo = test |> List.mapi (fun i x -> {w = x;item = i}) in
-    let bar = Seq.init 100 (fun _-> pick_weighted foo) |> List.of_seq in
-    let result = List.filter_map (fun x -> x) bar in
-    result *)
 
 let select_next_edge_new pher_arr allowed_edges =
   let p_combi =
@@ -477,8 +453,8 @@ let select_next_edge_new pher_arr allowed_edges =
         let pher_level = get_pheromone pher_arr start target in
         let heuristic = get_inverse edge in
         let weight =
-          (pher_level ** !current_buffer.alpha)
-          *. (heuristic ** !current_buffer.beta)
+          pher_level *. !current_buffer.alpha
+          *. (heuristic *. !current_buffer.beta)
         in
         {w= weight; item= edge} :: acc )
       [] allowed_edges
@@ -525,16 +501,38 @@ let print_int_lst label ilist =
   List.iter (fun i -> print_int i ; print_char ' ') ilist ;
   print_newline ()
 
+let get_array_value arr index =
+  if index >= 0 && index < Array.length arr then Some arr.(index)
+    (* Return Some(value) if the index is within bounds *)
+  else None (* Return None if the index is out of bounds *)
+
 (*
  * complete nodes are all the nodes that are there in the original configuration
  *)
+let add_missing_link edges =
+  let missing =
+    match edges with
+    | [] -> None
+    | x :: _ -> (
+      match List.rev edges with
+      | y :: _ ->
+          let start = get_start x in
+          let target = get_target y in
+          Some (mkEdge (get_target y) (get_start x) (distance start target))
+      | [] -> None )
+  in
+  match missing with
+  | None -> []
+  | Some x -> x :: edges
+
 let start_new complete_nodes (State state) =
   let _ =
-    deposit_pher pheromones state.visited_edges
-      (!current_buffer.deposit /. state.total_dist)
-    (* print_string "best distance ";
-       print_float state.best_dist;
-       print_endline "" *)
+    match state.visited_edges with
+    | [] -> print_string "first time no deposit"
+    | vstd ->
+        let complete = add_missing_link vstd in
+        deposit_pher pheromones vstd
+          (!current_buffer.deposit /. state.total_dist)
   in
   (* reset, all targets become available again *)
   (* let _ =
@@ -548,6 +546,9 @@ let start_new complete_nodes (State state) =
          if Array.length reset_targets == 0 then print_endline "OH NO!"
          else print_endline "ok"
        in *)
+    (* nodes
+       |> Toolkit.flip get_array_value 0
+       |> Option.value ~default:default_node *)
     nodes |> Toolkit.choice_arr_opt |> Option.value ~default:default_node
   in
   let updated_ant =
@@ -558,6 +559,24 @@ let start_new complete_nodes (State state) =
       (* let _ = logint "current ant : " state.current_ant in *)
       state.current_ant + 1
   in
+  let best_dist = min state.best_dist state.total_dist in
+  let () = shortest := best_dist in
+  let () =
+    if state.total_dist < state.best_dist then (
+      print_string "print path" ;
+      List.iter
+        (fun i -> print_int i ; print_char ' ')
+        (List.map get_node_id state.visited) ;
+      print_newline () ;
+      print_string "smallest is now: " ;
+      print_float state.total_dist ;
+      print_newline () ;
+      paths := state.visited :: Toolkit.lst_take 10 !paths ;
+      print_string "size of paths" ;
+      print_int (List.length !paths) ;
+      print_newline () )
+    else ()
+  in
   State
     { current_ant= updated_ant
     ; current= first_pick
@@ -565,7 +584,7 @@ let start_new complete_nodes (State state) =
     ; visited= []
     ; total_dist= 0.0
     ; visited_edges= []
-    ; best_dist= min state.best_dist state.total_dist }
+    ; best_dist }
 
 let pretty_print_flt_row row =
   let row_string = Array.map (fun flt -> Printf.sprintf "%.2f " flt) row in
@@ -583,6 +602,7 @@ let throttled_pher_func = with_throttled_execution 44100 debug_phers
 
 let pick_next_point pher_arr original_nodes dist_matrix (State state) =
   match state.targets with
+  | [] -> start_new original_nodes (State state)
   | _ :: _ ->
       (* let _ =
            print_string "current = ";
@@ -625,11 +645,19 @@ let pick_next_point pher_arr original_nodes dist_matrix (State state) =
           ; visited_edges= picked_edge :: state.visited_edges
           ; total_dist= state.total_dist +. get_dist picked_edge
           ; best_dist= state.best_dist }
-  | [] -> start_new original_nodes (State state)
-
-
 
 (* let get_x (Node n) = n.x *)
+let read_file filename =
+  let result = ref "" in
+  let in_channel = open_in filename in
+  try
+    while true do
+      let line = input_line in_channel in
+      result := !result ^ line ^ "\n"
+    done ;
+    !result
+  with
+  | End_of_file -> close_in in_channel ; !result
 
 let signal () =
   let nodes_list = nodes |> Array.to_list in
@@ -679,10 +707,32 @@ let otherSignal () =
     | Some i -> i
     | None -> 0
   in
-  Cisp.recursive c 0 u (fun index -> line_table.(index))
+  Cisp.recursive c 0 u (fun index -> line_table.(index) *. 0.01)
+  |> Cisp.hold (st 1)
 
-let jackMain () =
-  Jack.playSeqs 0 Process.sample_rate [otherSignal (); otherSignal (); output]
+let pathsSignal () =
+  let lst_head lst =
+    match lst with
+    | x :: _ -> Some x
+    | [] -> None
+  in
+  let open Cisp in
+  let path_sq = ofRef paths in
+  let scale x = (x /. float_of_int num_nodes *. 72.0) +. 64. |> mtof in
+  let of_node_list lst =
+    lst |> lst_head
+    |> fun opt ->
+    Option.value opt ~default:[default_node]
+    |> fun node_lst ->
+    node_lst
+    |> List.map (fun i -> i |> get_node_id)
+    |> List.to_seq
+    |> hold (st 41)
+    |> floatify |> fmap scale |> sinosc2
+  in
+  path_sq |> Seq.map of_node_list |> concat
+
+let jackMain () = Jack.playSeqs 0 Process.sample_rate [pathsSignal (); output]
 
 let write_to_file filename str =
   let oc = open_out filename in
@@ -691,16 +741,136 @@ let write_to_file filename str =
 let graphic () =
   while true do
     Unix.sleepf 0.33 ;
-    let svg = Graphsvg.generate_svg (Array.map get_coords nodes) pheromones in
+    let svg =
+      Graphsvg.generate_svg (Array.map get_coords nodes) pheromones !shortest
+    in
     write_to_file
-      "/Users/casperschipper/devel/ocaml/ocaml-cisp/examples/ant_state.svg" svg ;
+      "/Users/casperschipper/devel/ocaml/cisp/examples/ant_state.svg" svg ;
     ()
   done
 
+let encode_nodes nodes =
+  let lst = Array.to_list nodes in
+  `List
+    ( lst
+    |> List.map (fun node ->
+           node |> get_coords |> fun (x, y) -> `List [`Float x; `Float y] ) )
+
+let fromEdge phers (Edge e) =
+  let start_coords = get_coords e.start in
+  let target_coords = get_coords e.target in
+  let start_id = get_node_id e.start in
+  let target_id = get_node_id e.target in
+  let weight = phers.(start_id).(target_id) in
+  DrawableEdge {start= start_coords; target= target_coords; weight}
+
+let simpleEdgesFrom phers =
+  phers
+  |> Array.mapi (fun i rr ->
+         rr
+         |> Array.mapi (fun j p -> SimpleEdge {start= i; target= j; weight= p}) )
+         |> Toolkit.flatten
+
+let encode_edges edges =
+  let open Toolkit in
+  let encode (DrawableEdge {start; target; weight}) =
+    `List
+      [ `List [`Float (fst start); `Float (sec start)]
+      ; `List [`Float (fst target); `Float (sec target)]
+      ; `Float weight ]
+  in
+  `List (edges |> List.map encode)
+
+let encode_simple_edges simple_edges =
+  let encode (SimpleEdge {start; target; weight}) =
+    `List [`Int start; `Int target; `Float weight]
+  in
+  `List (simple_edges |> Array.map encode |> Array.to_list)
+
+
+let edges_from_arrayarray nodes arrr =
+  arrr
+  |> Array.mapi (fun i arr ->
+         arr
+         |> Array.mapi (fun j strength ->
+                DrawableEdge
+                  { start= nodes.(i) |> get_coords
+                  ; target= nodes.(j) |> get_coords
+                  ; weight= strength } ) )
+  |> Toolkit.flatten 
+
+let encode_nodes_edges phers nodes =
+  let open Yojson in
+  let edges = edges_from_arrayarray nodes phers |> Array.to_list in
+  let yojson_value =
+    `Assoc [("nodes", encode_nodes nodes); ("edges", encode_edges edges)]
+  in
+  try Ok (Safe.to_string yojson_value) with
+  | Json_error msg -> Error ("Yojson encoding error: " ^ msg)
+
+(* Call the function *)
+
+let json_error error_str =
+  let open Yojson in
+  let json_value = `Assoc [("error", `String error_str)] in
+  Safe.to_string json_value
+
+let home = read_file "simplecasper.html"
+
+let dream_thread phers nodes () =
+  Dream.run ~port:8080 @@ Dream.logger
+  @@ Dream.router
+       [ Dream.get "/" (fun _ -> Dream.html home)
+       ; Dream.get "/websocket" (fun _ ->
+             Dream.websocket (fun websocket ->
+                 let rec process_messages () =
+                   match%lwt Dream.receive websocket with
+                   | Some "tick" -> (
+                       let result = encode_nodes_edges phers nodes in
+                       match result with
+                       | Ok json ->
+                           let%lwt () =
+                             Dream.send ~text_or_binary:`Text websocket json
+                           in
+                           process_messages () (* Continue looping *)
+                       | Error e ->
+                           let%lwt () =
+                             Dream.send ~text_or_binary:`Text websocket
+                               (json_error e)
+                           in
+                           process_messages () (* Continue looping *) )
+                   | Some "init" ->
+                       let num = Array.length nodes in
+                       let value =
+                         `Assoc
+                           [ ( "init"
+                             , `Assoc
+                                 [ ("nodes", encode_nodes nodes)
+                                 ; ( "edges"
+                                   , encode_simple_edges
+                                       (simpleEdgesFrom pheromones) ) ] ) ]
+                       in
+                       let str = Yojson.Safe.to_string value in
+                       let%lwt () =
+                         Dream.send ~text_or_binary:`Text websocket str
+                       in
+                       process_messages ()
+                   | Some str ->
+                       let%lwt () =
+                         Dream.send websocket
+                           ("I do not understand this message:\n" ^ str)
+                       in
+                       process_messages () (* Continue looping *)
+                   | None -> Dream.close_websocket websocket
+                 in
+                 process_messages () (* Start processing messages *) ) ) ]
+
 let () =
+  let _ = pretty_print_distance distance_array in
   let _ = Thread.create jackMain () in
   let _ = Thread.create osc_thread_function () in
   let _ = Thread.create graphic () in
+  let _ = Thread.create (dream_thread pheromones nodes) () in
   (* let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in *)
   while true do
     Unix.sleep 20

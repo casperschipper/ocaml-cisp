@@ -89,6 +89,25 @@ let update_at_index (arr : 'a array array) (index : int) (f : 'a -> 'a) : 'a arr
 
 let flip f x y = f y x
 
+let rec lst_take n lst =
+  match (n, lst) with
+  | (0, _) -> [] (* If n is 0, return an empty list *)
+  | (_, []) -> [] (* If the list is empty, return an empty list *)
+  | (_, x :: xs) -> x :: lst_take (n - 1) xs (* Otherwise, take the head and recurse on the tail *)
+
+
+let clipf mini maxi input = 
+  max mini input |> min maxi
+
+(** Update the nth element of a list *)
+let rec update_nth lst n x =
+  match lst, n with
+  | [], _ -> []  (* If the list is empty, return an empty list *)
+  | _ :: tail, 0 -> x :: tail  (* Replace the 0th element with x *)
+  | head :: tail, n when n > 0 -> head :: update_nth tail (n - 1) x  (* Recurse to the nth element *)
+  | _ -> lst  (* If n is out of bounds, return the original list *)
+
+
 let%test "modBy mod x" =
   let input = [0; 1; 2; 3; 4; 5; 6] in
   let expect = [0; 1; 2; 0; 1; 2; 0] in
@@ -120,3 +139,8 @@ let%test "wrap 0" =
        None
      else
        Some (Array.get arr idx) *)
+
+let fst (x, _) = x 
+let sec (_, y) = y
+
+let flatten arr = arr |> Array.fold_left Array.append [||]

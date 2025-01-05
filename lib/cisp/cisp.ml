@@ -105,13 +105,13 @@ let withEffect effect lst =
 let test sq = map print_float sq
 
 let debugi label i =
-  print_string (label ^ "int:");
+  print_string (label ^ "int: ");
   print_int i;
   print_newline ();
   i
 
 let debugf label f =
-  print_string (label ^ "int:");
+  print_string (label ^ "flt: ");
   print_float f;
   print_newline ();
   f
@@ -636,20 +636,21 @@ let tanh_clip = Seq.map tanh
 *)
 
 (**
- * This can be used to produce a stream of values, where consecuative may depend on previous input.
- * You start with a state (init).
- * This state is updated through a control stream using the update function.
- * @control : Seq.t msg
- * @init : state (you define whatever you need)
- * @update : msg -> state -> state
- * @evaluate : state -> output (this allows you to ignore some part of the state, or interperet it
+ control init update evaluate
+ This can be used to produce a stream of values, where consecuative may depend on previous input.
+ You start with a state (init).
+ This state is updated through a control stream using the update function.
+ @control : Seq.t msg
+ @init : state (you define whatever you need)
+ @update : msg -> state -> state
+ @evaluate : state -> output (this allows you to ignore some part of the state, or interperet it
  *
- * In fact, this is similar to Seq.unfold, but control is a parameter, instead of 
- * stored in the state. This garantees that control is updated/consumed on each tick (useful when it is a live input!)
- * Inspired by the Elm architecture. I guess this is some distant form of Functional Reactive Programming. 
+ In fact, this is similar to Seq.unfold, but control is a parameter, instead of 
+ stored in the state. This garantees that control is updated/consumed on each tick (useful when it is a live input!)
+ Inspired by the Elm architecture. I guess this is some distant form of Functional Reactive Programming. 
  *
- * For example, you can make a counter as follows
- * [recursive (st ()) 0 (fun () state -> state + 1) (identity)]
+ For example, you can make a counter as follows
+ [recursive (st ()) 0 (fun () state -> state + 1) (identity)]
  *)
 let rec recursive control init update evaluate () =
   match control () with
@@ -706,7 +707,7 @@ let many_walks (starts : float Infseq.t) (steps : float Seq.t Infseq.t) =
   Infseq.map2 (fun start steps2 -> walk start steps2) starts steps
   |> Infseq.concatSq
 
-(* bring your own function *)
+(** bring your own function *)
 let rec iterwalk start f steps () =
   match steps () with
   | Cons (h, ls) ->

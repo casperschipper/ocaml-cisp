@@ -3,14 +3,18 @@
 <body>
   <script>
     const svgNamespace = "http://www.w3.org/2000/svg";
-    const svg_node = document.createElementNS(svgNamespace, "svg");
+    const svg = document.createElementNS(svgNamespace, "svg");
+    const window_width = 800;
+    const window_height = 800;
+      
+    /* Set SVG attributes (e.g., width and height, adjust as needed) */
+    svg.setAttribute("width", `${window_width}px`);
+    svg.setAttribute("height", `${window_height}px`);
+    svg.setAttribute("style", "border: 1px solid black;");
+    document.body.appendChild(svg);
 
-    let setupSvg = function(nodes) {
-      nodes.forEach(createNode);
-    }
-
-    function createNode(node,index) {
-      const [x,y] = node;
+    function createNode(node, index) {
+      const [x, y] = node;
       const circle = document.createElementNS(svgNamespace, "circle");
       circle.setAttribute("cx", x * window_width);
       circle.setAttribute("cy", y * window_height);
@@ -18,60 +22,63 @@
       circle.setAttribute("fill", "blue");
       circle.setAttribute("stroke", "black");
       circle.setAttribute("stroke-width", "2");
-        // Add an identifier to each node for interactivity
+      // Add an identifier to each node for interactivity
       circle.setAttribute("id", `node-${index}`);
-        // Append circle and label to the SVG
-      svg_node.appendChild(circle);
+      // Append circle and label to the SVG
+      svg.appendChild(circle);
     };
 
-    function updateNode(node,index) {
-      const [x,y] = node;
+    function updateNode(node, index) {
+      const [x, y] = node;
       const circle = document.getElementById(`node-${index}`);
       if (circle) {
         circle.setAttribute("cx", x * window_width);
         circle.setAttribute("cy", y * window_height);
+      } else {
+        console.log('cannot find circle'+index);
       }
     };
 
-    function updateEdge(edge,index) {
-      const edge = document.getElementById(`edge-${index}`);
-      if (edge) {
-        const { start, target, strength } = edge;
+    function updateEdge(edge, index) {
+      const line = document.getElementById(`edge-${index}`);
+      if (line) {
+        const { start, target, weight } = edge;
         line.setAttribute("stroke-width", weight * 10);
       } else {
-        console.log(`edge not found: ${edge}`);
+        console.log(`edge/line not found: ${edge}`);
       }
     };
 
     function getNodeCoordinates(nodeId) {
       const circle = document.getElementById(nodeId);
-        if (!circle) {
-            console.error(`Node with ID "${nodeId}" not found`);
-            return null;
-        }
+      if (!circle) {
+        console.error(`Node with ID "${nodeId}" not found`);
+        return null;
+      }
 
-        const cx = parseFloat(circle.getAttribute("cx"));
-        const cy = parseFloat(circle.getAttribute("cy"));
+      const cx = parseFloat(circle.getAttribute("cx"));
+      const cy = parseFloat(circle.getAttribute("cy"));
 
-        return [cx,cy];
-    } 
+      return [cx, cy];
+    }
 
-    function createEdge(edge,index) {
-      const { start, target, strength } = edge;
+    function createEdge(edge, index) {
+      const { start, target, weight } = edge;
       const id_a = `node-${start}`;
       const id_b = `node-${target}`;
-      const [startX,startY] = getNodeCoordinates(id_a);
-      const [targetX,targetY] = getNodeCoordinates(id_b);
-      
+      const [startX, startY] = getNodeCoordinates(id_a);
+      const [targetX, targetY] = getNodeCoordinates(id_b);
+
       /* Create a line for the edge */
       const line = document.createElementNS(svgNamespace, "line");
-      line.setAttribute("x1", startX * window_width);
-      line.setAttribute("y1", startY * window_height);
-      line.setAttribute("x2", targetX * window_width);
-      line.setAttribute("y2", targetY * window_height);
+      line.setAttribute("x1", startX);
+      line.setAttribute("y1", startY);
+      line.setAttribute("x2", targetX);
+      line.setAttribute("y2", targetY);
       line.setAttribute("stroke", "black");
       line.setAttribute("stroke-width", weight * 10);
       line.setAttribute("id", `edge-${index}`);
+
 
       svg.appendChild(line);
     }
@@ -83,79 +90,41 @@
       const nodes = json.nodes;
       const edges = json.edges;
 
-      const window_width = 800;
-      const window_height = 800;
-    
-      /* Create an SVG element */
-      const svgNamespace = "http://www.w3.org/2000/svg";
-      const svg = document.createElementNS(svgNamespace, "svg");
-
-      /* Set SVG attributes (e.g., width and height, adjust as needed) */
-      svg.setAttribute("width", `${window_width}px`);
-      svg.setAttribute("height", `${window_height}px`);
-      svg.setAttribute("style", "border: 1px solid black;");
-
-      /* Draw edges */
-      for (let i = 0; i < edges.length; i = i + 1) {
-        const [start, target, weight] = edges[i];
-        const [startX, startY] = start;
-        const [targetX, targetY] = target;
-
-        /* Create a line for the edge */
-        const line = document.createElementNS(svgNamespace, "line");
-        line.setAttribute("x1", startX * window_width);
-        line.setAttribute("y1", startY * window_height);
-        line.setAttribute("x2", targetX * window_width);
-        line.setAttribute("y2", targetY * window_height);
-        line.setAttribute("stroke", "black");
-        line.setAttribute("stroke-width", weight * 10);
-        svg.appendChild(line);
-      }  
-
-      /* Draw nodes */
-      nodes.forEach(([x, y], index) => {
-        // Create a circle for each node
-        const circle = document.createElementNS(svgNamespace, "circle");
-        circle.setAttribute("cx", x * window_width);
-        circle.setAttribute("cy", y * window_height);
-        circle.setAttribute("r", "10");
-        circle.setAttribute("fill", "blue");
-        circle.setAttribute("stroke", "black");
-        circle.setAttribute("stroke-width", "2");
-
-        // Add an identifier to each node for interactivity
-        circle.setAttribute("id", `node-${index}`);
-
-        // Append circle and label to the SVG
-        svg.appendChild(circle);
-      });
-
       document.body.appendChild(svg);
     };
-    
+
 
     var socket = new WebSocket("ws://" + window.location.host + "/websocket");
 
     socket.onopen = function () {
       socket.send("init");
+    };
+
+    function init(state) {
+      state.nodes.forEach(createNode);
+      state.edges.forEach(createEdge);
       setInterval(() => {
-        console.log('tick');
-        socket.send("tick")
-      }, 5000);
-    };
+        socket.send('tick');
+      }, 50);
+    }
 
-    function init(encoded) {
-      json = JSON.parse(encoded);
-      nodes = json.nodes;
-    };
-
+    function update(state) {
+      state.nodes.forEach(updateNode);
+      state.edges.forEach(updateEdge);
+    }
 
     socket.onmessage = function (e) {
-      if(e.data.init) {
-        init(num_nodes);
+      let object = JSON.parse(e.data);
+      if (object == null) {
+        console.log('json decode fail');
+      } else if (object.init) {
+        init(object.init);
+      } else if (object.update) {
+        console.log('update');
+        update(object.update);
       } else {
-        drawGraph(e.data)
-      }
+        console.log('do not understand message ' + object);
+      };
     };
 
   </script>

@@ -1,0 +1,4 @@
+(library
+ (name dream_websocket)
+ (libraries dream lwt lwt.unix)
+ (preprocess (pps lwt_ppx)))

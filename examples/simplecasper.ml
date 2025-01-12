@@ -453,8 +453,8 @@ let select_next_edge_new pher_arr allowed_edges =
         let pher_level = get_pheromone pher_arr start target in
         let heuristic = get_inverse edge in
         let weight =
-          pher_level *. !current_buffer.alpha
-          *. (heuristic *. !current_buffer.beta)
+          pher_level ** !current_buffer.alpha
+          *. (heuristic ** !current_buffer.beta)
         in
         {w= weight; item= edge} :: acc )
       [] allowed_edges
@@ -809,7 +809,7 @@ let encode_nodes_edges phers nodes =
   let open Yojson in
   let edges = edges_from_arrayarray nodes phers |> Array.to_list in
   let yojson_value =
-    `Assoc [("nodes", encode_nodes nodes); ("edges", encode_edges edges)]
+    `Assoc [("nodes", encode_nodes nodes); ("edges", encode_edges edges);("num_nodes", `Int num_nodes)]
   in
   try Ok (Safe.to_string yojson_value) with
   | Json_error msg -> Error ("Yojson encoding error: " ^ msg)

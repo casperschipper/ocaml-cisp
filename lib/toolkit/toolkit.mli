@@ -1,7 +1,7 @@
 
 val safe_get : 'a array -> int -> 'a option
 
-
+(* mini maxi input, clips *)
 val clipf : 'a -> 'a -> 'a -> 'a
 
 
@@ -61,7 +61,7 @@ val update_nth : 'a list -> int -> 'a -> 'a list
 val fst : 'a * 'b -> 'a
 val sec : 'a * 'b -> 'b 
 
-(* flatten array *)
+(* flatten array of arrays *)
 val flatten : 'a array array -> 'a array
 
 

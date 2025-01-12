@@ -7,7 +7,7 @@
     const window_width = 800;
     const window_height = 800;
     let num_nodes = 0;
-      
+
     /* Set SVG attributes (e.g., width and height, adjust as needed) */
     svg.setAttribute("width", `${window_width}px`);
     svg.setAttribute("height", `${window_height}px`);
@@ -29,16 +29,31 @@
       svg.appendChild(circle);
     };
 
-    function updateNode(node, index) {
-      const [x, y] = node;
-      const circle = document.getElementById(`node-${index}`);
+    function updateNode(node) {
+      const {node_id, x, y} = node;
+      const circle = document.getElementById(`node-${node_id}`);
       if (circle) {
         circle.setAttribute("cx", x * window_width);
         circle.setAttribute("cy", y * window_height);
+        updateConnectedEdges(x,y,node_id);
       } else {
-        console.log('cannot find circle'+index);
+        console.log('cannot find circle' + node_id);
       }
     };
+
+    function updateConnectedEdges(x,y, index) {
+      for (let i = 0; i < num_nodes; i++) {
+        if (i !== index) {
+          const startIndex = (index * num_nodes) + i; 
+          const targetIndex = (i * num_nodes) + index;
+          //console.log('what', startIndex,targetIndex);
+          updateEdgePositionStart(x,y,startIndex);
+          updateEdgePositionTarget(x,y,targetIndex);
+        }
+
+      }
+    }
+
 
     function updateEdge(edge, index) {
       const line = document.getElementById(`edge-${index}`);
@@ -49,6 +64,34 @@
         console.log(`edge/line not found: ${edge}`);
       }
     };
+
+    function updateEdgePositionStart(startX,startY,idx) {
+      // update the start position of edge with index idx
+      const edgeId = `edge-${idx}`;
+      const line = document.getElementById(edgeId);
+      if (line) {
+        line.setAttribute("x1", startX * window_width);
+        line.setAttribute("y1", startY * window_height);
+        //console.log('what');
+      } else {
+        console.log('cannot find edge',edgeId);
+      }
+
+    };
+
+    function updateEdgePositionTarget(targetX,targetY,idx) {
+      // update the start position of edge with index idx
+      const edgeId = `node-${idx}`;
+      const line = document.getElementById(edgeId);
+      if (line) {
+        line.setAttribute("x2", targetX * window_width);
+        line.setAttribute("y2", targetY * window_height) ;
+      }
+      else {
+        console.log('no edge target');
+      }
+    };
+
 
     function getNodeCoordinates(nodeId) {
       const circle = document.getElementById(nodeId);
@@ -105,13 +148,14 @@
       state.nodes.forEach(createNode);
       state.edges.forEach(createEdge);
       num_nodes = state.num_nodes;
+      //console.log('num nodes is now', num_nodes, state);
       setInterval(() => {
         socket.send('tick');
       }, 50);
     }
 
     function update(state) {
-      state.nodes.forEach(updateNode);
+      state.updated_nodes.forEach(updateNode);
       state.edges.forEach(updateEdge);
     }
 
@@ -122,7 +166,7 @@
       } else if (object.init) {
         init(object.init);
       } else if (object.update) {
-        console.log('update');
+        //console.log('update');
         update(object.update);
       } else {
         console.log('do not understand message ' + object);

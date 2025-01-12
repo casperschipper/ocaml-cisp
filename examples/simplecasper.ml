@@ -4,7 +4,7 @@ let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
 let beta = 2.0 (* prefer paths that are shorter *)
 
-let num_nodes = 40
+let num_nodes = 30
 
 let evaporation = 0.2
 
@@ -19,7 +19,11 @@ let buffer_mutex = Mutex.create ()
 
 let shortest = ref 0.0
 
-type node = Node of {id: int; x: float; y: float}
+type sync = Modified | Synced | Pristine
+
+type node = Node of {id: int; x: float; y: float; sync: sync}
+
+let update_position x y (Node old) = Node {id= old.id; x; y; sync= Modified}
 
 type edge = Edge of {start: node; target: node; dist: float; inv: float}
 
@@ -30,7 +34,7 @@ type simple_edge = SimpleEdge of {start: int; target: int; weight: float}
 
 let paths : node list list ref = ref []
 
-let mkNode id x y = Node {id; x; y}
+let mkNode id x y = Node {id; x; y; sync= Pristine}
 
 (* Function to generate an array of random points *)
 let generate_random_points ~seed ~count ~max_x ~max_y =
@@ -95,7 +99,7 @@ let pretty_print_matrix arr =
   Array.iter pretty_print_row arr
 
 let update_matrix point_index new_point points (Distance dist) =
-  if point_index >= 0 && point_index < Array.length points then (
+  if point_index > 0 && point_index < Array.length points then (
     points.(point_index) <- new_point ;
     let old_line = dist.(point_index) in
     dist.(point_index) <-
@@ -109,6 +113,21 @@ let update_matrix point_index new_point points (Distance dist) =
       dist
     (* ; pretty_print_matrix dist *) )
   else ()
+
+let update_matrix_2 point_index new_point points (Distance dist) =
+  if point_index >= 0 && point_index < Array.length points then (
+    points.(point_index) <- new_point ;
+    for i = 0 to num_nodes - 1 do
+      if i != point_index then (
+        let start1, start2 = (point_index, i) in
+        let target1, target2 = (i, point_index) in
+        dist.(start1).(start2) <-
+          mkEdge new_point points.(i) (distance new_point points.(i)) ;
+        dist.(target1).(target2) <-
+          mkEdge points.(i) new_point (distance points.(i) new_point) )
+    done ;
+    Distance dist (* ; pretty_print_matrix dist *) )
+  else Distance dist
 
 (*
     0 1 2 3
@@ -209,7 +228,9 @@ let handle_osc_message path data =
   let update_points opt_ipoint =
     match opt_ipoint with
     | Some (IndexedPoint {idx; x; y}) ->
-        update_matrix idx (mkNode idx x y) nodes distance_array
+        if idx < num_nodes && idx >= 0 then
+          ignore (update_matrix_2 idx (mkNode idx x y) nodes distance_array)
+        else ()
     | None -> ()
   in
   match path with
@@ -231,19 +252,27 @@ let osc_thread_function () =
     (* Swap buffers at a safe point, can be adjusted based on needs *)
   done
 
+let print_sync sync =
+  match sync with
+  | Pristine -> "pristine"
+  | Modified -> "modified"
+  | Synced -> "synced"
+
 let print_node = function
-  | Node {id; x; y} ->
+  | Node {id; x; y; sync} ->
+      let sync = print_sync sync in
       Printf.printf "Node {\n" ;
       Printf.printf "  id: %d\n" id ;
       Printf.printf "  x: %.2f\n" x ;
       Printf.printf "  y: %.2f\n" y ;
+      Printf.printf "  sync: %s" sync ;
       Printf.printf "}\n"
 
 let get_node_id (Node n) = n.id
 
 let get_node_x (Node n) = n.x
 
-let default_node = Node {id= 0; x= 0.0; y= 0.0}
+let default_node = Node {id= 0; x= 0.0; y= 0.0; sync= Synced}
 
 (* type dist_arr = float Array.t Array.t *)
 
@@ -453,7 +482,7 @@ let select_next_edge_new pher_arr allowed_edges =
         let pher_level = get_pheromone pher_arr start target in
         let heuristic = get_inverse edge in
         let weight =
-          pher_level ** !current_buffer.alpha
+          (pher_level ** !current_buffer.alpha)
           *. (heuristic ** !current_buffer.beta)
         in
         {w= weight; item= edge} :: acc )
@@ -733,12 +762,12 @@ let pathsSignal () =
 
 let paths () =
   let open Cisp in
-  let signal = output |> Seq.map (fun x -> x *. 40.0)  in
+  let signal = output |> Seq.map (fun x -> x *. 40.0) in
   let scale x = (x /. float_of_int num_nodes *. 72.0) +. 64. |> mtof in
   signal |> hold (st 100) |> fmap scale |> sinosc2
 
 let jackMain () =
-   Jack.playSeqs 0 Process.sample_rate [paths (); paths (); output]
+  Jack.playSeqs 0 Process.sample_rate [paths (); paths (); output]
 
 let write_to_file filename str =
   let oc = open_out filename in
@@ -805,23 +834,49 @@ let edges_from_arrayarray nodes arrr =
                   ; weight= strength } ) )
   |> Toolkit.flatten
 
+let encode_nodes_update new_nodes = 
+  let encode_node_update node = 
+    let (x,y) = get_coords node in
+    `Assoc [ ("node_id", `Int (get_node_id node) )
+    ; ("x", `Float x )
+    ; ("y", `Float y ) ]
+  in
+  `List (new_nodes |> List.map encode_node_update)
+
 let encode_nodes_edges phers nodes =
   let open Yojson in
   let edges = edges_from_arrayarray nodes phers |> Array.to_list in
   let yojson_value =
-    `Assoc [("nodes", encode_nodes nodes); ("edges", encode_edges edges);("num_nodes", `Int num_nodes)]
+    `Assoc
+      [ ("nodes", encode_nodes nodes)
+      ; ("edges", encode_edges edges)
+      ; ("numberOfNodes", `Int num_nodes) ]
   in
   try Ok (Safe.to_string yojson_value) with
   | Json_error msg -> Error ("Yojson encoding error: " ^ msg)
 
+let modify_nodes nds =
+  (* this will return only the modified nodes, and considet them synced *)
+  let number i x = (i, x) in
+  nds |> Array.to_list |> List.mapi number
+  |> List.filter_map (fun (idx, Node n) ->
+         (* only report unsynced nodes *)
+         match n.sync with
+         | Synced -> None
+         | _ ->
+             let new_node = Node {n with sync= Synced} in
+             nodes.(idx) <- new_node ;
+             Some new_node )
+
 let encode_nodes_edges_update phers nodes =
   let open Yojson in
   let edges = simpleEdgesFrom phers in
+  let updates = modify_nodes nodes in
   let value =
     `Assoc
       [ ( "update"
         , `Assoc
-            [("nodes", encode_nodes nodes); ("edges", encode_simple_edges edges)]
+            [("updated_nodes", encode_nodes_update updates); ("edges", encode_simple_edges edges)]
         ) ]
   in
   Safe.to_string value
@@ -846,6 +901,7 @@ let dream_thread phers nodes () =
                    | Some "tick" ->
                        let result = encode_nodes_edges_update phers nodes in
                        let%lwt () =
+                         (* let _ = print_endline ("yes: " ^ result) in *)
                          Dream.send ~text_or_binary:`Text websocket result
                        in
                        process_messages () (* Continue looping *)
@@ -857,7 +913,8 @@ let dream_thread phers nodes () =
                                  [ ("nodes", encode_nodes nodes)
                                  ; ( "edges"
                                    , encode_simple_edges
-                                       (simpleEdgesFrom pheromones) ) ] ) ]
+                                       (simpleEdgesFrom pheromones) )
+                                ; ( "num_nodes", `Int num_nodes )] ) ]
                        in
                        let str = Yojson.Safe.to_string value in
                        let%lwt () =

@@ -2,11 +2,13 @@ module S = Lo.Server
 
 let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
-let beta = 2.0 (* prefer paths that are shorter *)
+let beta = 1.0 (* prefer paths that are shorter *)
 
-let num_nodes = 30
+let num_nodes = 32
 
 let evaporation = 0.2
+
+let exploration_bias = 0.0
 
 let deposit = 1.0
 
@@ -45,9 +47,11 @@ let generate_random_points ~seed ~count ~max_x ~max_y =
       let x = Random.float max_x in
       let y = Random.float max_y in
       mkNode idx x y )
+(* |> Array.mapi (fun idx (x, y) -> mkNode idx x y) *)
+(* [|(0.25, 0.25); (0.75, 0.25); (0.75, 0.75); (0.25, 0.75)|] *)
 
 let nodes =
-  let seed = 121 |> Cisp.debugi "my random seed" in
+  let seed = 123 (*121*) |> Cisp.debugi "my random seed" in
   (* let seed = Random.int 12000 |> Cisp.debugi "myseed" in *)
   generate_random_points ~seed ~count:num_nodes ~max_x:1.0 ~max_y:1.0
 
@@ -96,7 +100,9 @@ let pretty_print_row row =
 (* Function to pretty print a 2D array of floats *)
 let pretty_print_matrix arr =
   (* Iterate over each row in the 2D array *)
-  Array.iter pretty_print_row arr
+  print_endline "-*-" ;
+  Array.iter pretty_print_row arr ;
+  print_endline "-*-"
 
 let update_matrix point_index new_point points (Distance dist) =
   if point_index > 0 && point_index < Array.length points then (
@@ -118,23 +124,23 @@ let update_matrix_2 point_index new_point points (Distance dist) =
   if point_index >= 0 && point_index < Array.length points then (
     points.(point_index) <- new_point ;
     for i = 0 to num_nodes - 1 do
-      if i != point_index then (
-        let start1, start2 = (point_index, i) in
-        let target1, target2 = (i, point_index) in
-        dist.(start1).(start2) <-
-          mkEdge new_point points.(i) (distance new_point points.(i)) ;
-        dist.(target1).(target2) <-
-          mkEdge points.(i) new_point (distance points.(i) new_point) )
+      let start1, start2 = (point_index, i) in
+      let target1, target2 = (i, point_index) in
+      dist.(start1).(start2) <-
+        mkEdge points.(start1) points.(start2)
+          (distance points.(start1) points.(start2)) ;
+      dist.(target1).(target2) <-
+        mkEdge points.(target1) points.(target2)
+          (distance points.(target1) points.(target2))
     done ;
     Distance dist (* ; pretty_print_matrix dist *) )
   else Distance dist
 
 (*
-    0 1 2 3
-0     
-1
-2
-3
+  0    1   2
+0     0,1
+1 1,0 1,1 1,2
+2     2,1
 
 *)
 
@@ -149,9 +155,20 @@ let distance_array = generate_distance_matrix nodes
 let pheromones = Array.make_matrix num_nodes num_nodes 0.0
 
 type controllers =
-  {alpha: float; beta: float; deposit: float; evaporation: float; num_ants: int}
+  {alpha: float; beta: float; deposit: float; evaporation: float; num_ants: int; exploration_bias : float}
 
-let initial = {alpha; beta; deposit; evaporation; num_ants}
+let controllers_to_string ctr =
+  Printf.sprintf
+    "Controllers {\n\
+    \  alpha: %.2f\n\
+    \  beta: %.2f\n\
+    \  deposit: %.2f\n\
+    \  evaporation: %.2f\n\
+    \  num_ants: %d\n\
+     }"
+    ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants
+
+let initial = {alpha; beta; deposit; evaporation; num_ants; exploration_bias}
 
 let set_alpha a ctrl = {ctrl with alpha= a}
 
@@ -162,6 +179,8 @@ let set_deposit d ctrl = {ctrl with deposit= d}
 let set_evaporation e ctrl = {ctrl with evaporation= e}
 
 let set_ants a ctrl = {ctrl with num_ants= a}
+
+let set_exploration_bias a ctrl = { ctrl with exploration_bias = a }
 
 let current_buffer = ref initial
 
@@ -228,8 +247,9 @@ let handle_osc_message path data =
   let update_points opt_ipoint =
     match opt_ipoint with
     | Some (IndexedPoint {idx; x; y}) ->
-        if idx < num_nodes && idx >= 0 then
-          ignore (update_matrix_2 idx (mkNode idx x y) nodes distance_array)
+        if idx < num_nodes && idx >= 0 then (
+          ignore (update_matrix_2 idx (mkNode idx x y) nodes distance_array) ;
+          distance_array |> fun (Distance d) -> pretty_print_matrix d )
         else ()
     | None -> ()
   in
@@ -242,6 +262,7 @@ let handle_osc_message path data =
       data |> handle_int_arg
       |> update_ref_with_option ~ref:next_buffer ~update:set_ants
   | "/point" -> data |> handle_int_float_float |> update_points
+  | "/exploration_bias" -> data |> handle_float_arg |> update ~update:set_exploration_bias
   | _ -> Printf.printf "Unhandled OSC path or arguments\n"
 
 let osc_thread_function () =
@@ -484,6 +505,7 @@ let select_next_edge_new pher_arr allowed_edges =
         let weight =
           (pher_level ** !current_buffer.alpha)
           *. (heuristic ** !current_buffer.beta)
+          +. !current_buffer.exploration_bias
         in
         {w= weight; item= edge} :: acc )
       [] allowed_edges
@@ -764,10 +786,13 @@ let paths () =
   let open Cisp in
   let signal = output |> Seq.map (fun x -> x *. 40.0) in
   let scale x = (x /. float_of_int num_nodes *. 72.0) +. 64. |> mtof in
-  signal |> hold (st 100) |> fmap scale |> sinosc2
+  signal |> hold (st 10) |> fmap scale |> sinosc2
+
+let att input = input |> Seq.map (fun x -> x *. 0.01)
 
 let jackMain () =
-  Jack.playSeqs 0 Process.sample_rate [paths (); paths (); output]
+  Jack.playSeqs 0 Process.sample_rate
+    [paths () |> att; paths () |> att; output |> att]
 
 let write_to_file filename str =
   let oc = open_out filename in
@@ -834,12 +859,11 @@ let edges_from_arrayarray nodes arrr =
                   ; weight= strength } ) )
   |> Toolkit.flatten
 
-let encode_nodes_update new_nodes = 
-  let encode_node_update node = 
-    let (x,y) = get_coords node in
-    `Assoc [ ("node_id", `Int (get_node_id node) )
-    ; ("x", `Float x )
-    ; ("y", `Float y ) ]
+let encode_nodes_update new_nodes =
+  let encode_node_update node =
+    let x, y = get_coords node in
+    `Assoc
+      [("node_id", `Int (get_node_id node)); ("x", `Float x); ("y", `Float y)]
   in
   `List (new_nodes |> List.map encode_node_update)
 
@@ -876,8 +900,10 @@ let encode_nodes_edges_update phers nodes =
     `Assoc
       [ ( "update"
         , `Assoc
-            [("updated_nodes", encode_nodes_update updates); ("edges", encode_simple_edges edges)]
-        ) ]
+            [ ("updated_nodes", encode_nodes_update updates)
+            ; ("edges", encode_simple_edges edges)
+            ; ("controllers", `String (controllers_to_string !current_buffer))
+            ] ) ]
   in
   Safe.to_string value
 
@@ -914,7 +940,7 @@ let dream_thread phers nodes () =
                                  ; ( "edges"
                                    , encode_simple_edges
                                        (simpleEdgesFrom pheromones) )
-                                ; ( "num_nodes", `Int num_nodes )] ) ]
+                                 ; ("num_nodes", `Int num_nodes) ] ) ]
                        in
                        let str = Yojson.Safe.to_string value in
                        let%lwt () =

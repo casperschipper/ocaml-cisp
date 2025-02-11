@@ -29,12 +29,12 @@ jack_default_audio_sample_t **inputs;
 float *input_buffer;
 float *output_buffer;
 
-/* static void signal_handler(int sig) */
-/* { */
-/* 	jack_client_close(client); */
-/* 	fprintf(stderr, "signal received, exiting ...\n"); */
-/* 	exit(0); */
-/* } */
+ static void signal_handler(int sig) 
+ { 
+ 	jack_client_close(client); 
+ 	fprintf(stderr, "signal received, exiting ...\n"); 
+ 	exit(0); 
+ }
 
 /**
  * The process callback for this JACK application is called in a
@@ -253,16 +253,16 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 	jack_free (ports);
     
     /* install a signal handler to properly quits jack client */
-/* #ifdef WIN32 */
-/* 	signal(SIGINT, signal_handler); */
-/* 	signal(SIGABRT, signal_handler); */
-/* 	signal(SIGTERM, signal_handler); */
-/* #else */
-/* 	signal(SIGQUIT, signal_handler); */
-/* 	signal(SIGTERM, signal_handler); */
-/* 	signal(SIGHUP, signal_handler); */
-/* 	signal(SIGINT, signal_handler); */
-/* #endif */
+	#ifdef WIN32 
+		signal(SIGINT, signal_handler); 
+		signal(SIGABRT, signal_handler); 
+		signal(SIGTERM, signal_handler); 
+	#else 
+		signal(SIGQUIT, signal_handler); 
+		signal(SIGTERM, signal_handler); 
+		signal(SIGHUP, signal_handler); 
+		signal(SIGINT, signal_handler); 
+	#endif 
 
 	/* keep running until the Ctrl+C */
 

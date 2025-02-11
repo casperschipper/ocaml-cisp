@@ -178,7 +178,7 @@
   (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules fmfb)
- (libraries bigarray ctypes jack sndfile))
+ (libraries bigarray ctypes jack))
 
 (executable
  (name kuramoto)
@@ -254,6 +254,24 @@
   euclid
   dynlink
   plugface))
+
+(executable
+ (name simplesinecisp)
+ (link_flags
+  (-cclib -ljack))
+ (flags
+  (:standard -w -26-27-32))
+ (modules simplesinecisp)
+ (libraries
+  infseq
+  midi
+  cisp
+  bigarray
+  ctypes
+  jack
+  jackMidi
+  euclid
+  ))
 
 (executable
  (name graphpath)

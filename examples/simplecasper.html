@@ -7,12 +7,18 @@
     const window_width = 800;
     const window_height = 800;
     let num_nodes = 0;
+    const line_weight = 1;
+
 
     /* Set SVG attributes (e.g., width and height, adjust as needed) */
     svg.setAttribute("width", `${window_width}px`);
     svg.setAttribute("height", `${window_height}px`);
     svg.setAttribute("style", "border: 1px solid black;");
     document.body.appendChild(svg);
+    const ctrlState = document.createElement('pre');
+    ctrlState.innerText = "controller state";
+    ctrlState.setAttribute("id", "controllers");
+    document.body.appendChild(ctrlState);
 
     function createNode(node, index) {
       const [x, y] = node;
@@ -27,28 +33,36 @@
       circle.setAttribute("id", `node-${index}`);
       // Append circle and label to the SVG
       svg.appendChild(circle);
+
+      const text = document.createElementNS(svgNamespace, "text");
+      text.setAttribute('x', x * window_width); // x-coordinate
+      text.setAttribute('y', y * window_height); // y-coordinate
+      text.setAttribute('fill', 'black'); // Text color
+      text.setAttribute('font-size', '24'); // Font size
+      text.textContent = String(index);
+      svg.appendChild(text);
     };
 
     function updateNode(node) {
-      const {node_id, x, y} = node;
+      const { node_id, x, y } = node;
       const circle = document.getElementById(`node-${node_id}`);
       if (circle) {
         circle.setAttribute("cx", x * window_width);
         circle.setAttribute("cy", y * window_height);
-        updateConnectedEdges(x,y,node_id);
+        updateConnectedEdges(x, y, node_id);
       } else {
         console.log('cannot find circle' + node_id);
       }
     };
 
-    function updateConnectedEdges(x,y, index) {
+    function updateConnectedEdges(x, y, index) {
       for (let i = 0; i < num_nodes; i++) {
-        if (i !== index) {
-          const startIndex = (index * num_nodes) + i; 
+        if (true) {
+          const startIndex = (index * num_nodes) + i;
           const targetIndex = (i * num_nodes) + index;
-          //console.log('what', startIndex,targetIndex);
-          updateEdgePositionStart(x,y,startIndex);
-          updateEdgePositionTarget(x,y,targetIndex);
+          //console.log(`start-target: ${startIndex} , ${targetIndex}` );
+          updateEdgePositionStart(x, y, startIndex);
+          updateEdgePositionTarget(x, y, targetIndex);
         }
 
       }
@@ -59,13 +73,22 @@
       const line = document.getElementById(`edge-${index}`);
       if (line) {
         const { start, target, weight } = edge;
-        line.setAttribute("stroke-width", weight * 10);
+        line.setAttribute("stroke-width", weight * line_weight);
       } else {
         console.log(`edge/line not found: ${edge}`);
       }
     };
 
-    function updateEdgePositionStart(startX,startY,idx) {
+    function updateText(txt) {
+      const element = document.getElementById("controllers");
+      if (element) {
+        element.innerText = txt;
+      } else {
+        console.log('could not find element');
+      }
+    };
+
+    function updateEdgePositionStart(startX, startY, idx) {
       // update the start position of edge with index idx
       const edgeId = `edge-${idx}`;
       const line = document.getElementById(edgeId);
@@ -74,18 +97,18 @@
         line.setAttribute("y1", startY * window_height);
         //console.log('what');
       } else {
-        console.log('cannot find edge',edgeId);
+        console.log('cannot find edge', edgeId);
       }
 
     };
 
-    function updateEdgePositionTarget(targetX,targetY,idx) {
+    function updateEdgePositionTarget(targetX, targetY, idx) {
       // update the start position of edge with index idx
-      const edgeId = `node-${idx}`;
+      const edgeId = `edge-${idx}`;
       const line = document.getElementById(edgeId);
       if (line) {
         line.setAttribute("x2", targetX * window_width);
-        line.setAttribute("y2", targetY * window_height) ;
+        line.setAttribute("y2", targetY * window_height);
       }
       else {
         console.log('no edge target');
@@ -120,7 +143,7 @@
       line.setAttribute("x2", targetX);
       line.setAttribute("y2", targetY);
       line.setAttribute("stroke", "black");
-      line.setAttribute("stroke-width", weight * 10);
+      line.setAttribute("stroke-width", weight * line_weight);
       line.setAttribute("id", `edge-${index}`);
 
 
@@ -157,6 +180,8 @@
     function update(state) {
       state.updated_nodes.forEach(updateNode);
       state.edges.forEach(updateEdge);
+      console.log(state.controllers);
+      updateText(state.controllers);
     }
 
     socket.onmessage = function (e) {

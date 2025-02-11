@@ -61,66 +61,88 @@
 (executable
  (name tablepath)
  (modules tablepath)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack))
 
 (executable
  (name tablepath2)
  (modules tablepath2)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack))
 
 (executable
  (name tablepath2b)
  (modules tablepath2b)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
 (executable
  (name tablepath2nrt)
  (modules tablepath2nrt)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
 (executable
  (name tablepathslow)
  (modules tablepathslow)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
 (executable
  (name tablepathslow2)
  (modules tablepathslow2)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
 (executable
  (name tablepathsplit)
  (modules tablepathsplit)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
 (executable
  (name tablepathsplit2)
  (modules tablepathsplit2)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
 (executable
  (name tablepathsplitnew)
  (modules tablepathsplitnew)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
 (executable
  (name tablepathnew)
  (modules tablepathnew)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries toolkit cisp jack sndfile))
 
 (executable
  (name null_lookup)
  (modules null_lookup)
+  (flags
+  (:standard -w -26-32-69-34))
  (ocamlopt_flags -O3)
  (libraries cisp bigarray ctypes jack sndfile))
 

@@ -24,7 +24,7 @@ value caml_snd_write (value input_ar, value filename, value format_tuple)
   int sr = Int_val(Field(format_tuple,0));
   int chs = Int_val(Field(format_tuple,1));
   int bits = Int_val(Field(format_tuple,2));
-  int format = Int_val(Field(format_tuple,3));
+  int format = Int_val(Field(format_tuple,3)) | SF_FORMAT_PCM_16; // Ensure a valid sub-format
 
   char *fname = String_val(filename);
 
@@ -39,11 +39,16 @@ value caml_snd_write (value input_ar, value filename, value format_tuple)
   sfinfo.frames		= size/chs;
   sfinfo.channels	= chs ;
   sfinfo.format = format;
+
+  printf("Opening file: %s\n", fname);
+  printf("Format: 0x%x, Sample Rate: %d, Channels: %d\n", sfinfo.format, sfinfo.samplerate, sfinfo.channels);
+
   
   if (! (file = sf_open (fname, SFM_WRITE, &sfinfo))) {	
-    caml_failwith("couldn't open output file.");
-    } ;
-
+    printf("Error: %s\n", sf_strerror(NULL));  // NULL retrieves last error
+    caml_failwith(sf_strerror(NULL));
+  };
+    
   
     sf_count_t written = sf_write_float(file, input_data, sfinfo.channels * (size / chs));
     if (written != sfinfo.channels * (size / chs)) {

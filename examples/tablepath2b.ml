@@ -66,6 +66,6 @@ let () =
     let t =
       Sndfile.from_seq size (int_of_float !Process.sample_rate) with_effect
     in
-    Sndfile.write t "/Users/casperschipper/Music/Null/BIRDNOTE.wav"
-      Sndfile.WAV_32
+    Sndfile.write t "/tmp/1111.wav"
+      Sndfile.WAV_16
   else Jack.playSeqs 0 Process.sample_rate with_effect

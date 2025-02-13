@@ -183,13 +183,13 @@
  (libraries cisp lo bigarray ctypes jack))
 
 (executable
- (name simplecasper)
+ (name antcolony)
  (flags
   (:standard -w -26-32-69-34))
  (link_flags
   (-cclib -ljack))
  (ocamlopt_flags -O3)
- (modules simplecasper)
+ (modules antcolony)
  (libraries lwt lwt.unix graphsvg lo cisp jack svg_gen dream)
  (preprocess
   (pps lwt_ppx)))

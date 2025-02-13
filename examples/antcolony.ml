@@ -729,7 +729,7 @@ let line_table =
   let steps = num_nodes in
   let one_step = 1.0 /. float_of_int steps in
   let table = List.init steps (fun i -> float_of_int i *. one_step) in
-  table |> Toolkit.shuffle |> Array.of_list
+  table |> Array.of_list
 
 let lookup input = input |> Seq.map (fun idx -> Array.get line_table idx)
 
@@ -757,8 +757,11 @@ let otherSignal () =
     | Some i -> i
     | None -> 0
   in
-  Cisp.recursive c 0 u (fun index -> line_table.(index) *. 0.01)
-  |> Cisp.hold (st 1)
+  let eval inp = 
+    let scale x = ((x /. float_of_int num_nodes) *. 1024.0) +. 64. |> mtof in
+    line_table.(inp) |> scale 
+  in
+  Cisp.recursive c 0 u eval |> hold (st 30) |> sinosc2
 
 let pathsSignal () =
   let lst_head lst =
@@ -786,13 +789,13 @@ let paths () =
   let open Cisp in
   let signal = output |> Seq.map (fun x -> x *. 40.0) in
   let scale x = (x /. float_of_int num_nodes *. 72.0) +. 64. |> mtof in
-  signal |> hold (st 10) |> fmap scale |> sinosc2
+  signal |> hold (st 30) |> fmap scale |> sinosc2
 
 let att input = input |> Seq.map (fun x -> x *. 0.01)
 
 let jackMain () =
   Jack.playSeqs 0 Process.sample_rate
-    [paths () |> att; paths () |> att; output |> att]
+    [otherSignal () |> att; otherSignal () |> att; output |> att]
 
 let write_to_file filename str =
   let oc = open_out filename in

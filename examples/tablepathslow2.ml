@@ -54,7 +54,7 @@ let () =
   let channels = rangei 0 30 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
   
   let with_effect = ((effect eff (signal ())) :: channels) in
-   if true then
+   if false then
     let size = !Process.sample_rate *. 120.0 |> int_of_float in
     let t = Sndfile.from_seq size (int_of_float !Process.sample_rate) with_effect in
     Sndfile.write t "/Users/casperschipper/Music/Null/tablepath_pulse_3.wav" Sndfile.WAV_32

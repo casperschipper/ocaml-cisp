@@ -61,7 +61,7 @@ let () =
   in
   let channels = rangei 0 14 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
   let with_effect = effect eff (signal ()) :: channels in
-  if true then
+  if false then
     let size = !Process.sample_rate *. (60.0 *. 3.0) |> int_of_float in
     let t =
       Sndfile.from_seq size (int_of_float !Process.sample_rate) with_effect

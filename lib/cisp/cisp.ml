@@ -747,6 +747,9 @@ let stereo_pan_fold (seq_list : float Seq.t list) : float Seq.t * float Seq.t =
   List.fold_left process_track (zero_seq, zero_seq)
     (List.combine seq_list pan_positions)
 
+let spray_stereo n thing =
+  mkLotsLst n thing |> stereo_pan_fold
+
 let mixList lst () = List.fold_left ( +~ ) lst
 
 let sumlist lst = List.fold_left ( +.~ ) (st 0.0) lst

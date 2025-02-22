@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 823.0, 100.0, 655.0, 801.0 ],
+		"rect" : [ 823.0, 147.0, 655.0, 801.0 ],
 		"gridsize" : [ 15.0, 15.0 ],
 		"boxes" : [ 			{
 				"box" : 				{
@@ -222,6 +222,10 @@
 , 						{
 							"number" : 2,
 							"data" : [ 5, "obj-21", "number", "float", 0.5, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 1.0, 5, "obj-31", "number", "float", 100.0, 5, "obj-36", "number", "int", 10, 5, "obj-10", "number", "int", 5, 5, "obj-12", "number", "float", 92.913383483886719, 5, "obj-14", "number", "float", 92.125984191894531, 6, "obj-17", "pictslider", "list", 118, 10, 5, "obj-19", "number", "int", 118, 5, "obj-20", "number", "int", 10 ]
+						}
+, 						{
+							"number" : 3,
+							"data" : [ 5, "obj-21", "number", "float", 1.230000019073486, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.449999988079071, 5, "obj-31", "number", "float", 3.0, 5, "obj-36", "number", "int", 0, 5, "obj-10", "number", "int", 29, 5, "obj-12", "number", "float", 0.905511796474457, 5, "obj-14", "number", "float", 0.25984251499176, 6, "obj-17", "pictslider", "list", 115, 94, 5, "obj-19", "number", "int", 115, 5, "obj-20", "number", "int", 94, 5, "obj-15", "number", "float", 0.0, 5, "obj-18", "number", "float", 0.03999999910593 ]
 						}
  ]
 				}

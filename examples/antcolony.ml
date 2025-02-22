@@ -4,7 +4,9 @@ let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
 let beta = 1.0 (* prefer paths that are shorter *)
 
-let num_nodes = 32
+let num_nodes = 49
+
+let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
 let evaporation = 0.2
 
@@ -49,11 +51,21 @@ let generate_random_points ~seed ~count ~max_x ~max_y =
       mkNode idx x y )
 (* |> Array.mapi (fun idx (x, y) -> mkNode idx x y) *)
 (* [|(0.25, 0.25); (0.75, 0.25); (0.75, 0.75); (0.25, 0.75)|] *)
-
+let generate_grid n =
+  let step = 1.0 /. float_of_int (n - 1) in
+  Array.init (n * n) (fun i ->
+      let horisteps = i mod n in
+      let verticalsteps = i / n in
+      let x = float_of_int horisteps *. step in
+      let y = float_of_int verticalsteps *. step in
+      mkNode i x y) 
 let nodes =
   let seed = 123 (*121*) |> Cisp.debugi "my random seed" in
   (* let seed = Random.int 12000 |> Cisp.debugi "myseed" in *)
-  generate_random_points ~seed ~count:num_nodes ~max_x:1.0 ~max_y:1.0
+  generate_grid n_side
+  (* generate_random_points ~seed ~count:num_nodes ~max_x:1.0 ~max_y:1.0 *)
+
+
 
 let distance (Node p1) (Node p2) =
   if p1.id = p2.id then 0.0
@@ -68,7 +80,7 @@ let mkEdge start target distance =
     ; dist= distance
     ; inv=
         ( match distance with
-        | 0.0 -> 0.0
+        | 0.0 -> 100.0
         | noneZero -> 1.0 /. noneZero ) }
 
 type distance1d = Distance of edge Array.t Array.t
@@ -155,7 +167,12 @@ let distance_array = generate_distance_matrix nodes
 let pheromones = Array.make_matrix num_nodes num_nodes 0.0
 
 type controllers =
-  {alpha: float; beta: float; deposit: float; evaporation: float; num_ants: int; exploration_bias : float}
+  { alpha: float
+  ; beta: float
+  ; deposit: float
+  ; evaporation: float
+  ; num_ants: int
+  ; exploration_bias: float }
 
 let controllers_to_string ctr =
   Printf.sprintf
@@ -180,7 +197,7 @@ let set_evaporation e ctrl = {ctrl with evaporation= e}
 
 let set_ants a ctrl = {ctrl with num_ants= a}
 
-let set_exploration_bias a ctrl = { ctrl with exploration_bias = a }
+let set_exploration_bias a ctrl = {ctrl with exploration_bias= a}
 
 let current_buffer = ref initial
 
@@ -262,7 +279,8 @@ let handle_osc_message path data =
       data |> handle_int_arg
       |> update_ref_with_option ~ref:next_buffer ~update:set_ants
   | "/point" -> data |> handle_int_float_float |> update_points
-  | "/exploration_bias" -> data |> handle_float_arg |> update ~update:set_exploration_bias
+  | "/exploration_bias" ->
+      data |> handle_float_arg |> update ~update:set_exploration_bias
   | _ -> Printf.printf "Unhandled OSC path or arguments\n"
 
 let osc_thread_function () =
@@ -757,9 +775,9 @@ let otherSignal () =
     | Some i -> i
     | None -> 0
   in
-  let eval inp = 
-    let scale x = ((x /. float_of_int num_nodes) *. 1024.0) +. 64. |> mtof in
-    line_table.(inp) |> scale 
+  let eval inp =
+    let scale x = (x /. float_of_int num_nodes *. 1024.0) +. 64. |> mtof in
+    line_table.(inp) |> scale
   in
   Cisp.recursive c 0 u eval |> hold (st 30) |> sinosc2
 

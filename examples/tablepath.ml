@@ -61,7 +61,7 @@ let () =
   let open Cisp in
   let chaos =
        timed
-         (tline (st 7.0) (seq [0.01;6.0]))
+         (tline (ch [|0.1;7.0|]) (seq [0.01;3.0;12.0;6.0]))
          (st write_line |> Seq.map (fun x -> x ()))
      in
   let peace =

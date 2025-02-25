@@ -190,7 +190,7 @@
   (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules antcolony)
- (libraries lwt lwt.unix graphsvg lo cisp jack svg_gen dream)
+ (libraries lwt lwt.unix graphsvg lo cisp jack svg_gen dream spacegen)
  (preprocess
   (pps lwt_ppx)))
 

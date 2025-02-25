@@ -10,7 +10,7 @@ let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
 let evaporation = 0.2
 
-let exploration_bias = 0.0
+let exploration_bias = 0.001
 
 let deposit = 1.0
 
@@ -41,29 +41,15 @@ let paths : node list list ref = ref []
 let mkNode id x y = Node {id; x; y; sync= Pristine}
 
 (* Function to generate an array of random points *)
-let generate_random_points ~seed ~count ~max_x ~max_y =
-  (* Set the seed for the random number generator *)
-  Random.init seed ;
-  (* Create an array of random points *)
-  Array.init count (fun idx ->
-      let x = Random.float max_x in
-      let y = Random.float max_y in
-      mkNode idx x y )
+
 (* |> Array.mapi (fun idx (x, y) -> mkNode idx x y) *)
 (* [|(0.25, 0.25); (0.75, 0.25); (0.75, 0.75); (0.25, 0.75)|] *)
-let generate_grid n =
-  let step = 1.0 /. float_of_int (n - 1) in
-  Array.init (n * n) (fun i ->
-      let horisteps = i mod n in
-      let verticalsteps = i / n in
-      let x = float_of_int horisteps *. step in
-      let y = float_of_int verticalsteps *. step in
-      mkNode i x y) 
+
 let nodes =
   let seed = 123 (*121*) |> Cisp.debugi "my random seed" in
   (* let seed = Random.int 12000 |> Cisp.debugi "myseed" in *)
-  generate_grid n_side
-  (* generate_random_points ~seed ~count:num_nodes ~max_x:1.0 ~max_y:1.0 *)
+  (* generate_grid n_side *)
+  Spacegen.generate_random_points ~seed ~count:num_nodes ~max_x:1.0 ~max_y:1.0 mkNode
 
 
 
@@ -345,7 +331,8 @@ type state =
       ; visited: node list
       ; visited_edges: edge list
       ; total_dist: float
-      ; best_dist: float }
+      ; best_dist: float
+      ; n_visited: int }
 
 let get_node_id (Node n) = n.id
 
@@ -373,7 +360,8 @@ let print_state = function
       ; visited
       ; visited_edges
       ; total_dist
-      ; best_dist } ->
+      ; best_dist
+      ; _  } ->
       Printf.printf "State {\n" ;
       Printf.printf "  current_ant: %d\n" current_ant ;
       Printf.printf "  current: %d\n" (get_node_id current) ;
@@ -652,7 +640,8 @@ let start_new complete_nodes (State state) =
     ; visited= []
     ; total_dist= 0.0
     ; visited_edges= []
-    ; best_dist }
+    ; best_dist 
+    ; n_visited = 0}
 
 let pretty_print_flt_row row =
   let row_string = Array.map (fun flt -> Printf.sprintf "%.2f " flt) row in
@@ -669,50 +658,55 @@ let debug_phers () =
 let throttled_pher_func = with_throttled_execution 44100 debug_phers
 
 let pick_next_point pher_arr original_nodes dist_matrix (State state) =
-  match state.targets with
-  | [] -> start_new original_nodes (State state)
-  | _ :: _ ->
-      (* let _ =
-           print_string "current = ";
-           print_int (get_node_id state.current);
-           print_endline ""
-         in *)
-      (* let size = Array.length dist_matrix in *)
-      (* current should be within bounds *)
-      let edges = get_line (get_node_id state.current) dist_matrix in
-      (* let _ = Array.iter print_edge edges in *)
-      (* remove current point from targets *)
-      let new_targets = remove_node state.current state.targets in
-      (* let () = print_nodes "new targets: " new_targets in *)
-      (* get the target node ids *)
-      let ids = new_targets |> List.map get_node_id in
-      let filtered_edges =
-        (* only get the edges that are of targets *)
-        edges |> Array.to_list
-        |> List.filter (fun (Edge e) -> List.mem (get_node_id e.target) ids)
-        (* |> debug_edges "filtered edges targets" *)
-        |> Array.of_list
-      in
-      if Array.length filtered_edges < 1 then
-        start_new original_nodes (State state)
-      else
-        let picked_edge = select_next_edge_new pher_arr filtered_edges in
-        (* let _ = throttled_pher_func () in *)
-        (* let _ = debug_edges "filtered edges" (filtered_edges |> Array.to_list) in *)
-        let new_target = picked_edge |> get_target in
-        (* let () =
-             print_endline "\n visited ";
-             print_nodes "old visited state" state.visited;
-             print_endline "\n"
-           in *)
-        State
-          { current_ant= state.current_ant
-          ; current= new_target
-          ; targets= new_targets
-          ; visited= state.current :: state.visited
-          ; visited_edges= picked_edge :: state.visited_edges
-          ; total_dist= state.total_dist +. get_dist picked_edge
-          ; best_dist= state.best_dist }
+  if state.n_visited == 6 then
+    start_new original_nodes (State state)
+  else 
+    match state.targets with
+    | [] -> start_new original_nodes (State state)
+    | _ :: _ ->
+        (* let _ =
+            print_string "current = ";
+            print_int (get_node_id state.current);
+            print_endline ""
+          in *)
+        (* let size = Array.length dist_matrix in *)
+        (* current should be within bounds *)
+        let edges = get_line (get_node_id state.current) dist_matrix in
+        (* let _ = Array.iter print_edge edges in *)
+        (* remove current point from targets *)
+        let new_targets = remove_node state.current state.targets in
+        (* let new_targets = state.targets in *)
+        (* let () = print_nodes "new targets: " new_targets in *)
+        (* get the target node ids *)
+        let ids = new_targets |> List.map get_node_id in
+        let filtered_edges =
+          (* only get the edges that are of targets *)
+          edges |> Array.to_list
+          |> List.filter (fun (Edge e) -> List.mem (get_node_id e.target) ids)
+          (* |> debug_edges "filtered edges targets" *)
+          |> Array.of_list
+        in
+        if Array.length filtered_edges < 1 then
+          start_new original_nodes (State state)
+        else
+          let picked_edge = select_next_edge_new pher_arr filtered_edges in
+          (* let _ = throttled_pher_func () in *)
+          (* let _ = debug_edges "filtered edges" (filtered_edges |> Array.to_list) in *)
+          let new_target = picked_edge |> get_target in
+          (* let () =
+              print_endline "\n visited ";
+              print_nodes "old visited state" state.visited;
+              print_endline "\n"
+            in *)
+          State
+            { current_ant= state.current_ant
+            ; current= new_target
+            ; targets= new_targets
+            ; visited= state.current :: state.visited
+            ; visited_edges= picked_edge :: state.visited_edges
+            ; total_dist= state.total_dist +. get_dist picked_edge
+            ; best_dist= state.best_dist
+            ; n_visited= state.n_visited + 1 }
 
 (* let get_x (Node n) = n.x *)
 let read_file filename =
@@ -737,7 +731,8 @@ let signal () =
       ; visited= []
       ; total_dist= 0.0
       ; visited_edges= []
-      ; best_dist= 1000000.0 }
+      ; best_dist= 1000000.0
+      ; n_visited= 0 }
   in
   let update = pick_next_point pheromones nodes_list distance_array in
   let eval (State state) = get_node_id state.current in
@@ -781,6 +776,24 @@ let otherSignal () =
   in
   Cisp.recursive c 0 u eval |> hold (st 30) |> sinosc2
 
+let justThePath () =
+    let open Cisp in
+    let c = st () in
+    let u () model =
+      let phers = Array.get pheromones model in
+      let weighted =
+        Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
+      in
+      let next_pher = pick_weighted weighted in
+      match next_pher with
+      | Some i -> i
+      | None -> 0
+    in
+    let eval inp =
+      line_table.(inp)
+    in
+    Cisp.recursive c 0 u eval
+
 let pathsSignal () =
   let lst_head lst =
     match lst with
@@ -811,9 +824,19 @@ let paths () =
 
 let att input = input |> Seq.map (fun x -> x *. 0.01)
 
+let sumOctaves () =
+  let open Cisp in
+    List.fold_left ( +.~ ) (st 0.0) [
+      justThePath () 
+    ; justThePath () |> hold (st 2) 
+    ; justThePath () |> hold (st 4)
+    ; justThePath () |> hold (st 8)
+    ; justThePath () |> hold (st 16)
+    ; justThePath () |> hold (st 32)]
+
 let jackMain () =
   Jack.playSeqs 0 Process.sample_rate
-    [otherSignal () |> att; otherSignal () |> att; output |> att]
+    [sumOctaves () |> att; sumOctaves () |> att; output |> att]
 
 let write_to_file filename str =
   let oc = open_out filename in

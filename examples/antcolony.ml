@@ -49,9 +49,8 @@ let nodes =
   let seed = 123 (*121*) |> Cisp.debugi "my random seed" in
   (* let seed = Random.int 12000 |> Cisp.debugi "myseed" in *)
   (* generate_grid n_side *)
-  Spacegen.generate_random_points ~seed ~count:num_nodes ~max_x:1.0 ~max_y:1.0 mkNode
-
-
+  Spacegen.generate_random_points ~seed ~count:num_nodes ~max_x:1.0 ~max_y:1.0
+    mkNode
 
 let distance (Node p1) (Node p2) =
   if p1.id = p2.id then 0.0
@@ -250,9 +249,8 @@ let handle_osc_message path data =
   let update_points opt_ipoint =
     match opt_ipoint with
     | Some (IndexedPoint {idx; x; y}) ->
-        if idx < num_nodes && idx >= 0 then (
-          ignore (update_matrix_2 idx (mkNode idx x y) nodes distance_array) ;
-          distance_array |> fun (Distance d) -> pretty_print_matrix d )
+        if idx < num_nodes && idx >= 0 then
+          ignore (update_matrix_2 idx (mkNode idx x y) nodes distance_array)
         else ()
     | None -> ()
   in
@@ -361,7 +359,7 @@ let print_state = function
       ; visited_edges
       ; total_dist
       ; best_dist
-      ; _  } ->
+      ; _ } ->
       Printf.printf "State {\n" ;
       Printf.printf "  current_ant: %d\n" current_ant ;
       Printf.printf "  current: %d\n" (get_node_id current) ;
@@ -640,8 +638,8 @@ let start_new complete_nodes (State state) =
     ; visited= []
     ; total_dist= 0.0
     ; visited_edges= []
-    ; best_dist 
-    ; n_visited = 0}
+    ; best_dist
+    ; n_visited= 0 }
 
 let pretty_print_flt_row row =
   let row_string = Array.map (fun flt -> Printf.sprintf "%.2f " flt) row in
@@ -658,9 +656,8 @@ let debug_phers () =
 let throttled_pher_func = with_throttled_execution 44100 debug_phers
 
 let pick_next_point pher_arr original_nodes dist_matrix (State state) =
-  if state.n_visited == 6 then
-    start_new original_nodes (State state)
-  else 
+  if state.n_visited == 6 then start_new original_nodes (State state)
+  else
     match state.targets with
     | [] -> start_new original_nodes (State state)
     | _ :: _ ->
@@ -776,23 +773,23 @@ let otherSignal () =
   in
   Cisp.recursive c 0 u eval |> hold (st 30) |> sinosc2
 
-let justThePath () =
-    let open Cisp in
-    let c = st () in
-    let u () model =
-      let phers = Array.get pheromones model in
-      let weighted =
-        Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
-      in
-      let next_pher = pick_weighted weighted in
-      match next_pher with
-      | Some i -> i
-      | None -> 0
+
+(* this creates a stereo signal *)
+let justThePath repeats =
+  let open Cisp in
+  let c = st () in
+  let u () model =
+    let phers = Array.get pheromones model in
+    let weighted =
+      Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
     in
-    let eval inp =
-      line_table.(inp)
-    in
-    Cisp.recursive c 0 u eval
+    let next_pher = pick_weighted weighted in
+    match next_pher with
+    | Some i -> i
+    | None -> 0
+  in
+  let eval inp = nodes.(inp) |> fun (Node node) -> (node.x, node.y) in
+  Cisp.recursive c 0 u eval |> Cisp.hold (st repeats) |> Seq.unzip |> pairToList 
 
 let pathsSignal () =
   let lst_head lst =
@@ -824,6 +821,7 @@ let paths () =
 
 let att input = input |> Seq.map (fun x -> x *. 0.01)
 
+(**
 let sumOctaves () =
   let open Cisp in
     List.fold_left ( +.~ ) (st 0.0) [
@@ -832,11 +830,10 @@ let sumOctaves () =
     ; justThePath () |> hold (st 4)
     ; justThePath () |> hold (st 8)
     ; justThePath () |> hold (st 16)
-    ; justThePath () |> hold (st 32)]
+    ; justThePath () |> hold (st 32)] *)
 
 let jackMain () =
-  Jack.playSeqs 0 Process.sample_rate
-    [sumOctaves () |> att; sumOctaves () |> att; output |> att]
+  Jack.playSeqs 0 Process.sample_rate (justThePath () @ [output |> att])
 
 let write_to_file filename str =
   let oc = open_out filename in

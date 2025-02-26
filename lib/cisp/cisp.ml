@@ -600,6 +600,8 @@ let joinB lst bridge =
 
 let unzip sq = (map fst sq, map snd sq)
 
+let pairToList (x,y) = [x;y]
+
 let unzip3 sq =
   let first (x, _, _) = x in
   let second (_, x, _) = x in

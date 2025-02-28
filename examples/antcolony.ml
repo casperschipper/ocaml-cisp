@@ -4,7 +4,7 @@ let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
 let beta = 1.0 (* prefer paths that are shorter *)
 
-let num_nodes = 64
+let num_nodes = 49
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
@@ -17,6 +17,8 @@ let deposit = 1.0
 let num_ants = 10
 
 let num_samples = 44100 * 40
+
+let max_tour = 33
 
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
@@ -157,7 +159,8 @@ type controllers =
   ; deposit: float
   ; evaporation: float
   ; num_ants: int
-  ; exploration_bias: float }
+  ; exploration_bias: float
+  ; max_tour: int }
 
 let controllers_to_string ctr =
   Printf.sprintf
@@ -167,10 +170,12 @@ let controllers_to_string ctr =
     \  deposit: %.2f\n\
     \  evaporation: %.2f\n\
     \  num_ants: %d\n\
+    \  max_tour: %d\n\
      }"
-    ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants
+    ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants ctr.max_tour
 
-let initial = {alpha; beta; deposit; evaporation; num_ants; exploration_bias}
+let initial =
+  {alpha; beta; deposit; evaporation; num_ants; exploration_bias; max_tour}
 
 let set_alpha a ctrl = {ctrl with alpha= a}
 
@@ -181,6 +186,10 @@ let set_deposit d ctrl = {ctrl with deposit= d}
 let set_evaporation e ctrl = {ctrl with evaporation= e}
 
 let set_ants a ctrl = {ctrl with num_ants= a}
+
+let set_max_tour a ctrl =
+  let mx = if a > 1 then a else 1 in
+  {ctrl with max_tour= mx}
 
 let set_exploration_bias a ctrl = {ctrl with exploration_bias= a}
 
@@ -265,6 +274,9 @@ let handle_osc_message path data =
   | "/point" -> data |> handle_int_float_float |> update_points
   | "/exploration_bias" ->
       data |> handle_float_arg |> update ~update:set_exploration_bias
+  | "/max_tour" ->
+      data |> handle_int_arg
+      |> update_ref_with_option ~ref:next_buffer ~update:set_max_tour
   | _ -> Printf.printf "Unhandled OSC path or arguments\n"
 
 let osc_thread_function () =
@@ -656,7 +668,8 @@ let debug_phers () =
 let throttled_pher_func = with_throttled_execution 44100 debug_phers
 
 let pick_next_point pher_arr original_nodes dist_matrix (State state) =
-  if state.n_visited == 6 then start_new original_nodes (State state)
+  if state.n_visited >= !current_buffer.max_tour then
+    start_new original_nodes (State state)
   else
     match state.targets with
     | [] -> start_new original_nodes (State state)
@@ -773,7 +786,6 @@ let otherSignal () =
   in
   Cisp.recursive c 0 u eval |> hold (st 30) |> sinosc2
 
-
 (* this creates a stereo signal *)
 let justThePath repeats =
   let open Cisp in
@@ -786,10 +798,10 @@ let justThePath repeats =
     let next_pher = pick_weighted weighted in
     match next_pher with
     | Some i -> i
-    | None -> 0
+    | None -> Toolkit.rvi 0 num_nodes
   in
   let eval inp = nodes.(inp) |> fun (Node node) -> (node.x, node.y) in
-  Cisp.recursive c 0 u eval |> Cisp.hold (st repeats) |> Seq.unzip |> pairToList 
+  Cisp.recursive c 0 u eval |> Cisp.hold (st repeats) |> Seq.unzip
 
 let pathsSignal () =
   let lst_head lst =
@@ -834,14 +846,33 @@ let sumOctaves () =
 
 let bunch () =
   let open Cisp in
-  let stereos = rangei 1 6 |> fmap (fun x -> justThePath x) in
-  let result  =  Seq.fold_left List.append [] stereos  in
-  let _ = print_int (List.length result); print_endline "done" in
+  let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
+  let stereos =
+    [1; 101; 102; 555; 10000; 2000]
+    |> List.to_seq
+    |> fmap (fun x -> justThePath x)
+  in
+  let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
 
+let move_node_by_promille (Node {id; x; y; _}) =
+  let promille = 0.01 in
+  let new_x = x +. (x *. Toolkit.rvfi ((-1.0) *. promille)  promille) |> Toolkit.wrapf 0.0 1.0 in
+  let new_y = y +. (y *. Toolkit.rvfi ((-1.0) *. promille) promille) |> Toolkit.wrapf 0.0 1.0 in
+  Node {id; x= new_x; y= new_y; sync = Modified}
+
+let push_nodes () =
+  let open Cisp in
+  countTill (num_nodes - 1)
+  |> fmap (fun idx ->
+         let new_node = move_node_by_promille nodes.(idx) in
+         ignore (update_matrix_2 idx new_node nodes distance_array) ;
+         0.0 )
+  |> hold (st 100)
+
 let jackMain () =
-  Jack.playSeqs 0 Process.sample_rate (bunch () @ [output |> att])
-  
+  Jack.playSeqs 0 Process.sample_rate (bunch () @ [output |> att; push_nodes ()])
+
 let write_to_file filename str =
   let oc = open_out filename in
   output_string oc str ; close_out oc

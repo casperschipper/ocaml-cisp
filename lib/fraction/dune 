@@ -1,4 +1,0 @@
-(library
- (name fraction)
- (ocamlopt_flags -O3)	
-)

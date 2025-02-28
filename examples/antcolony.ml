@@ -4,7 +4,7 @@ let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
 let beta = 1.0 (* prefer paths that are shorter *)
 
-let num_nodes = 49
+let num_nodes = 64
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
@@ -832,9 +832,16 @@ let sumOctaves () =
     ; justThePath () |> hold (st 16)
     ; justThePath () |> hold (st 32)] *)
 
-let jackMain () =
-  Jack.playSeqs 0 Process.sample_rate (justThePath () @ [output |> att])
+let bunch () =
+  let open Cisp in
+  let stereos = rangei 1 6 |> fmap (fun x -> justThePath x) in
+  let result  =  Seq.fold_left List.append [] stereos  in
+  let _ = print_int (List.length result); print_endline "done" in
+  result
 
+let jackMain () =
+  Jack.playSeqs 0 Process.sample_rate (bunch () @ [output |> att])
+  
 let write_to_file filename str =
   let oc = open_out filename in
   output_string oc str ; close_out oc

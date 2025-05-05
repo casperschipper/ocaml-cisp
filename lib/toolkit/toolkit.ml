@@ -28,11 +28,19 @@ let modByf y x =
   | nonZeroY ->
       let result = mod_float x nonZeroY in
       if result >= 0.0 then result else result +. y
-
+(* 
 let wrapf low high x =
   let l = min low high in
   let r = abs_float (high -. low) in
-  l +. (x -. l |> modByf r)
+  l +. (x -. l |> modByf r) *)
+
+let wrapf low high x =
+    let range = high -. low in
+    if range <= 0.0 then invalid_arg "wrap_float: high must be greater than low"
+    else
+      let wrapped = mod_float (x -. low) range +. low in
+      if wrapped < low then wrapped +. range else wrapped
+  
 
 let wrap low high x =
   let l = min low high in

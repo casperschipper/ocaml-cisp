@@ -41,7 +41,11 @@ val wrap : int -> int -> int -> int
 (** wrap an int between two boundaries *)
 
 val wrapf : float -> float -> float -> float
-(** wraps a float between two boundaries *)
+(** wraps a float between two boundaries
+    @low 
+    @high 
+    @input
+ *)
 val shuffle : 'a List.t -> 'a List.t
 (** *)
 

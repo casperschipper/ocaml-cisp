@@ -71,7 +71,11 @@ let rec ofRef rf () = Cons (!rf, ofRef rf)
 
 let rdRef rf () = Cons (!rf, ofRef rf)
 
+(* write but return unit *)
 let wrRef rf valueSq = map (fun x -> rf := x) valueSq
+
+(* write and also return the currently recorded value *)
+let rcRef rf valueSq = map (fun x -> rf := x; x) valueSq
 
 let singleton a = [a]
 

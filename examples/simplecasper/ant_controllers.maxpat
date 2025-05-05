@@ -10,9 +10,45 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 823.0, 147.0, 655.0, 801.0 ],
+		"rect" : [ 1769.0, -926.0, 655.0, 801.0 ],
 		"gridsize" : [ 15.0, 15.0 ],
 		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-38",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 538.0, 136.0, 79.0, 22.0 ],
+					"text" : "/max_tour $1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-35",
+					"maxclass" : "number",
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "", "bang" ],
+					"parameter_enable" : 0,
+					"patching_rect" : [ 538.0, 95.0, 50.0, 22.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-28",
+					"linecount" : 2,
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 452.0, 36.0, 150.0, 33.0 ],
+					"text" : "three seems to be particularly good."
+				}
+
+			}
+, 			{
 				"box" : 				{
 					"id" : "obj-30",
 					"maxclass" : "message",
@@ -33,7 +69,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "", "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 418.0, 106.0, 50.0, 22.0 ]
+					"patching_rect" : [ 418.0, 100.0, 50.0, 22.0 ]
 				}
 
 			}
@@ -217,15 +253,19 @@
 					"patching_rect" : [ 14.0, 16.0, 100.0, 40.0 ],
 					"preset_data" : [ 						{
 							"number" : 1,
-							"data" : [ 5, "obj-21", "number", "float", 1.0, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.300000011920929, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-10", "number", "int", 3, 5, "obj-12", "number", "float", 0.267716526985168, 5, "obj-14", "number", "float", 0.141732290387154, 6, "obj-17", "pictslider", "list", 34, 109, 5, "obj-19", "number", "int", 34, 5, "obj-20", "number", "int", 109, 5, "obj-15", "number", "float", 1.0 ]
+							"data" : [ 5, "obj-21", "number", "float", 1.0, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.5, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-10", "number", "int", 3, 5, "obj-12", "number", "float", 0.267716526985168, 5, "obj-14", "number", "float", 0.141732290387154, 6, "obj-17", "pictslider", "list", 34, 109, 5, "obj-19", "number", "int", 34, 5, "obj-20", "number", "int", 109, 5, "obj-15", "number", "float", 1.0, 5, "obj-18", "number", "float", 0.0, 5, "obj-35", "number", "int", 6 ]
 						}
 , 						{
 							"number" : 2,
-							"data" : [ 5, "obj-21", "number", "float", 0.5, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 1.0, 5, "obj-31", "number", "float", 100.0, 5, "obj-36", "number", "int", 10, 5, "obj-10", "number", "int", 5, 5, "obj-12", "number", "float", 92.913383483886719, 5, "obj-14", "number", "float", 92.125984191894531, 6, "obj-17", "pictslider", "list", 118, 10, 5, "obj-19", "number", "int", 118, 5, "obj-20", "number", "int", 10 ]
+							"data" : [ 5, "obj-21", "number", "float", 0.5, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 1.0, 5, "obj-31", "number", "float", 100.0, 5, "obj-36", "number", "int", 10, 5, "obj-10", "number", "int", 5, 5, "obj-12", "number", "float", 0.929133832454681, 5, "obj-14", "number", "float", 0.921259820461273, 6, "obj-17", "pictslider", "list", 118, 10, 5, "obj-19", "number", "int", 118, 5, "obj-20", "number", "int", 10, 5, "obj-15", "number", "float", 1.0, 5, "obj-18", "number", "float", 0.0, 5, "obj-35", "number", "int", 6 ]
 						}
 , 						{
 							"number" : 3,
-							"data" : [ 5, "obj-21", "number", "float", 1.230000019073486, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.449999988079071, 5, "obj-31", "number", "float", 3.0, 5, "obj-36", "number", "int", 0, 5, "obj-10", "number", "int", 29, 5, "obj-12", "number", "float", 0.905511796474457, 5, "obj-14", "number", "float", 0.25984251499176, 6, "obj-17", "pictslider", "list", 115, 94, 5, "obj-19", "number", "int", 115, 5, "obj-20", "number", "int", 94, 5, "obj-15", "number", "float", 0.0, 5, "obj-18", "number", "float", 0.03999999910593 ]
+							"data" : [ 5, "obj-21", "number", "float", 1.230000019073486, 5, "obj-24", "number", "float", 3.0, 5, "obj-29", "number", "float", 0.0, 5, "obj-31", "number", "float", 3.0, 5, "obj-36", "number", "int", 0, 5, "obj-10", "number", "int", 29, 5, "obj-12", "number", "float", 0.905511796474457, 5, "obj-14", "number", "float", 0.25984251499176, 6, "obj-17", "pictslider", "list", 115, 94, 5, "obj-19", "number", "int", 115, 5, "obj-20", "number", "int", 94, 5, "obj-15", "number", "float", 0.0, 5, "obj-18", "number", "float", 0.050000000745058, 5, "obj-35", "number", "int", 6 ]
+						}
+, 						{
+							"number" : 4,
+							"data" : [ 5, "obj-21", "number", "float", 1.0, 5, "obj-24", "number", "float", 2.0, 5, "obj-29", "number", "float", 0.449999988079071, 5, "obj-31", "number", "float", 3.0, 5, "obj-36", "number", "int", 0, 5, "obj-10", "number", "int", 12, 5, "obj-12", "number", "float", 0.511811017990112, 5, "obj-14", "number", "float", 0.700787425041199, 6, "obj-17", "pictslider", "list", 65, 38, 5, "obj-19", "number", "int", 65, 5, "obj-20", "number", "int", 38, 5, "obj-15", "number", "float", 0.0, 5, "obj-18", "number", "float", 0.070000000298023, 5, "obj-35", "number", "int", 6 ]
 						}
  ]
 				}
@@ -585,8 +625,23 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-38", 0 ],
+					"source" : [ "obj-35", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-34", 0 ],
 					"source" : [ "obj-36", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-1", 0 ],
+					"midpoints" : [ 547.5, 164.5, 27.5, 164.5 ],
+					"source" : [ "obj-38", 0 ]
 				}
 
 			}

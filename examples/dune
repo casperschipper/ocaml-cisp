@@ -353,6 +353,7 @@
  (ocamlopt_flags -O3)
  (modules cisp3)
  (libraries
+  osc_unix
   infseq
   midi
   cisp

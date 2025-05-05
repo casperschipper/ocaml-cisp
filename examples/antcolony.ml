@@ -789,19 +789,27 @@ let otherSignal () =
 (* this creates a stereo signal *)
 let justThePath repeats =
   let open Cisp in
+  let random_index () = Toolkit.rvi 0 num_nodes in
   let c = st () in
-  let u () model =
+  let u () (model,t) =
     let phers = Array.get pheromones model in
     let weighted =
       Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
     in
     let next_pher = pick_weighted weighted in
+    let new_time = t + 1 in
+    let ix = if t > 10000 then
+      random_index () 
+    else 
+      model
+    in
     match next_pher with
-    | Some i -> i
-    | None -> Toolkit.rvi 0 num_nodes
+    | Some i -> (i, ix)
+    | None -> (random_index (), 0)
   in
-  let eval inp = nodes.(inp) |> fun (Node node) -> (node.x, node.y) in
-  Cisp.recursive c 0 u eval |> Cisp.hold (st repeats) |> Seq.unzip
+  let eval (inp,_) = nodes.(inp) |> fun (Node node) -> (node.x, node.y) in
+  let init = (random_index (), 0) in
+  Cisp.recursive c init u eval |> Cisp.hold (st repeats) |> Seq.unzip
 
 let pathsSignal () =
   let lst_head lst =
@@ -831,7 +839,7 @@ let paths () =
   let scale x = (x /. float_of_int num_nodes *. 72.0) +. 64. |> mtof in
   signal |> hold (st 30) |> fmap scale |> sinosc2
 
-let att input = input |> Seq.map (fun x -> x *. 0.01)
+let att input = input |> Seq.map (fun x -> x *. 0.001)
 
 (**
 let sumOctaves () =
@@ -848,7 +856,7 @@ let bunch () =
   let open Cisp in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
   let stereos =
-    [1; 101; 102; 555; 10000; 2000]
+    [1;2;2;1]
     |> List.to_seq
     |> fmap (fun x -> justThePath x)
   in
@@ -856,9 +864,9 @@ let bunch () =
   result
 
 let move_node_by_promille (Node {id; x; y; _}) =
-  let promille = 0.01 in
-  let new_x = x +. (x *. Toolkit.rvfi ((-1.0) *. promille)  promille) |> Toolkit.wrapf 0.0 1.0 in
-  let new_y = y +. (y *. Toolkit.rvfi ((-1.0) *. promille) promille) |> Toolkit.wrapf 0.0 1.0 in
+  let promille = 0.003 in
+  let new_x = x +. (Toolkit.rvfi ((-1.0) *. promille)  promille) |> Toolkit.wrapf 0.0 1.0 in
+  let new_y = y +. (Toolkit.rvfi ((-1.0) *. promille) promille) |> Toolkit.wrapf 0.0 1.0 in
   Node {id; x= new_x; y= new_y; sync = Modified}
 
 let push_nodes () =

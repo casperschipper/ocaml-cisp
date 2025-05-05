@@ -26,9 +26,9 @@
       circle.setAttribute("cx", x * window_width);
       circle.setAttribute("cy", y * window_height);
       circle.setAttribute("r", "10");
-      circle.setAttribute("fill", "blue");
-      circle.setAttribute("stroke", "black");
-      circle.setAttribute("stroke-width", "2");
+      circle.setAttribute("fill", "gray");
+      // circle.setAttribute("stroke", "black");
+      // circle.setAttribute("stroke-width", "2");
       // Add an identifier to each node for interactivity
       circle.setAttribute("id", `node-${index}`);
       // Append circle and label to the SVG
@@ -174,7 +174,7 @@
       //console.log('num nodes is now', num_nodes, state);
       setInterval(() => {
         socket.send('tick');
-      }, 50);
+      }, 80);
     }
 
     function update(state) {

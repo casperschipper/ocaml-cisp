@@ -22,38 +22,71 @@
 
     function createNode(node, index) {
       const [x, y] = node;
+
+      const group = document.createElementNS(svgNamespace, "g");
+      group.setAttribute("id", `node-${index}`);
+      group.setAttribute("transform", `translate(${x * window_width}, ${y * window_height})`);
+      svg.appendChild(group);
+
       const circle = document.createElementNS(svgNamespace, "circle");
-      circle.setAttribute("cx", x * window_width);
-      circle.setAttribute("cy", y * window_height);
       circle.setAttribute("r", "10");
       circle.setAttribute("fill", "gray");
-      // circle.setAttribute("stroke", "black");
-      // circle.setAttribute("stroke-width", "2");
-      // Add an identifier to each node for interactivity
-      circle.setAttribute("id", `node-${index}`);
-      // Append circle and label to the SVG
-      svg.appendChild(circle);
+      group.appendChild(circle);
 
       const text = document.createElementNS(svgNamespace, "text");
-      text.setAttribute('x', x * window_width); // x-coordinate
-      text.setAttribute('y', y * window_height); // y-coordinate
-      text.setAttribute('fill', 'black'); // Text color
-      text.setAttribute('font-size', '24'); // Font size
+      text.setAttribute("fill", "black");
+      text.setAttribute("font-size", "24");
+      text.setAttribute("dy", "0.35em");  // Vertically center
+      text.setAttribute("x", "15");       // Offset to the right
       text.textContent = String(index);
-      svg.appendChild(text);
+      group.appendChild(text);
+
+      enableDrag(group, index);  // Apply drag to group
     };
+
+    function enableDrag(circle, node_id) {
+      let isDragging = false;
+
+      function onMouseMove(e) {
+        if (!isDragging) return;
+        const rect = svg.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / window_width;
+        const y = (e.clientY - rect.top) / window_height;
+
+        // Update node position
+        updateNode({ node_id, x, y });
+
+        // Optionally: send to OCaml over WebSocket
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ drag: { node_id, x, y } }));
+        }
+      }
+
+      function onMouseUp() {
+        isDragging = false;
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      }
+
+      circle.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
+      });
+    }
+
 
     function updateNode(node) {
       const { node_id, x, y } = node;
-      const circle = document.getElementById(`node-${node_id}`);
-      if (circle) {
-        circle.setAttribute("cx", x * window_width);
-        circle.setAttribute("cy", y * window_height);
+      const group = document.getElementById(`node-${node_id}`);
+      if (group) {
+        group.setAttribute("transform", `translate(${x * window_width}, ${y * window_height})`);
         updateConnectedEdges(x, y, node_id);
       } else {
-        console.log('cannot find circle' + node_id);
+        console.log('cannot find group' + node_id);
       }
-    };
+    }
+
 
     function updateConnectedEdges(x, y, index) {
       for (let i = 0; i < num_nodes; i++) {

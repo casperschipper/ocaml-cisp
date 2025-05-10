@@ -791,23 +791,19 @@ let justThePath repeats =
   let open Cisp in
   let random_index () = Toolkit.rvi 0 num_nodes in
   let c = st () in
-  let u () (model,t) =
+  let u () (model, t) =
     let phers = Array.get pheromones model in
     let weighted =
       Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
     in
     let next_pher = pick_weighted weighted in
     let new_time = t + 1 in
-    let ix = if t > 10000 then
-      random_index () 
-    else 
-      model
-    in
+    let ix = if t > 10000 then random_index () else model in
     match next_pher with
     | Some i -> (i, ix)
     | None -> (random_index (), 0)
   in
-  let eval (inp,_) = nodes.(inp) |> fun (Node node) -> (node.x, node.y) in
+  let eval (inp, _) = nodes.(inp) |> fun (Node node) -> (node.x, node.y) in
   let init = (random_index (), 0) in
   Cisp.recursive c init u eval |> Cisp.hold (st repeats) |> Seq.unzip
 
@@ -855,19 +851,19 @@ let sumOctaves () =
 let bunch () =
   let open Cisp in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
-  let stereos =
-    [1;2;2;1]
-    |> List.to_seq
-    |> fmap (fun x -> justThePath x)
-  in
+  let stereos = [1; 2; 2; 1] |> List.to_seq |> fmap (fun x -> justThePath x) in
   let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
 
 let move_node_by_promille (Node {id; x; y; _}) =
   let promille = 0.003 in
-  let new_x = x +. (Toolkit.rvfi ((-1.0) *. promille)  promille) |> Toolkit.wrapf 0.0 1.0 in
-  let new_y = y +. (Toolkit.rvfi ((-1.0) *. promille) promille) |> Toolkit.wrapf 0.0 1.0 in
-  Node {id; x= new_x; y= new_y; sync = Modified}
+  let new_x =
+    x +. Toolkit.rvfi (-1.0 *. promille) promille |> Toolkit.wrapf 0.0 1.0
+  in
+  let new_y =
+    y +. Toolkit.rvfi (-1.0 *. promille) promille |> Toolkit.wrapf 0.0 1.0
+  in
+  Node {id; x= new_x; y= new_y; sync= Modified}
 
 let push_nodes () =
   let open Cisp in
@@ -1003,6 +999,15 @@ let json_error error_str =
 
 let home = read_file "simplecasper.html"
 
+type drag = 
+  Drag of { node_id : int ; x : float ; y : float }
+let handle_websocket_json_update str = 
+  match Yojson.Safe.from_string str with
+  | `Assoc [ ( "drag", `Assoc [ ( "node_id", `Int node_id) ; ("x", `Float x); ("y", `Float y)] )] -> Ok (Drag { node_id; x; y })
+  | _ -> Error ("json has unexpected format:\n " ^ str ^ "\nI expected something like\n { node_id : 42, x : 0.3, y : 0.5 }")
+
+      
+
 let dream_thread phers nodes () =
   Dream.run ~port:8080 @@ Dream.logger
   @@ Dream.router
@@ -1034,12 +1039,16 @@ let dream_thread phers nodes () =
                          Dream.send ~text_or_binary:`Text websocket str
                        in
                        process_messages ()
-                   | Some str ->
-                       let%lwt () =
-                         Dream.send websocket
-                           ("I do not understand this message:\n" ^ str)
-                       in
-                       process_messages () (* Continue looping *)
+                   | Some str -> (
+                     match handle_websocket_json_update str with
+                     | Ok (Drag { node_id; x; y }) ->
+                         ignore (update_matrix_2 node_id (mkNode node_id x y) nodes distance_array) ;
+                         process_messages ()
+                     | Error str ->
+                         let%lwt () =
+                           Dream.send ~text_or_binary:`Text websocket str
+                         in
+                         process_messages () )
                    | None -> Dream.close_websocket websocket
                  in
                  process_messages () (* Start processing messages *) ) ) ]

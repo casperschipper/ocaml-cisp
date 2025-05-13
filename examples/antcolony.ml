@@ -253,10 +253,14 @@ let handle_int_arg datas =
       Some i
   | _ -> None
 
-let update_ref_with_option ~ref ~update opt =
-  match opt with
-  | Some x -> ref := update x !ref
-  | None -> ()
+
+ 
+
+let update_and_swap ~update value =
+  Mutex.lock buffer_mutex ;
+  next_buffer := update value !current_buffer ;
+  current_buffer := !next_buffer ;
+  Mutex.unlock buffer_mutex
 
 (* let update_distance_matrix nodes old_distances index new_point =
    let copy = Array.copy old_distances in
@@ -266,7 +270,7 @@ let update_ref_with_option ~ref ~update opt =
      Toolkit.update_at_index old_distances idx (fun _ -> new_dist)) *)
 
 let handle_osc_message path data =
-  let update = update_ref_with_option ~ref:next_buffer in
+  let update ~update opt = opt |> Option.iter (fun x -> update_and_swap ~update:update x) in
   let update_points opt_ipoint =
     match opt_ipoint with
     | Some (IndexedPoint {idx; x; y}) ->
@@ -282,13 +286,13 @@ let handle_osc_message path data =
   | "/deposit" -> data |> handle_float_arg |> update ~update:set_deposit
   | "/num_ants" ->
       data |> handle_int_arg
-      |> update_ref_with_option ~ref:next_buffer ~update:set_ants
+      |> Option.iter (fun f -> update_and_swap ~update:set_ants f)
   | "/point" -> data |> handle_int_float_float |> update_points
   | "/exploration_bias" ->
       data |> handle_float_arg |> update ~update:set_exploration_bias
   | "/max_tour" ->
-      data |> handle_int_arg
-      |> update_ref_with_option ~ref:next_buffer ~update:set_max_tour
+      data |> handle_int_arg |> update ~update:set_max_tour
+      
   | _ -> Printf.printf "Unhandled OSC path or arguments\n"
 
 let osc_thread_function () =
@@ -865,7 +869,8 @@ let bunch () =
   let gainStereo (s1, s2) = (att 0.01 s1, att 0.01 s2) in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
   let stereos =
-    [1;2;2;1;3] |> List.to_seq |> fmap (fun x -> justThePath x |> gainStereo)
+    [1; 2; 2; 1; 3] |> List.to_seq
+    |> fmap (fun x -> justThePath x |> gainStereo)
   in
   let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
@@ -1031,6 +1036,8 @@ let handle_websocket_json_update str =
         ( "json has unexpected format:\n " ^ str
         ^ "\nI expected something like\n { node_id : 42, x : 0.3, y : 0.5 }" )
 
+
+
 let dream_thread phers nodes () =
   Dream.run ~port:8080 @@ Dream.logger
   @@ Dream.router
@@ -1070,8 +1077,7 @@ let dream_thread phers nodes () =
                               distance_array ) ;
                          process_messages ()
                      | Ok (Brownian amount) ->
-                         ignore (next_buffer := set_brownian amount !next_buffer) ;
-                         swap_buffers ();
+                         ignore (update_and_swap ~update:set_brownian amount) ;
                          process_messages ()
                      | Error str ->
                          let _ = print_string ("some error" ^ str) in

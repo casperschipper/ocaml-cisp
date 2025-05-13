@@ -1,6 +1,17 @@
 <html>
 
 <body>
+  <style>
+    #floatBox {
+      width: 80px;
+      height: 30px;
+      font-size: 18px;
+      text-align: right;
+      padding: 5px;
+      border: 1px solid #999;
+      border-radius: 4px;
+    }
+  </style>
   <script>
     const svgNamespace = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNamespace, "svg");
@@ -54,7 +65,7 @@
         const rect = svg.getBoundingClientRect();
         const x = (e.clientX - rect.left) / window_width;
         const y = (e.clientY - rect.top) / window_height;
-        
+
 
         // Update node position
         updateNode({ node_id, x, y });
@@ -173,8 +184,8 @@
       const { start, target, weight } = edge;
       const id_a = `node-${start}`;
       const id_b = `node-${target}`;
-      const [startX, startY] = getNodeCoordinates(id_a);
-      const [targetX, targetY] = getNodeCoordinates(id_b);
+      const [startX, startY] = [0, 0]; // we just put them somewhere, they will get updated anyway getNodeCoordinates(id_a);
+      const [targetX, targetY] = [0, 0]// getNodeCoordinates(id_b);
 
       /* Create a line for the edge */
       const line = document.createElementNS(svgNamespace, "line");
@@ -204,7 +215,7 @@
     var socket = new WebSocket("ws://" + window.location.host + "/websocket");
 
     socket.onopen = function () {
-      socket.send("init");
+      socket.send('init');
     };
 
     function init(state) {
@@ -220,7 +231,7 @@
     function update(state) {
       state.updated_nodes.forEach(updateNode);
       state.edges.forEach(updateEdge);
-      console.log(state.controllers);
+      //console.log(state.controllers);
       updateText(state.controllers);
     }
 
@@ -237,6 +248,86 @@
         console.log('do not understand message ' + object);
       };
     };
+
+
+
+    function createFloatNumberBox(socket) {
+      let createElement = function () {
+        const floatBox = document.createElement('input');
+        floatBox.setAttribute('type', 'number');
+        floatBox.setAttribute('id', 'floatBox');
+        floatBox.setAttribute('step', '0.01');
+        floatBox.setAttribute('value', '0.0');
+
+        // Optionally, apply some styling or positioning if needed
+        floatBox.style.margin = '10px';
+
+        // Append it to the DOM — for example, below the SVG
+        document.body.appendChild(floatBox);
+        //console.log('floatbox', floatBox);
+
+        return floatBox;
+      };
+
+      const element = createElement();
+
+
+      element.addEventListener('change', () => {
+        const value = parseFloat(element.value);
+        console.log('avlue',value);
+        if (!isNaN(value)) {
+          socket.send(encoder(value));
+          console.log(encoder(value));
+        }
+      });
+
+
+
+
+      let encoder = function (x) {
+        return JSON.stringify({ 'brownian': { 'amount': x } });
+      }
+
+
+      let isDragging = false;
+      let startY = 0;
+      let startValue = 0;
+
+      const onMouseMove = (e) => {
+        if (!isDragging) return;
+
+        const deltaY = startY - e.clientY;
+        let sensitivity = 0.0001;
+        if (e.shiftKey) sensitivity = 0.001;
+        if (e.altKey) sensitivity = 0.001;
+
+        const newValue = parseFloat((startValue + deltaY * sensitivity).toFixed(4));
+        element.value = newValue;
+        socket.send(encoder(newValue));
+      };
+
+      const onMouseUp = () => {
+        if (isDragging) {
+          isDragging = false;
+          document.body.style.cursor = 'default';
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        }
+      };
+
+      element.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startY = e.clientY;
+        startValue = parseFloat(element.value) || 0.0;
+        document.body.style.cursor = 'ns-resize';
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+        e.preventDefault();
+      });
+    };
+
+    createFloatNumberBox(socket);
+
 
   </script>
 </body>

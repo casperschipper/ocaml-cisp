@@ -20,6 +20,8 @@ let num_samples = 44100 * 40
 
 let max_tour = 33
 
+let brownian = 0.0
+
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
 
@@ -160,7 +162,8 @@ type controllers =
   ; evaporation: float
   ; num_ants: int
   ; exploration_bias: float
-  ; max_tour: int }
+  ; max_tour: int
+  ; brownian: float }
 
 let controllers_to_string ctr =
   Printf.sprintf
@@ -175,7 +178,14 @@ let controllers_to_string ctr =
     ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants ctr.max_tour
 
 let initial =
-  {alpha; beta; deposit; evaporation; num_ants; exploration_bias; max_tour}
+  { alpha
+  ; beta
+  ; deposit
+  ; evaporation
+  ; num_ants
+  ; exploration_bias
+  ; max_tour
+  ; brownian }
 
 let set_alpha a ctrl = {ctrl with alpha= a}
 
@@ -186,6 +196,8 @@ let set_deposit d ctrl = {ctrl with deposit= d}
 let set_evaporation e ctrl = {ctrl with evaporation= e}
 
 let set_ants a ctrl = {ctrl with num_ants= a}
+
+let set_brownian a ctrl = {ctrl with brownian= a}
 
 let set_max_tour a ctrl =
   let mx = if a > 1 then a else 1 in
@@ -835,7 +847,7 @@ let paths () =
   let scale x = (x /. float_of_int num_nodes *. 72.0) +. 64. |> mtof in
   signal |> hold (st 30) |> fmap scale |> sinosc2
 
-let att input = input |> Seq.map (fun x -> x *. 0.001)
+let att gain input = input |> Seq.map (fun x -> x *. gain)
 
 (**
 let sumOctaves () =
@@ -850,13 +862,16 @@ let sumOctaves () =
 
 let bunch () =
   let open Cisp in
+  let gainStereo (s1, s2) = (att 0.01 s1, att 0.01 s2) in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
-  let stereos = [1; 2; 2; 1] |> List.to_seq |> fmap (fun x -> justThePath x) in
+  let stereos =
+    [1;2;2;1;3] |> List.to_seq |> fmap (fun x -> justThePath x |> gainStereo)
+  in
   let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
 
 let move_node_by_promille (Node {id; x; y; _}) =
-  let promille = 0.003 in
+  let promille = !current_buffer.brownian in
   let new_x =
     x +. Toolkit.rvfi (-1.0 *. promille) promille |> Toolkit.wrapf 0.0 1.0
   in
@@ -875,7 +890,8 @@ let push_nodes () =
   |> hold (st 100)
 
 let jackMain () =
-  Jack.playSeqs 0 Process.sample_rate (bunch () @ [output |> att; push_nodes ()])
+  Jack.playSeqs 0 Process.sample_rate
+    (bunch () @ [output |> att 0.01; push_nodes ()])
 
 let write_to_file filename str =
   let oc = open_out filename in
@@ -999,14 +1015,21 @@ let json_error error_str =
 
 let home = read_file "simplecasper.html"
 
-type drag = 
-  Drag of { node_id : int ; x : float ; y : float }
-let handle_websocket_json_update str = 
-  match Yojson.Safe.from_string str with
-  | `Assoc [ ( "drag", `Assoc [ ( "node_id", `Int node_id) ; ("x", `Float x); ("y", `Float y)] )] -> Ok (Drag { node_id; x; y })
-  | _ -> Error ("json has unexpected format:\n " ^ str ^ "\nI expected something like\n { node_id : 42, x : 0.3, y : 0.5 }")
+type webCtrl = Drag of {node_id: int; x: float; y: float} | Brownian of float
 
-      
+let handle_websocket_json_update str =
+  match Yojson.Safe.from_string str with
+  | `Assoc
+      [ ( "drag"
+        , `Assoc [("node_id", `Int node_id); ("x", `Float x); ("y", `Float y)]
+        ) ] ->
+      Ok (Drag {node_id; x; y})
+  | `Assoc [("brownian", `Assoc [("amount", `Float amount)])] ->
+      Ok (Brownian amount)
+  | _ ->
+      Error
+        ( "json has unexpected format:\n " ^ str
+        ^ "\nI expected something like\n { node_id : 42, x : 0.3, y : 0.5 }" )
 
 let dream_thread phers nodes () =
   Dream.run ~port:8080 @@ Dream.logger
@@ -1041,10 +1064,17 @@ let dream_thread phers nodes () =
                        process_messages ()
                    | Some str -> (
                      match handle_websocket_json_update str with
-                     | Ok (Drag { node_id; x; y }) ->
-                         ignore (update_matrix_2 node_id (mkNode node_id x y) nodes distance_array) ;
+                     | Ok (Drag {node_id; x; y}) ->
+                         ignore
+                           (update_matrix_2 node_id (mkNode node_id x y) nodes
+                              distance_array ) ;
+                         process_messages ()
+                     | Ok (Brownian amount) ->
+                         ignore (next_buffer := set_brownian amount !next_buffer) ;
+                         swap_buffers ();
                          process_messages ()
                      | Error str ->
+                         let _ = print_string ("some error" ^ str) in
                          let%lwt () =
                            Dream.send ~text_or_binary:`Text websocket str
                          in

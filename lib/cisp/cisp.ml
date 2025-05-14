@@ -835,6 +835,28 @@ let rec simpleRecursive init update evaluate () =
   let nextState = update init in
   Cons (evaluate init, simpleRecursive nextState update evaluate)
 
+let always x = 
+  fun _ -> x
+
+(* useful for executing in a pattern effect things *)
+let funStream trigSq f =
+  trigSq |> Seq.map (fun trig -> if trig then f () else ()) 
+
+(* useful for situations where you need to throttle something, like a debug on an audio stream *)
+let with_throttled_execution n f =
+  (* Create a reference to keep track of the call count *)
+  let call_count = ref 0 in
+  fun () ->
+    (* Increment the call count each time the function is called *)
+    (* Check if the call count is a multiple of 1000 *)
+    if !call_count >= n then
+      (* Call the function `f` *)
+      let _ = call_count := 0 in
+      f ()
+    else incr call_count ;
+    (* Do nothing otherwise *)
+    ()
+
 (* integer walk, note this is implicitely Infseq *)
 let walki start steps = recursive steps start (fun x start -> x + start) id
 
@@ -1488,6 +1510,22 @@ let pulse n sq filler =
   let p = interval n in
   weavePattern p sq filler
 
+
+(* given a function and a sq of arguments for this function, when the triggerfunction is true, evaluate the f with an input *)
+(* this allows you to slowly go through a sequence of things, with timing being
+synced to  a very fast trigger *)
+let functionTrigger f inputs ctrl = 
+  let update trg state = 
+    if trg then 
+      match state () with 
+      | Seq.Cons(x,xs) -> f x; xs 
+      | Seq.Nil -> state
+    else 
+      state
+  in
+  let eval _ = () in
+  recursive ctrl inputs update eval
+
 (*let pulsegen freqSq =
   let n = map (( /. ) !Process.sample_rate) freqSq in
   n |> trunc
@@ -1555,6 +1593,8 @@ let syncOverClock (clock : bool Seq.t) (source : 'a Seq.t) =
   in
   let eval (_, value) = value in
   recursive1 ctrl init update eval
+
+ 
 
 type 'a mutateArrayState = {arr: 'a Array.t; out: 'a}
 

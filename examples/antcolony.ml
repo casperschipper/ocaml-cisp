@@ -4,7 +4,7 @@ let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
 let beta = 1.0 (* prefer paths that are shorter *)
 
-let num_nodes = 49
+let num_nodes = 30
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
@@ -105,6 +105,7 @@ let pretty_print_matrix arr =
   Array.iter pretty_print_row arr ;
   print_endline "-*-"
 
+(*
 let update_matrix point_index new_point points (Distance dist) =
   if point_index > 0 && point_index < Array.length points then (
     points.(point_index) <- new_point ;
@@ -120,6 +121,7 @@ let update_matrix point_index new_point points (Distance dist) =
       dist
     (* ; pretty_print_matrix dist *) )
   else ()
+    *)
 
 let update_matrix_2 point_index new_point points (Distance dist) =
   if point_index >= 0 && point_index < Array.length points then (
@@ -253,9 +255,6 @@ let handle_int_arg datas =
       Some i
   | _ -> None
 
-
- 
-
 let update_and_swap ~update value =
   Mutex.lock buffer_mutex ;
   next_buffer := update value !current_buffer ;
@@ -270,7 +269,9 @@ let update_and_swap ~update value =
      Toolkit.update_at_index old_distances idx (fun _ -> new_dist)) *)
 
 let handle_osc_message path data =
-  let update ~update opt = opt |> Option.iter (fun x -> update_and_swap ~update:update x) in
+  let update ~update opt =
+    opt |> Option.iter (fun x -> update_and_swap ~update x)
+  in
   let update_points opt_ipoint =
     match opt_ipoint with
     | Some (IndexedPoint {idx; x; y}) ->
@@ -290,9 +291,7 @@ let handle_osc_message path data =
   | "/point" -> data |> handle_int_float_float |> update_points
   | "/exploration_bias" ->
       data |> handle_float_arg |> update ~update:set_exploration_bias
-  | "/max_tour" ->
-      data |> handle_int_arg |> update ~update:set_max_tour
-      
+  | "/max_tour" -> data |> handle_int_arg |> update ~update:set_max_tour
   | _ -> Printf.printf "Unhandled OSC path or arguments\n"
 
 let osc_thread_function () =
@@ -421,6 +420,7 @@ let play_stream stream =
     new_value
 
 (* Define a function that takes another function `f` and returns a new function that calls `f` once every 1000 times *)
+(**
 let with_throttled_execution n f =
   (* Create a reference to keep track of the call count *)
   let call_count = ref 0 in
@@ -434,6 +434,7 @@ let with_throttled_execution n f =
     else incr call_count ;
     (* Do nothing otherwise *)
     ()
+    *)
 
 let deposit_pher phero_arr tour pheromone =
   List.iter
@@ -681,7 +682,7 @@ let debug_phers () =
   print_float (calculate_entropy pheromones.(2)) ;
   print_newline ()
 
-let throttled_pher_func = with_throttled_execution 44100 debug_phers
+let throttled_pher_func = Cisp.with_throttled_execution 44100 debug_phers
 
 let pick_next_point pher_arr original_nodes dist_matrix (State state) =
   if state.n_visited >= !current_buffer.max_tour then
@@ -747,6 +748,42 @@ let read_file filename =
   with
   | End_of_file -> close_in in_channel ; !result
 
+(* end of ant part *)
+
+module SuperAnts = struct
+  (* The SuperCollider default address and port *)
+  let default_host = "127.0.0.1"
+
+  let default_port = 57110
+
+  (* Initialize an OSC address *)
+  let address = Lo.Address.create default_host default_port
+
+  (* Send a synth event to SuperCollider *)
+  let send_synth ?(synth_id = -1) ?(add_action = 1) ?(target_id = 0) ~synth_name
+      ~freq ~range ~imp ~q ~releaseDur ~pan () =
+    Lo.send address "/s_new"
+      [ `String synth_name
+      ; `Int32 synth_id
+      ; `Int32 add_action
+      ; `Int32 target_id
+      ; `String "freq"
+      ; `Float freq
+      ; `String "range"
+      ; `Float range
+      ; `String "imp"
+      ; `Float imp
+      ; `String "q"
+      ; `Float q
+      ; `String "releaseDur"
+      ; `Float releaseDur
+      ; `String "pan"
+      ; `Float pan ]
+
+  let ant_crackle ~freq ~range ~imp ~q ~releaseDur ~pan () =
+    send_synth ~synth_name:"antCrackle" ~freq ~range ~imp ~q ~releaseDur ~pan ()
+end
+
 let signal () =
   let nodes_list = nodes |> Array.to_list in
   let init =
@@ -802,7 +839,8 @@ let otherSignal () =
   in
   Cisp.recursive c 0 u eval |> hold (st 30) |> sinosc2
 
-(* this creates a stereo signal *)
+(* this creates a stereo signal, navigating through the pheromones only *)
+(* the repeats allows for different update rates , where 1 is sr *)
 let justThePath repeats =
   let open Cisp in
   let random_index () = Toolkit.rvi 0 num_nodes in
@@ -815,6 +853,7 @@ let justThePath repeats =
     let next_pher = pick_weighted weighted in
     let new_time = t + 1 in
     let ix = if t > 10000 then random_index () else model in
+    (* TODO think about the 10000 as a parameter *)
     match next_pher with
     | Some i -> (i, ix)
     | None -> (random_index (), 0)
@@ -822,6 +861,44 @@ let justThePath repeats =
   let eval (inp, _) = nodes.(inp) |> fun (Node node) -> (node.x, node.y) in
   let init = (random_index (), 0) in
   Cisp.recursive c init u eval |> Cisp.hold (st repeats) |> Seq.unzip
+
+let nodesStream () =
+  let open Cisp in
+  let random_index () = Toolkit.rvi 0 num_nodes in
+  let c = st () in
+  let u () (model, t) =
+    let phers = Array.get pheromones model in
+    let weighted =
+      Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
+    in
+    let next_pher = pick_weighted weighted in
+    let new_time = t + 1 in
+    let ix = if t > 10000 then random_index () else model in
+    (* TODO think about the 10000 as a parameter *)
+    match next_pher with
+    | Some i -> (i, ix)
+    | None -> (random_index (), 0)
+  in
+  let eval (inp, _) = nodes.(inp) in
+  let init = (random_index (), 0) in
+  Cisp.recursive c init u eval
+
+(* this should take node Seq.t, which are 2d coordinates. Now I want you to provide me with a "difference" stream that is the vectors between those points. 
+  I would like you to return those vectors as (delta x, delta y) stream, so a stream of float tuples *)
+let playEdges nodes_stream =
+  nodes_stream |> Cisp.selfChain
+  |> Seq.map (fun (Node {x= x1; y= y1; _}, Node {x= x2; y= y2; _}) ->
+         (x2 -. x1, y2 -. y1) )
+
+let playNodesAsAnts nodes_sq = 
+  let play (Node {x;y;_}) =
+    let f1 = Cisp.linlin 0.0 1.0 20.0 128.0 x |> Cisp.mtof in
+    let imp = Cisp.linlin 0.0 1.0 (-80.0) (20.0) y |> Cisp.mtof in
+    let pan = Cisp.linlin 0.0 1.0 (-1.0) 1.0 y in
+    SuperAnts.ant_crackle ~freq:f1 ~range:2.0 ~imp:imp ~q:300.0 ~releaseDur:2.0 ~pan:pan ()
+  in
+  let open Cisp in
+  functionTrigger play nodes_sq (interval (st (441)))
 
 let pathsSignal () =
   let lst_head lst =
@@ -891,12 +968,15 @@ let push_nodes () =
   |> fmap (fun idx ->
          let new_node = move_node_by_promille nodes.(idx) in
          ignore (update_matrix_2 idx new_node nodes distance_array) ;
-         0.0 )
+         () )
   |> hold (st 100)
 
 let jackMain () =
+  let applyEffects master = 
+    List.fold_left Cisp.syncEffect master [push_nodes();playNodesAsAnts (nodesStream ()) ]
+  in
   Jack.playSeqs 0 Process.sample_rate
-    (bunch () @ [output |> att 0.01; push_nodes ()])
+    ( [applyEffects (output |> att 0.0)])
 
 let write_to_file filename str =
   let oc = open_out filename in
@@ -1036,8 +1116,6 @@ let handle_websocket_json_update str =
         ( "json has unexpected format:\n " ^ str
         ^ "\nI expected something like\n { node_id : 42, x : 0.3, y : 0.5 }" )
 
-
-
 let dream_thread phers nodes () =
   Dream.run ~port:8080 @@ Dream.logger
   @@ Dream.router
@@ -1088,6 +1166,8 @@ let dream_thread phers nodes () =
                    | None -> Dream.close_websocket websocket
                  in
                  process_messages () (* Start processing messages *) ) ) ]
+
+(* oscSender.ml *)
 
 let () =
   let _ = pretty_print_distance distance_array in

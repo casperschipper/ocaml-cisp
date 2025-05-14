@@ -4,7 +4,7 @@ let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
 let beta = 1.0 (* prefer paths that are shorter *)
 
-let num_nodes = 30
+let num_nodes = 49
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
@@ -155,7 +155,10 @@ let update_matrix_2 point_index new_point points (Distance dist) =
 
 let distance_array = generate_distance_matrix nodes
 
-let pheromones = Array.make_matrix num_nodes num_nodes 0.0
+let mkPheromonesArr = Array.make_matrix num_nodes num_nodes 0.0
+
+let duplicateArrArr arrarr = 
+  Array.map Array.copy arrarr
 
 type controllers =
   { alpha: float
@@ -609,7 +612,7 @@ let add_missing_link edges =
   | None -> []
   | Some x -> x :: edges
 
-let start_new complete_nodes (State state) =
+let start_new pheromones complete_nodes (State state) =
   let _ =
     match state.visited_edges with
     | [] -> print_string "first time no deposit"
@@ -676,20 +679,21 @@ let pretty_print_flt_row row =
 
 let pretty_print_floats arr = Array.iter pretty_print_flt_row arr
 
-let debug_phers () =
+let debug_phers pheromones () =
   print_string "pher :" ;
   pretty_print_floats pheromones ;
   print_float (calculate_entropy pheromones.(2)) ;
   print_newline ()
 
-let throttled_pher_func = Cisp.with_throttled_execution 44100 debug_phers
+let throttled_pher_func pheromones =
+  Cisp.with_throttled_execution 44100 (debug_phers pheromones)
 
-let pick_next_point pher_arr original_nodes dist_matrix (State state) =
+let pick_next_point pheromones original_nodes dist_matrix (State state) =
   if state.n_visited >= !current_buffer.max_tour then
-    start_new original_nodes (State state)
+    start_new pheromones original_nodes (State state)
   else
     match state.targets with
-    | [] -> start_new original_nodes (State state)
+    | [] -> start_new pheromones original_nodes (State state)
     | _ :: _ ->
         (* let _ =
             print_string "current = ";
@@ -714,9 +718,9 @@ let pick_next_point pher_arr original_nodes dist_matrix (State state) =
           |> Array.of_list
         in
         if Array.length filtered_edges < 1 then
-          start_new original_nodes (State state)
+          start_new pheromones original_nodes (State state)
         else
-          let picked_edge = select_next_edge_new pher_arr filtered_edges in
+          let picked_edge = select_next_edge_new pheromones filtered_edges in
           (* let _ = throttled_pher_func () in *)
           (* let _ = debug_edges "filtered edges" (filtered_edges |> Array.to_list) in *)
           let new_target = picked_edge |> get_target in
@@ -784,7 +788,7 @@ module SuperAnts = struct
     send_synth ~synth_name:"antCrackle" ~freq ~range ~imp ~q ~releaseDur ~pan ()
 end
 
-let signal () =
+let signal pheromones () =
   let nodes_list = nodes |> Array.to_list in
   let init =
     State
@@ -809,7 +813,9 @@ let line_table =
 
 let lookup input = input |> Seq.map (fun idx -> Array.get line_table idx)
 
-let output = signal () |> lookup
+let output pheromones = signal pheromones () |> lookup
+
+let only_compute pheromones = signal pheromones () |> Seq.map (fun _ -> ())
 
 (* let () =
    pretty_print_matrix distance_array;
@@ -820,7 +826,7 @@ let output = signal () |> lookup
           print_string " "); *)
    flush stdout *)
 
-let otherSignal () =
+let otherSignal pheromones () =
   let open Cisp in
   let c = st () in
   let u () model =
@@ -841,7 +847,7 @@ let otherSignal () =
 
 (* this creates a stereo signal, navigating through the pheromones only *)
 (* the repeats allows for different update rates , where 1 is sr *)
-let justThePath repeats =
+let justThePath pheromones repeats =
   let open Cisp in
   let random_index () = Toolkit.rvi 0 num_nodes in
   let c = st () in
@@ -862,7 +868,7 @@ let justThePath repeats =
   let init = (random_index (), 0) in
   Cisp.recursive c init u eval |> Cisp.hold (st repeats) |> Seq.unzip
 
-let nodesStream () =
+let nodesStream pheromones () =
   let open Cisp in
   let random_index () = Toolkit.rvi 0 num_nodes in
   let c = st () in
@@ -890,15 +896,16 @@ let playEdges nodes_stream =
   |> Seq.map (fun (Node {x= x1; y= y1; _}, Node {x= x2; y= y2; _}) ->
          (x2 -. x1, y2 -. y1) )
 
-let playNodesAsAnts nodes_sq = 
-  let play (Node {x;y;_}) =
+let playNodesAsAnts nodes_sq =
+  let play (Node {x; y; _}) =
     let f1 = Cisp.linlin 0.0 1.0 20.0 128.0 x |> Cisp.mtof in
-    let imp = Cisp.linlin 0.0 1.0 (-80.0) (20.0) y |> Cisp.mtof in
+    let imp = Cisp.linlin 0.0 1.0 (-80.0) 20.0 y |> Cisp.mtof in
     let pan = Cisp.linlin 0.0 1.0 (-1.0) 1.0 y in
-    SuperAnts.ant_crackle ~freq:f1 ~range:2.0 ~imp:imp ~q:300.0 ~releaseDur:2.0 ~pan:pan ()
+    SuperAnts.ant_crackle ~freq:f1 ~range:2.0 ~imp ~q:300.0 ~releaseDur:2.0 ~pan
+      ()
   in
   let open Cisp in
-  functionTrigger play nodes_sq (interval (st (441)))
+  functionTrigger play nodes_sq (interval (st 441))
 
 let pathsSignal () =
   let lst_head lst =
@@ -922,9 +929,9 @@ let pathsSignal () =
   in
   path_sq |> Seq.map of_node_list |> concat
 
-let paths () =
+let paths pheromones () =
   let open Cisp in
-  let signal = output |> Seq.map (fun x -> x *. 40.0) in
+  let signal = output pheromones |> Seq.map (fun x -> x *. 40.0) in
   let scale x = (x /. float_of_int num_nodes *. 72.0) +. 64. |> mtof in
   signal |> hold (st 30) |> fmap scale |> sinosc2
 
@@ -941,13 +948,13 @@ let sumOctaves () =
     ; justThePath () |> hold (st 16)
     ; justThePath () |> hold (st 32)] *)
 
-let bunch () =
+let bunch s pheromones () =
   let open Cisp in
   let gainStereo (s1, s2) = (att 0.01 s1, att 0.01 s2) in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
   let stereos =
-    [1; 2; 2; 1; 3] |> List.to_seq
-    |> fmap (fun x -> justThePath x |> gainStereo)
+    [s] |> List.to_seq
+    |> fmap (fun x -> justThePath pheromones x |> gainStereo)
   in
   let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
@@ -971,12 +978,13 @@ let push_nodes () =
          () )
   |> hold (st 100)
 
-let jackMain () =
-  let applyEffects master = 
-    List.fold_left Cisp.syncEffect master [push_nodes();playNodesAsAnts (nodesStream ()) ]
+let jackMain array1 array2 () =
+  let applyEffects master =
+    List.fold_left Cisp.syncEffect master [push_nodes ();only_compute array1 ;only_compute array2 ]
   in
   Jack.playSeqs 0 Process.sample_rate
-    ( [applyEffects (output |> att 0.0)])
+    ( bunch 1 array1 () @ bunch 1 array2 ()
+    @ [applyEffects (Cisp.st 0.0)] )
 
 let write_to_file filename str =
   let oc = open_out filename in
@@ -1138,8 +1146,8 @@ let dream_thread phers nodes () =
                              , `Assoc
                                  [ ("nodes", encode_nodes nodes)
                                  ; ( "edges"
-                                   , encode_simple_edges
-                                       (simpleEdgesFrom pheromones) )
+                                   , encode_simple_edges (simpleEdgesFrom phers)
+                                   )
                                  ; ("num_nodes", `Int num_nodes) ] ) ]
                        in
                        let str = Yojson.Safe.to_string value in
@@ -1170,11 +1178,13 @@ let dream_thread phers nodes () =
 (* oscSender.ml *)
 
 let () =
+  let pheromones = mkPheromonesArr in
+  let array1, array2 = (duplicateArrArr pheromones, duplicateArrArr pheromones) in
   let _ = pretty_print_distance distance_array in
-  let _ = Thread.create jackMain () in
+  let _ = Thread.create (jackMain array1 array2) () in
   let _ = Thread.create osc_thread_function () in
   (* let _ = Thread.create graphic () in *)
-  let _ = Thread.create (dream_thread pheromones nodes) () in
+  let _ = Thread.create (dream_thread array1 nodes) () in
   (* let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in *)
   while true do
     Unix.sleep 20

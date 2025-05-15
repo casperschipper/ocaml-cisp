@@ -157,8 +157,7 @@ let distance_array = generate_distance_matrix nodes
 
 let mkPheromonesArr = Array.make_matrix num_nodes num_nodes 0.0
 
-let duplicateArrArr arrarr = 
-  Array.map Array.copy arrarr
+let duplicateArrArr arrarr = Array.map Array.copy arrarr
 
 type controllers =
   { alpha: float
@@ -648,7 +647,7 @@ let start_new pheromones complete_nodes (State state) =
   let best_dist = min state.best_dist state.total_dist in
   let () = shortest := best_dist in
   let () =
-    if state.total_dist < state.best_dist then (
+     if state.total_dist < state.best_dist then (
       print_string "print path" ;
       List.iter
         (fun i -> print_int i ; print_char ' ')
@@ -660,8 +659,8 @@ let start_new pheromones complete_nodes (State state) =
       paths := state.visited :: Toolkit.lst_take 10 !paths ;
       print_string "size of paths" ;
       print_int (List.length !paths) ;
-      print_newline () )
-    else ()
+      print_newline () ) 
+    else () 
   in
   State
     { current_ant= updated_ant
@@ -953,8 +952,7 @@ let bunch s pheromones () =
   let gainStereo (s1, s2) = (att 0.01 s1, att 0.01 s2) in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
   let stereos =
-    [s] |> List.to_seq
-    |> fmap (fun x -> justThePath pheromones x |> gainStereo)
+    [s] |> List.to_seq |> fmap (fun x -> justThePath pheromones x |> gainStereo)
   in
   let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
@@ -980,11 +978,20 @@ let push_nodes () =
 
 let jackMain array1 array2 () =
   let applyEffects master =
-    List.fold_left Cisp.syncEffect master [push_nodes ();only_compute array1 ;only_compute array2 ]
+    List.fold_left Cisp.syncEffect master
+      [only_compute array1; only_compute array2]
   in
+  let open Cisp in
   Jack.playSeqs 0 Process.sample_rate
-    ( bunch 4 array1 () @ bunch 4 array2 ()
-    @ [applyEffects (Cisp.st 0.0)] )
+    [(rvf (st (-1.0)) (st 1.0))]
+
+(* let playArray arrarr () =
+  let lst =
+    arrarr |> Array.to_list
+    |> List.map (fun inner ->
+           inner |> Array.to_seq |> Cisp.cycle |> Seq.map (fun x -> x *. 0.01) )
+  in
+  Jack.playSeqs 0 Process.sample_rate lst *)
 
 let write_to_file filename str =
   let oc = open_out filename in
@@ -1179,13 +1186,14 @@ let dream_thread phers nodes () =
 
 let () =
   let pheromones = mkPheromonesArr in
-  let array1, array2 = (duplicateArrArr pheromones, duplicateArrArr pheromones) in
+  let array1, array2 =
+    (duplicateArrArr pheromones, duplicateArrArr pheromones)
+  in
   let _ = pretty_print_distance distance_array in
-  let _ = Thread.create (jackMain array1 array2) () in
-  let _ = Thread.create osc_thread_function () in
-  (* let _ = Thread.create graphic () in *)
-  let _ = Thread.create (dream_thread array1 nodes) () in
-  (* let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in *)
+  let _jack = Thread.create (fun () -> jackMain array1 array2 ()) in
+  let _osc = Thread.create osc_thread_function in
+  let _web = Thread.create (fun () -> dream_thread array1 nodes ()) in
+  (* Keep main domain alive *)
   while true do
     Unix.sleep 20
   done

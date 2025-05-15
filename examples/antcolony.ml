@@ -981,9 +981,8 @@ let jackMain array1 array2 () =
     List.fold_left Cisp.syncEffect master
       [only_compute array1; only_compute array2]
   in
-  let open Cisp in
   Jack.playSeqs 0 Process.sample_rate
-    [(rvf (st (-1.0)) (st 1.0))]
+    (bunch 4 array1 () @ bunch 4 array2 () @ [applyEffects (Cisp.st 0.0)])
 
 (* let playArray arrarr () =
   let lst =

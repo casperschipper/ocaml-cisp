@@ -983,7 +983,7 @@ let jackMain array1 array2 () =
     List.fold_left Cisp.syncEffect master [push_nodes ();only_compute array1 ;only_compute array2 ]
   in
   Jack.playSeqs 0 Process.sample_rate
-    ( bunch 1 array1 () @ bunch 1 array2 ()
+    ( bunch 4 array1 () @ bunch 4 array2 ()
     @ [applyEffects (Cisp.st 0.0)] )
 
 let write_to_file filename str =

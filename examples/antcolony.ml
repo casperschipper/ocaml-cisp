@@ -947,12 +947,15 @@ let sumOctaves () =
     ; justThePath () |> hold (st 16)
     ; justThePath () |> hold (st 32)] *)
 
+let stereosig holder pheromones =
+  let gainStereo (s1, s2) = (att 0.01 s1, att 0.01 s2) in
+  justThePath pheromones holder |> gainStereo 
+
 let bunch s pheromones () =
   let open Cisp in
-  let gainStereo (s1, s2) = (att 0.01 s1, att 0.01 s2) in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
   let stereos =
-    [s] |> List.to_seq |> fmap (fun x -> justThePath pheromones x |> gainStereo)
+    [s] |> List.to_seq |> fmap (fun n -> stereosig n pheromones)
   in
   let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
@@ -1202,6 +1205,30 @@ let dream_thread phers nodes () =
                  process_messages () (* Start processing messages *) ) ) ]
 
 (* oscSender.ml *)
+
+let formatted_time () =
+  let open Unix in
+  let time = localtime (time ()) in
+  Printf.sprintf "%02d-%02d-%02d:%02d"
+    (time.tm_mon + 1)  (* tm_mon is 0-based, so add 1 *)
+    time.tm_mday
+    time.tm_hour
+    time.tm_min
+
+let one_voice arrarr = 
+  let dupl = duplicateArrArr arrarr in
+  let signal = stereosig 1 dupl in 
+  signal
+
+let fold_stereo_pairs_to_flat_list pairs =
+  Seq.fold_left (fun acc (sql,sqr) -> sql::sqr::acc) [] pairs
+
+let as_sound_file record_length seqs arrarr =
+  Cisp.rangei 0 31 |> Seq.map (fun _ -> one_voice arrarr) |> 
+  
+  let size = !Process.sample_rate *. record_length |> int_of_float in
+  let t = Sndfile.from_seq size (int_of_float !Process.sample_rate) seqs in
+  Sndfile.write t ("/Users/casperschipper/Music/Ants/straight" ^ formatted_time ()) Sndfile.WAV_24
 
 let () =
   let pheromones = mkPheromonesArr in

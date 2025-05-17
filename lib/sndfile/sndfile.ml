@@ -123,3 +123,36 @@ let to_seq snd channel =
   Seq.map (idx_channel snd channel) count
 
 let n_channels snd = snd.channels
+
+
+let write_multichannel_array
+    (channels : float array list)
+    (sr : int)
+    (path : string)
+    (fmt : format) =
+  let n_channels = List.length channels in
+  if n_channels = 0 then invalid_arg "No channels provided";
+
+  let n_frames =
+    match List.map Array.length channels with
+    | len :: rest ->
+        if List.exists (( <> ) len) rest then
+          invalid_arg "Channel arrays must all be the same length";
+        len
+    | [] -> 0
+  in
+
+  let buf =
+    Bigarray.Array1.create Bigarray.float32 Bigarray.c_layout (n_channels * n_frames)
+  in
+
+  (* Interleave samples *)
+  List.iteri
+    (fun c chan_array ->
+      for i = 0 to n_frames - 1 do
+        let idx = i * n_channels + c in
+        buf.{idx} <- chan_array.(i)
+      done)
+    channels;
+
+  write_buf buf path sr n_channels fmt

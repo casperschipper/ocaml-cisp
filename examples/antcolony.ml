@@ -16,11 +16,9 @@ let deposit = 1.0
 
 let num_ants = 10
 
-let num_samples = 44100 * 40
+let max_tour = 8
 
-let max_tour = 33
-
-let brownian = 0.0
+let brownian = 0.01
 
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
@@ -647,7 +645,7 @@ let start_new pheromones complete_nodes (State state) =
   let best_dist = min state.best_dist state.total_dist in
   let () = shortest := best_dist in
   let () =
-     if state.total_dist < state.best_dist then (
+    if state.total_dist < state.best_dist then (
       print_string "print path" ;
       List.iter
         (fun i -> print_int i ; print_char ' ')
@@ -659,8 +657,8 @@ let start_new pheromones complete_nodes (State state) =
       paths := state.visited :: Toolkit.lst_take 10 !paths ;
       print_string "size of paths" ;
       print_int (List.length !paths) ;
-      print_newline () ) 
-    else () 
+      print_newline () )
+    else ()
   in
   State
     { current_ant= updated_ant
@@ -863,9 +861,34 @@ let justThePath pheromones repeats =
     | Some i -> (i, ix)
     | None -> (random_index (), 0)
   in
-  let eval (inp, _) = nodes.(inp) |> fun (Node node) -> (node.x, node.y) in
+  let eval (inp, _) =
+    nodes.(inp) |> fun (Node node) -> (node.x -. 0.5, node.y -. 0.5)
+  in
   let init = (random_index (), 0) in
   Cisp.recursive c init u eval |> Cisp.hold (st repeats) |> Seq.unzip
+
+let justThePathButLines =
+  let interpolate_segment ~start ~stop ~samples =
+    let step = (stop -. start) /. float_of_int samples in
+    Seq.init samples (fun i -> start +. float_of_int i *. step)
+  in
+
+  let waveform_of_targets ~sample_rate target_values segment_lengths =
+  (* Create pairs of (start, stop, segment_duration) *)
+    let rec make_segments tvs sls =
+      match Seq.uncons tvs, Seq.uncons sls with
+      | Some (v1, tvs'), Some (len, sls') ->
+          begin match Seq.uncons tvs' with
+          | Some (v2, rest) ->
+              let samples = int_of_float (len *. sample_rate) in
+              let seg = interpolate_segment ~start:v1 ~stop:v2 ~samples in
+              Seq.append seg (make_segments (Seq.cons v2 rest) sls')
+          | None -> Seq.empty
+          end
+      | _ -> Seq.empty
+    in
+    make_segments target_values segment_lengths
+
 
 let nodesStream pheromones () =
   let open Cisp in
@@ -948,15 +971,13 @@ let sumOctaves () =
     ; justThePath () |> hold (st 32)] *)
 
 let stereosig holder pheromones =
-  let gainStereo (s1, s2) = (att 0.01 s1, att 0.01 s2) in
-  justThePath pheromones holder |> gainStereo 
+  let gainStereo (s1, s2) = (att 1.0 s1, att 1.0 s2) in
+  justThePath pheromones holder |> gainStereo
 
 let bunch s pheromones () =
   let open Cisp in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
-  let stereos =
-    [s] |> List.to_seq |> fmap (fun n -> stereosig n pheromones)
-  in
+  let stereos = [s] |> List.to_seq |> fmap (fun n -> stereosig n pheromones) in
   let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
 
@@ -981,8 +1002,7 @@ let push_nodes () =
 
 let array_as_infinite_stream arr =
   let length = Array.length arr in
-  if length = 0 then
-    failwith "Cannot create stream from empty array"
+  if length = 0 then failwith "Cannot create stream from empty array"
   else
     (* Create a sequence that repeatedly reads from the array *)
     let rec make_seq position () =
@@ -996,14 +1016,15 @@ let array_as_infinite_stream arr =
 (* Usage example for audio processing *)
 let process_audio_stream arr =
   let open Seq in
-  array_as_infinite_stream arr
-  |> map (fun x -> x *. 1.0) (* Apply gain *)
+  array_as_infinite_stream arr |> map (fun x -> x *. 1.0)
+(* Apply gain *)
 
-let makeSum arrarr () = 
+let makeSum arrarr () =
   let open Cisp in
-  Array.sub arrarr 0 3 |> Array.mapi (fun idx arr -> 
-    process_audio_stream arr |> hold (st (idx + 1))) |> Array.to_list 
-
+  Array.sub arrarr 0 3
+  |> Array.mapi (fun idx arr ->
+         process_audio_stream arr |> hold (st (idx + 1)) )
+  |> Array.to_list
 
 let jackMain array1 array2 () =
   let applyEffects master =
@@ -1011,7 +1032,7 @@ let jackMain array1 array2 () =
       [only_compute array1; only_compute array2]
   in
   Jack.playSeqs 0 Process.sample_rate
-    ((makeSum array1 ()) @ [applyEffects (Cisp.st 0.0)])
+    (bunch 1 array1 () @ [applyEffects (Cisp.st 0.0)])
 
 (* Create an infinite sequence from a mutable array that's updated elsewhere *)
 
@@ -1210,25 +1231,51 @@ let formatted_time () =
   let open Unix in
   let time = localtime (time ()) in
   Printf.sprintf "%02d-%02d-%02d:%02d"
-    (time.tm_mon + 1)  (* tm_mon is 0-based, so add 1 *)
-    time.tm_mday
-    time.tm_hour
-    time.tm_min
+    (time.tm_mon + 1) (* tm_mon is 0-based, so add 1 *)
+    time.tm_mday time.tm_hour time.tm_min
 
-let one_voice arrarr = 
-  let dupl = duplicateArrArr arrarr in
-  let signal = stereosig 1 dupl in 
-  signal
+let seqs_to_arrays_in_sync (seqs : float Seq.t list) (n : int) :
+    float array array =
+  let n_channels = List.length seqs in
+  if n_channels = 0 then invalid_arg "No sequences provided" ;
+  (* Create one array per channel *)
+  let arrays = Array.init n_channels (fun _ -> Array.make n 0.0) in
+  (* Convert the list of sequences to a mutable array of thunks (stateful) *)
+  let seq_arr = Array.of_list seqs in
+  (* For each frame (sample index) *)
+  for i = 0 to n - 1 do
+    for c = 0 to n_channels - 1 do
+      match seq_arr.(c) () with
+      | Seq.Nil -> arrays.(c).(i) <- 0.0
+      | Seq.Cons (x, next) ->
+          arrays.(c).(i) <- x ;
+          seq_arr.(c) <- next
+    done
+  done ;
+  arrays
 
 let fold_stereo_pairs_to_flat_list pairs =
-  Seq.fold_left (fun acc (sql,sqr) -> sql::sqr::acc) [] pairs
+  Seq.fold_left (fun acc (sql, sqr) -> sql :: sqr :: acc) [] pairs
 
-let as_sound_file record_length seqs arrarr =
-  Cisp.rangei 0 31 |> Seq.map (fun _ -> one_voice arrarr) |> 
-  
-  let size = !Process.sample_rate *. record_length |> int_of_float in
-  let t = Sndfile.from_seq size (int_of_float !Process.sample_rate) seqs in
-  Sndfile.write t ("/Users/casperschipper/Music/Ants/straight" ^ formatted_time ()) Sndfile.WAV_24
+let one_voice arrarr =
+  let dupl = duplicateArrArr arrarr in
+  let signal = stereosig 1 dupl in
+  signal
+
+let nonrealtime record_length arrarr =
+  let sigs =
+    [1; 1; 1; 1; 2; 2; 2; 2; 1; 1; 1]
+    |> List.map (fun n -> bunch n arrarr ())
+    |> List.concat
+  in
+  let sigs_with_calc =
+    (only_compute arrarr |> Seq.map (fun _ -> 0.0)) :: sigs
+  in
+  let nsamps = !Process.sample_rate *. record_length |> floor |> int_of_float in
+  let arrays = seqs_to_arrays_in_sync sigs_with_calc nsamps |> Array.to_list in
+  Sndfile.write_multichannel_array arrays
+    (!Process.sample_rate |> floor |> int_of_float)
+    "/Users/casperschipper/Music/ants/file2_Smaller_tour.wav" Sndfile.WAV_32
 
 let () =
   let pheromones = mkPheromonesArr in
@@ -1238,7 +1285,8 @@ let () =
   let _ = Thread.create (jackMain array1 array2) () in
   let _ = Thread.create osc_thread_function () in
   let _ = Thread.create (dream_thread array1 nodes) () in
-  let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in
+  (* let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in *)
+  (* let () = nonrealtime 45.0 pheromones in *)
   while true do
-    Unix.sleep 20
+    Unix.sleep 60
   done

@@ -976,21 +976,41 @@ let push_nodes () =
          () )
   |> hold (st 100)
 
+let array_as_infinite_stream arr =
+  let length = Array.length arr in
+  if length = 0 then
+    failwith "Cannot create stream from empty array"
+  else
+    (* Create a sequence that repeatedly reads from the array *)
+    let rec make_seq position () =
+      (* Use modulo to wrap around when we reach the end of the array *)
+      let current_pos = position mod length in
+      (* Return the current value and a continuation *)
+      Seq.Cons (Array.get arr current_pos, make_seq (position + 1))
+    in
+    make_seq 0
+
+(* Usage example for audio processing *)
+let process_audio_stream arr =
+  let open Seq in
+  array_as_infinite_stream arr
+  |> map (fun x -> x *. 1.0) (* Apply gain *)
+
+let makeSum arrarr () = 
+  let open Cisp in
+  Array.sub arrarr 0 3 |> Array.mapi (fun idx arr -> 
+    process_audio_stream arr |> hold (st (idx + 1))) |> Array.to_list 
+
+
 let jackMain array1 array2 () =
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
       [only_compute array1; only_compute array2]
   in
   Jack.playSeqs 0 Process.sample_rate
-    (bunch 4 array1 () @ bunch 4 array2 () @ [applyEffects (Cisp.st 0.0)])
+    ((makeSum array1 ()) @ [applyEffects (Cisp.st 0.0)])
 
-(* let playArray arrarr () =
-  let lst =
-    arrarr |> Array.to_list
-    |> List.map (fun inner ->
-           inner |> Array.to_seq |> Cisp.cycle |> Seq.map (fun x -> x *. 0.01) )
-  in
-  Jack.playSeqs 0 Process.sample_rate lst *)
+(* Create an infinite sequence from a mutable array that's updated elsewhere *)
 
 let write_to_file filename str =
   let oc = open_out filename in
@@ -1188,11 +1208,10 @@ let () =
   let array1, array2 =
     (duplicateArrArr pheromones, duplicateArrArr pheromones)
   in
-  let _ = pretty_print_distance distance_array in
-  let _jack = Thread.create (fun () -> jackMain array1 array2 ()) in
-  let _osc = Thread.create osc_thread_function in
-  let _web = Thread.create (fun () -> dream_thread array1 nodes ()) in
-  (* Keep main domain alive *)
+  let _ = Thread.create (jackMain array1 array2) () in
+  let _ = Thread.create osc_thread_function () in
+  let _ = Thread.create (dream_thread array1 nodes) () in
+  let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in
   while true do
     Unix.sleep 20
   done

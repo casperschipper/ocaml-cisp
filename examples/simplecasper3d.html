@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Graph</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    #floatBox {
+      width: 80px;
+      height: 30px;
+      font-size: 18px;
+      text-align: right;
+      padding: 5px;
+      border: 1px solid #999;
+      border-radius: 4px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+    }
+    #controllers {
+      position: absolute;
+      top: 50px;
+      left: 10px;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <input type="number" id="floatBox" step="0.01" value="0.0" />
+  <pre id="controllers">controller state</pre>
+  <script type="module">
+    import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.module.js';
+    import { OrbitControls } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/examples/jsm/controls/OrbitControls.js';
+    // Three.js setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 0, 5);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+
+    const nodeMeshes = {};
+    const edgeLines = {};
+
+    let num_nodes = 0;
+    const line_weight = 0.02;
+
+    function createNode([x, y, z], index) {
+      const geometry = new THREE.SphereGeometry(0.05, 16, 16);
+      const material = new THREE.MeshBasicMaterial({ color: 0x888888 });
+      const sphere = new THREE.Mesh(geometry, material);
+      sphere.position.set(x, y, z);
+      scene.add(sphere);
+      nodeMeshes[index] = sphere;
+    }
+
+    function createEdge({ start, target, weight }, index) {
+      const startNode = nodeMeshes[start];
+      const targetNode = nodeMeshes[target];
+      
+      if (!startNode || !targetNode) {
+        console.error(`Missing node references for edge ${index}: start=${start}, target=${target}`);
+        return;
+      }
+      
+      const points = [
+        startNode.position,
+        targetNode.position
+      ];
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const material = new THREE.LineBasicMaterial({ color: 0x000000 });
+      // Three.js no longer supports linewidth for most renderers
+      // Setting a reasonable thickness that will work
+      const line = new THREE.Line(geometry, material);
+      scene.add(line);
+      edgeLines[index] = { line, start, target };
+    }
+
+    function updateNode({ node_id, x, y, z = 0 }) {
+      const mesh = nodeMeshes[node_id];
+      if (mesh) {
+        mesh.position.set(x, y, z);
+      } else {
+        console.warn(`Tried to update non-existent node: ${node_id}`);
+      }
+    }
+
+    function updateEdge(edge, index) {
+      const lineInfo = edgeLines[index];
+      if (!lineInfo) {
+        console.warn(`Tried to update non-existent edge: ${index}`);
+        return;
+      }
+
+      const startNode = nodeMeshes[edge.start];
+      const targetNode = nodeMeshes[edge.target];
+      
+      if (!startNode || !targetNode) {
+        console.warn(`Missing node references: start=${edge.start}, target=${edge.target}`);
+        return;
+      }
+
+      const startPos = startNode.position;
+      const targetPos = targetNode.position;
+
+      const positions = new Float32Array([
+        startPos.x, startPos.y, startPos.z,
+        targetPos.x, targetPos.y, targetPos.z
+      ]);
+
+      lineInfo.line.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      lineInfo.line.geometry.computeBoundingSphere();
+    }
+
+    function updateText(txt) {
+      const el = document.getElementById('controllers');
+      if (el) el.innerText = txt;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // WebSocket setup
+    let socket;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    const reconnectDelay = 2000; // 2 seconds
+
+    function connectWebSocket() {
+      socket = new WebSocket("ws://" + window.location.host + "/websocket");
+
+      socket.onopen = function () {
+        console.log("WebSocket connected");
+        reconnectAttempts = 0;
+        socket.send('init');
+      };
+
+      socket.onmessage = function (e) {
+        try {
+          let object = JSON.parse(e.data);
+          if (!object) {
+            console.log('Empty JSON object received');
+            return;
+          }
+
+          if (object.init) {
+            init(object.init);
+          } else if (object.update) {
+            update(object.update);
+          } else {
+            console.log('Unknown message format', object);
+          }
+        } catch (error) {
+          console.error('Error processing message:', error);
+        }
+      };
+
+      socket.onclose = function(event) {
+        console.log("WebSocket disconnected", event);
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`);
+          setTimeout(connectWebSocket, reconnectDelay);
+        } else {
+          console.error("Max reconnect attempts reached. Please refresh the page.");
+          updateText("Connection lost. Please refresh the page.");
+        }
+      };
+
+      socket.onerror = function(error) {
+        console.error("WebSocket error:", error);
+      };
+    }
+
+    connectWebSocket();
+
+    function init(state) {
+      // Clear any existing nodes/edges if reconnecting
+      Object.values(nodeMeshes).forEach(mesh => scene.remove(mesh));
+      Object.values(edgeLines).forEach(edge => scene.remove(edge.line));
+      
+      // Reset collections
+      for (const key in nodeMeshes) delete nodeMeshes[key];
+      for (const key in edgeLines) delete edgeLines[key];
+
+      num_nodes = state.num_nodes || 0;
+
+      if (state.nodes && Array.isArray(state.nodes)) {
+        state.nodes.forEach((node, index) => {
+          if (Array.isArray(node) && node.length >= 2) {
+            const [x, y] = node;
+            const z = node[2] || 0; // Use z if provided, otherwise default to 0
+            createNode([x, y, z], index);
+          }
+        });
+      }
+
+      if (state.edges && Array.isArray(state.edges)) {
+        state.edges.forEach((edge, index) => {
+          if (edge && typeof edge === 'object') {
+            createEdge(edge, index);
+          }
+        });
+      }
+
+      // Set up the ticker
+      const tickInterval = setInterval(() => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send('tick');
+        } else if (socket && socket.readyState === WebSocket.CLOSED) {
+          clearInterval(tickInterval);
+        }
+      }, 80);
+    }
+
+    function update(state) {
+      if (state.updated_nodes && Array.isArray(state.updated_nodes)) {
+        state.updated_nodes.forEach(updateNode);
+      }
+      
+      if (state.edges && Array.isArray(state.edges)) {
+        state.edges.forEach(updateEdge);
+      }
+      
+      if (state.controllers) {
+        updateText(state.controllers);
+      }
+    }
+
+    // Float box input
+    const floatBox = document.getElementById('floatBox');
+    floatBox.addEventListener('change', () => {
+      const value = parseFloat(floatBox.value);
+      if (!isNaN(value) && socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ brownian: { amount: value } }));
+      }
+    });
+
+    // Optional: drag adjust float box
+    (function enableFloatBoxDrag() {
+      let isDragging = false;
+      let startY = 0;
+      let startValue = 0;
+
+      const onMouseMove = (e) => {
+        if (!isDragging) return;
+
+        const deltaY = startY - e.clientY;
+        let sensitivity = e.shiftKey || e.altKey ? 0.001 : 0.0001;
+
+        const newValue = parseFloat((startValue + deltaY * sensitivity).toFixed(4));
+        floatBox.value = newValue;
+        
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ brownian: { amount: newValue } }));
+        }
+      };
+
+      const onMouseUp = () => {
+        if (isDragging) {
+          isDragging = false;
+          document.body.style.cursor = 'default';
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        }
+      };
+
+      floatBox.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startY = e.clientY;
+        startValue = parseFloat(floatBox.value) || 0.0;
+        document.body.style.cursor = 'ns-resize';
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+        e.preventDefault();
+      });
+    })();
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

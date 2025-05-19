@@ -194,6 +194,20 @@
  (preprocess
   (pps lwt_ppx)))
 
+
+(executable
+ (name antcolony3d)
+ (flags
+  (:standard -w -26-32-69-34))
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules antcolony3d)
+ (libraries lwt lwt.unix graphsvg lo cisp jack svg_gen dream spacegen sndfile)
+ (preprocess
+  (pps lwt_ppx)))
+
+
 (executable
  (name fmfb)
  (link_flags

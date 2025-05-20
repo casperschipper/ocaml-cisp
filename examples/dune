@@ -203,7 +203,7 @@
   (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules antcolony3d)
- (libraries lwt lwt.unix graphsvg lo cisp jack svg_gen dream spacegen sndfile)
+ (libraries lwt lwt.unix graphsvg lo cisp jack jackMidi svg_gen dream spacegen sndfile midi)
  (preprocess
   (pps lwt_ppx)))
 

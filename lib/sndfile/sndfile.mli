@@ -58,12 +58,12 @@ val n_channels : t -> int
 
 val write_multichannel_array :
   (** 
-    [float array list -> int -> string -> format -> unit]
+    [float array array -> int -> string -> format -> unit]
 
     @param samples A list of float arrays, where each array represents a channel's audio samples.
     @param samplerate The sample rate (in Hz) at which the audio should be saved.
     @param filename The path to the output audio file.
     @param format The audio file format specification.
   *)
-  float array list -> int -> string -> format -> unit
+  float array array -> int -> string -> format -> unit
 

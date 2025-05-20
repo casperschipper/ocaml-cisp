@@ -1,5 +1,7 @@
 module S = Lo.Server
 
+let () = Process.sample_rate := 48000.0
+
 let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
 let beta = 1.0 (* prefer paths that are shorter *)
@@ -8,9 +10,9 @@ let num_nodes = 49
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
-let evaporation = 0.2
+let evaporation = 0.4
 
-let exploration_bias = 0.001
+let exploration_bias = 0.0002
 
 let deposit = 1.0
 
@@ -18,7 +20,7 @@ let num_ants = 10
 
 let max_tour = 49
 
-let brownian = 0.01
+let brownian = 0.0001
 
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
@@ -183,8 +185,10 @@ let controllers_to_string ctr =
     \  evaporation: %.2f\n\
     \  num_ants: %d\n\
     \  max_tour: %d\n\
+    \  brownian: %.2f\n\
      }"
     ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants ctr.max_tour
+    ctr.brownian
 
 let initial =
   { alpha
@@ -300,6 +304,7 @@ let handle_osc_message path data =
   | "/exploration_bias" ->
       data |> handle_float_arg |> update ~update:set_exploration_bias
   | "/max_tour" -> data |> handle_int_arg |> update ~update:set_max_tour
+  | "/brownian" -> data |> handle_float_arg |> update ~update:set_brownian
   | _ -> Printf.printf "Unhandled OSC path or arguments\n"
 
 let osc_thread_function () =
@@ -1039,19 +1044,12 @@ let makeSum arrarr () =
          process_audio_stream arr |> hold (st (idx + 1)) )
   |> Array.to_list
 
-let jackMain array1 array2 () =
-  let applyEffects master =
-    List.fold_left Cisp.syncEffect master
-      [only_compute array1; only_compute array2]
-  in
-  Jack.playSeqs 0 Process.sample_rate
-    (bunch 1 array1 () @ [applyEffects (Cisp.st 0.0)])
+let one_voice inputArr =
+  let clone = duplicateArrArr inputArr in
+  let sigL, sigR = stereosig 1 clone in
+  [Cisp.syncEffect sigL (only_compute clone); sigR]
 
 (* Create an infinite sequence from a mutable array that's updated elsewhere *)
-
-let write_to_file filename str =
-  let oc = open_out filename in
-  output_string oc str ; close_out oc
 
 (* let graphic () =
   while true do
@@ -1240,8 +1238,8 @@ let dream_thread phers nodes () =
                          let old = nodes.(node_id) in
                          (* let (Node {z= old_z; _}) = old in *)
                          ignore
-                           (update_matrix_2 node_id (mkNode node_id x y z)
-                              nodes distance_array ) ;
+                           (update_matrix_2 node_id (mkNode node_id x y z) nodes
+                              distance_array ) ;
                          process_messages ()
                      | Ok (Brownian amount) ->
                          ignore (update_and_swap ~update:set_brownian amount) ;
@@ -1288,10 +1286,14 @@ let seqs_to_arrays_in_sync (seqs : float Seq.t list) (n : int) :
 let fold_stereo_pairs_to_flat_list pairs =
   Seq.fold_left (fun acc (sql, sqr) -> sql :: sqr :: acc) [] pairs
 
-let one_voice arrarr =
-  let dupl = duplicateArrArr arrarr in
-  let signal = stereosig 1 dupl in
-  signal
+let non_realtime2 arrarr filename =
+  let str =
+    Cisp.rangei 0 7
+    |> Cisp.fmap (fun _ -> one_voice arrarr)
+    |> List.of_seq |> List.concat
+  in
+  let audio_data = seqs_to_arrays_in_sync str (120 * 48000) in
+  Sndfile.write_multichannel_array audio_data 48000 filename Sndfile.WAV_24
 
 let nonrealtime record_length arrarr =
   let sigs =
@@ -1303,21 +1305,52 @@ let nonrealtime record_length arrarr =
     (only_compute arrarr |> Seq.map (fun _ -> 0.0)) :: sigs
   in
   let nsamps = !Process.sample_rate *. record_length |> floor |> int_of_float in
-  let arrays = seqs_to_arrays_in_sync sigs_with_calc nsamps |> Array.to_list in
+  let arrays = seqs_to_arrays_in_sync sigs_with_calc nsamps in
   Sndfile.write_multichannel_array arrays
     (!Process.sample_rate |> floor |> int_of_float)
     "/Users/casperschipper/Music/ants/file2_Smaller_tour.wav" Sndfile.WAV_32
 
-let () =
-  let pheromones = mkPheromonesArr in
-  let array1, array2 =
-    (duplicateArrArr pheromones, duplicateArrArr pheromones)
+let jackMain array1 array2 array3 () =
+  let applyEffects master =
+    List.fold_left Cisp.syncEffect master
+      [only_compute array1; only_compute array2; push_nodes ()]
   in
-  let _ = Thread.create (jackMain array1 array2) () in
-  let _ = Thread.create osc_thread_function () in
-  let _ = Thread.create (dream_thread array1 nodes) () in
-  (* let _ = ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0") in *)
-  (* let () = nonrealtime 45.0 pheromones in *)
-  while true do
-    Unix.sleep 60
-  done
+  Jack.playSeqs 0 Process.sample_rate
+    ( bunch 1 array1 () @ bunch 1 array2 () @ bunch 2 array3 ()
+    @ [applyEffects (Cisp.st 0.0)] )
+
+let midiOut phers =
+  let open Midi in
+  let open Cisp in
+  let pitchStr =
+    nodesStream phers () |> Seq.map (fun (Node {id; x; y; z; sync}) -> id + 40)
+  in
+  let f inp =
+    let stream pitch = mkNoteClip <$> st 1 <*> pitch <*> st 100 <*> st 100 in
+    let midi = Midi.trigger (stream pitchStr) inp |> serialize |> Seq.map toRaw in
+    let withEffect = syncEffect midi (only_compute phers) in
+   withEffect
+  in
+  Midi.playMidi f Process.sample_rate
+
+let rt = true
+
+let () =
+  if rt then
+    let pheromones = mkPheromonesArr in
+    (* let array1, array2 =
+      (duplicateArrArr pheromones, duplicateArrArr pheromones)
+    in
+    let array3 = duplicateArrArr pheromones in
+     let _ = Thread.create (jackMain array1 array2 array3) () in *)
+    let array1 = duplicateArrArr pheromones in
+    let _ = Thread.create osc_thread_function () in
+    let _ = Thread.create (dream_thread array1 nodes) () in
+    let _ = Thread.create midiOut array1 in 
+    while true do
+      Unix.sleep 60
+    done
+  else
+    let pheromones = mkPheromonesArr in
+    non_realtime2 pheromones
+      "/Users/casperschipper/Music/ants/many_ants3d_BIG_longer.wav"

@@ -126,15 +126,15 @@ let n_channels snd = snd.channels
 
 
 let write_multichannel_array
-    (channels : float array list)
+    (channels : float array array)
     (sr : int)
     (path : string)
     (fmt : format) =
-  let n_channels = List.length channels in
+  let n_channels = Array.length channels in
   if n_channels = 0 then invalid_arg "No channels provided";
 
   let n_frames =
-    match List.map Array.length channels with
+    match Array.map Array.length channels |> Array.to_list with
     | len :: rest ->
         if List.exists (( <> ) len) rest then
           invalid_arg "Channel arrays must all be the same length";
@@ -147,12 +147,11 @@ let write_multichannel_array
   in
 
   (* Interleave samples *)
-  List.iteri
+  Array.iteri
     (fun c chan_array ->
       for i = 0 to n_frames - 1 do
         let idx = i * n_channels + c in
         buf.{idx} <- chan_array.(i)
       done)
     channels;
-
   write_buf buf path sr n_channels fmt

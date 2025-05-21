@@ -1,11 +1,16 @@
 type param = IntParam of int | FloatParam of float | StringParam of string
 
+let intPar i = IntParam i
+let floatPar f = FloatParam f
+let stringPar s = StringParam s
+
 type csoundevent =
   | CSEvent of {instr: int; start: float; dur: float; params: param list}
 
 type cscore = Cscore of csoundevent list
 
 type event
+
 
 let fromStreams instr starts durs paramLst =
   (* TODO: implement the function logic *)

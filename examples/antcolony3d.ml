@@ -1347,33 +1347,61 @@ let midiOut phers =
            ignore (x, y, z, sync) ;
            (id + 23, floatToMidi x, floatToMidi x) )
   in
-  let p, v, d =
-    unzip3_seq (ctrlStr)
-  in
+  let p, v, d = unzip3_seq ctrlStr in
   let c = p |> Seq.map (fun x -> x mod 15) in
   let f inp =
     let stream = mkNoteClip <$> c <*> p <*> v <*> d in
     let midi = Midi.trigger stream inp |> serialize |> Seq.map toRaw in
-    let withEffect = midi |> effectsSync [push_nodes ();only_compute phers] in
+    let withEffect = midi |> effectsSync [push_nodes (); only_compute phers] in
     withEffect
   in
   Midi.playMidi f Process.sample_rate
+
+let createCsound filename nodes =
+  let open Csound in
+  let indexes = nodes |> Seq.map (fun n -> n |> get_node_id) in
+  let indexesPar = indexes |> Seq.map Csound.intPar in
+  let offsets =
+    indexes |> Seq.map (fun nid -> nid |> ( * ) 44100 |> Csound.intPar)
+  in
+  let open Cisp in
+  let score =
+    Csound.fromStreams 1
+      (walk 0.0 (st 0.1))
+      (st 0.5)
+      [ offsets
+      ; st (Csound.floatPar 1.0)
+      ; indexesPar
+      ; st (floatPar 0.001)
+      ; st (floatPar 0.5)
+      ; st (floatPar 0.0)
+      ; st (floatPar 0.0) ]
+  in
+  render_cscore_to_file score filename
+
+let csoundWithEffect () =
+  let phers = mkPheromonesArr in
+  nodesStream phers () |> Seq.take 1200
+  |> Cisp.effectsSync [only_compute phers; push_nodes ()]
+  |> createCsound "antscore.sco"
 
 let rt = true
 
 let () =
   if rt then
-    let pheromones = mkPheromonesArr in
     (* let array1, array2 =
       (duplicateArrArr pheromones, duplicateArrArr pheromones)
     in
     let array3 = duplicateArrArr pheromones in
      let _ = Thread.create (jackMain array1 array2 array3) () in *)
-    let array1 = duplicateArrArr pheromones in
+    (*
+     let array1 = duplicateArrArr pheromones in
     let _ = Thread.create osc_thread_function () in
     let _ = Thread.create (dream_thread array1 nodes) () in
     let _ = Thread.create midiOut array1 in
-    let _ =
+    *)
+    csoundWithEffect ()
+    (* let _ =
       print_int
         (Sys.command
            "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1" ) ;
@@ -1384,7 +1412,7 @@ let () =
     in
     while true do
       Unix.sleep 60
-    done
+    done *)
   else
     let pheromones = mkPheromonesArr in
     non_realtime2 pheromones

@@ -1319,17 +1319,43 @@ let jackMain array1 array2 array3 () =
     ( bunch 1 array1 () @ bunch 1 array2 () @ bunch 2 array3 ()
     @ [applyEffects (Cisp.st 0.0)] )
 
+let floatToMidi flt = flt *. 128.0 |> floor |> int_of_float
+
+let unzip3_seq (s : ('a * 'b * 'c) Seq.t) : 'a Seq.t * 'b Seq.t * 'c Seq.t =
+  (* We wrap the source sequence in a ref to share it lazily *)
+  let src = ref s in
+  let make_proj proj =
+    let rec next () =
+      match !src () with
+      | Seq.Nil -> Seq.Nil
+      | Seq.Cons ((a, b, c), tl) ->
+          src := tl ;
+          Seq.Cons (proj (a, b, c), next)
+    in
+    next
+  in
+  ( make_proj (fun (a, _, _) -> a)
+  , make_proj (fun (_, b, _) -> b)
+  , make_proj (fun (_, _, c) -> c) )
+
 let midiOut phers =
   let open Midi in
   let open Cisp in
-  let pitchStr =
-    nodesStream phers () |> Seq.map (fun (Node {id; x; y; z; sync}) -> id + 40)
+  let ctrlStr =
+    nodesStream phers ()
+    |> Seq.map (fun (Node {id; x; y; z; sync}) ->
+           ignore (x, y, z, sync) ;
+           (id + 23, floatToMidi x, floatToMidi x) )
   in
+  let p, v, d =
+    unzip3_seq (ctrlStr)
+  in
+  let c = p |> Seq.map (fun x -> x mod 15) in
   let f inp =
-    let stream pitch = mkNoteClip <$> st 1 <*> pitch <*> st 100 <*> st 100 in
-    let midi = Midi.trigger (stream pitchStr) inp |> serialize |> Seq.map toRaw in
-    let withEffect = syncEffect midi (only_compute phers) in
-   withEffect
+    let stream = mkNoteClip <$> c <*> p <*> v <*> d in
+    let midi = Midi.trigger stream inp |> serialize |> Seq.map toRaw in
+    let withEffect = midi |> effectsSync [push_nodes ();only_compute phers] in
+    withEffect
   in
   Midi.playMidi f Process.sample_rate
 
@@ -1346,7 +1372,16 @@ let () =
     let array1 = duplicateArrArr pheromones in
     let _ = Thread.create osc_thread_function () in
     let _ = Thread.create (dream_thread array1 nodes) () in
-    let _ = Thread.create midiOut array1 in 
+    let _ = Thread.create midiOut array1 in
+    let _ =
+      print_int
+        (Sys.command
+           "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1" ) ;
+      print_int
+        (Sys.command
+           "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in" ) ;
+      ignore (Sys.command "jack_lsp -c -A | grep ocaml")
+    in
     while true do
       Unix.sleep 60
     done

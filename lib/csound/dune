@@ -1,0 +1,4 @@
+(library
+ (name            csound)
+ (ocamlopt_flags -O3)	
+)

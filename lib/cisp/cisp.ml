@@ -118,6 +118,12 @@ let effectSync effectSq sq =
   (* same as syncEffect but flipped *)
   syncEffect sq effectSq
 
+let rec effectsSync lst sq =
+  match lst with
+  | [] -> sq
+  | eff :: rest -> effectSync eff (effectsSync rest sq)
+
+
 let effect = effectSync
 
 (* this is a global ref used to keep time, for lines and time based sync

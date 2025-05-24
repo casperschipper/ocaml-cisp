@@ -17,6 +17,17 @@ let roland idx transpose = Roland {index= idx; transpose}
 
 let wfsPos x y = {x; y}
 
+(** [rolandEvent start duration envelope index transpose x y] creates a Roland event with the specified parameters.
+
+  @param start The start time of the event.
+  @param duration The duration of the event.
+  @param envelope The envelope applied to the event.
+  @param index The index or identifier for the event.
+  @param transpose The transposition value to apply.
+  @param x The x-coordinate or parameter.
+  @param y The y-coordinate or parameter.
+  @return A value representing the constructed Roland event.
+*)
 let rolandEvent start duration envelope index transpose x y =
   { start ; duration ; envelope ; sound = Roland { index; transpose }; position = wfsPos x y }
 
@@ -53,7 +64,7 @@ let event_to_string {start; duration; envelope; sound; position} =
       ^ ", 'phase', -0.25132741228718, 'amp', 0.2 ] ], [ 'wfsSource', [ \
          'point', "
       ^ position_to_point_str position
-      ^ " ] ]))"
+      ^ " ] ]))\n"
   | Roland {index; transpose} ->
       let sampStart = index * 44100 |> string_of_int in
       let sampEnd = (index + 1) * 44100 |> string_of_int in
@@ -64,9 +75,9 @@ let event_to_string {start; duration; envelope; sound; position} =
       ^ ", [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("
       ^ quote rolandPath ^ ", " ^ string_of_int rolandLength ^ ", 1, 44100,"
       ^ sampStart ^ "," ^ sampEnd ^ "," ^ trans
-      ^ ", false).hasGlobal_(true) ] ], [ 'wfsSource', [ 'point', "
+      ^ ", false) ] ], [ 'wfsSource', [ 'point', "
       ^ position_to_point_str position
-      ^ " ] ])"
+      ^ " ] ])\n"
 
 let score title events = Score {title; events}
 

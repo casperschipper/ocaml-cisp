@@ -18,7 +18,7 @@ let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 14
+let max_tour = 20
 
 let brownian = 0.0001
 
@@ -190,29 +190,34 @@ let controllers_to_string ctr =
     ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants ctr.max_tour
     ctr.brownian
 
-type ctrlMsg 
-  = Alpha of float
+type indexed_point = IndexedPoint of {idx: int; x: float; y: float; z: float}
+
+type ctrlMsg =
+  | Alpha of float
   | Beta of float
   | Deposit of float
   | Evaporation of float
-  | Exploration of float 
+  | Exploration of float
   | NumAnts of int
   | MaxTour of int
   | Brownian of float
 
-let update msg ctrl = 
-  match msg with 
+type oscMessage =
+  | CtrlUpdate of ctrlMsg
+  | WriteHistory
+  | MovePoint of indexed_point
+  | Noop
+
+let update_ctrl msg ctrl =
+  match msg with
   | Alpha x -> {ctrl with alpha= x}
-  | Beta x -> { ctrl with beta = x}
-  | Deposit d -> { ctrl with deposit = d }
-  | NumAnts na -> { ctrl with num_ants = na }
-  | Evaporation eva ->  { ctrl with evaporation = eva }
-  | Exploration exp -> { ctrl with exploration_bias = exp }
-  | MaxTour mt -> { ctrl with max_tour = mt }
-  | Brownian brown -> { ctrl with brownian = brown }
-
-
-
+  | Beta x -> {ctrl with beta= x}
+  | Deposit d -> {ctrl with deposit= d}
+  | NumAnts na -> {ctrl with num_ants= na}
+  | Evaporation eva -> {ctrl with evaporation= eva}
+  | Exploration exp -> {ctrl with exploration_bias= exp}
+  | MaxTour mt -> {ctrl with max_tour= mt}
+  | Brownian brown -> {ctrl with brownian= brown}
 
 let initial =
   { alpha
@@ -270,11 +275,8 @@ let handle_float_arg datas =
   match data with
   | [`Float f]
    |[`Double f] ->
-      (* let _ = Cisp.debugf "float: " f in *)
-      Some f
+      Some (f : float)
   | _ -> None
-
-type indexed_point = IndexedPoint of {idx: int; x: float; y: float; z: float}
 
 let handle_int_float_float datas =
   let data = Array.to_list datas in
@@ -288,7 +290,7 @@ let handle_int_arg datas =
   match data with
   | [`Int32 i]
    |[`Int64 i] ->
-      Some i
+      Some (i : int)
   | _ -> None
 
 let update_and_swap ~update value =
@@ -304,17 +306,17 @@ let update_and_swap ~update value =
      let new_dist = distance new_point nodes.(idx) in
      Toolkit.update_at_index old_distances idx (fun _ -> new_dist)) *)
 
+let update_points opt_ipoint =
+  match opt_ipoint with
+  | Some (IndexedPoint {idx; x; y; z}) ->
+      if idx < num_nodes && idx >= 0 then
+        ignore (update_matrix_2 idx (mkNode idx x y z) nodes distance_array)
+      else ()
+  | None -> ()
+
 let handle_osc_message path data =
   let update ~update opt =
     opt |> Option.iter (fun x -> update_and_swap ~update x)
-  in
-  let update_points opt_ipoint =
-    match opt_ipoint with
-    | Some (IndexedPoint {idx; x; y; z}) ->
-        if idx < num_nodes && idx >= 0 then
-          ignore (update_matrix_2 idx (mkNode idx x y z) nodes distance_array)
-        else ()
-    | None -> ()
   in
   match path with
   | "/alpha" -> data |> handle_float_arg |> update ~update:set_alpha
@@ -331,10 +333,47 @@ let handle_osc_message path data =
   | "/brownian" -> data |> handle_float_arg |> update ~update:set_brownian
   | _ -> Printf.printf "Unhandled OSC path or arguments\n"
 
-let osc_thread_function () =
-  let server = S.create 57666 handle_osc_message in
+let parse_osc_message path data =
+  let withDefault f arg = arg |> Option.map f |> Option.value ~default:Noop in
+  match path with
+  | "/alpha" ->
+      data |> handle_float_arg |> withDefault (fun a -> CtrlUpdate (Alpha a))
+  | "/beta" ->
+      data |> handle_float_arg |> withDefault (fun b -> CtrlUpdate (Beta b))
+  | "/evaporation" ->
+      data |> handle_float_arg
+      |> withDefault (fun e -> CtrlUpdate (Evaporation e))
+  | "/deposit" ->
+      data |> handle_float_arg |> withDefault (fun d -> CtrlUpdate (Deposit d))
+  | "/num_ants" ->
+      data |> handle_int_arg |> withDefault (fun n -> CtrlUpdate (NumAnts n))
+  | "/point" ->
+      data |> handle_int_float_float |> withDefault (fun p -> MovePoint p)
+  | "/exploration_bias" ->
+      data |> handle_float_arg
+      |> withDefault (fun e -> CtrlUpdate (Exploration e))
+  | "/max_tour" ->
+      data |> handle_int_arg |> withDefault (fun m -> CtrlUpdate (MaxTour m))
+  | "/brownian" ->
+      data |> handle_float_arg |> withDefault (fun b -> CtrlUpdate (Brownian b))
+  | "/write_history" -> WriteHistory
+  | _ -> Noop
+
+let handle_osc_message_parse finish_history_callback path data =
+  let msg = parse_osc_message path data in
+  match msg with
+  | MovePoint p -> update_points (Some p)
+  | WriteHistory -> finish_history_callback ()
+  | CtrlUpdate ctrl -> update_and_swap ~update:update_ctrl ctrl
+  | Noop -> ()
+
+let osc_thread_function write_history_callback () =
+  let server =
+    S.create 57666 (handle_osc_message_parse write_history_callback)
+  in
   while true do
     S.recv server ;
+    print_endline "osc" ;
     swap_buffers ()
     (* Swap buffers at a safe point, can be adjusted based on needs *)
   done
@@ -1045,28 +1084,36 @@ let push_nodes () =
   |> hold (st 100)
 
 let nodes_history recordsArray phers =
+  let size = Array.length recordsArray in
   let nds = nodesStream phers () in
   let idx = 0 in
   let open Cisp in
-  let writeOneNode idx node = recordsArray.(idx) <- Some node in
+  let writeOneNode idx node =
+    if idx < size - 1 then recordsArray.(idx) <- Some node else ()
+  in
   let nodeWriter = Seq.map2 writeOneNode count nds in
-  pulse (st 100) (st ()) nodeWriter
+  pulse (st 441) nodeWriter (st ())
 
 (*start duration envelope index transpose x y*)
 let rolandifier nds =
   let open Wfs in
   let open Cisp in
+  let scale x = linlin 0.0 1.0 (-20.0) 20.0 x in
   rolandEvent
-  <$> walk 0.0 (st 0.01)
+  <$> walk 0.0 (st 0.1)
   <*> st 0.1 <*> st Wfs.defaultEnv <*> Seq.map get_node_id nds <*> st 1.0
-  <*> Seq.map get_node_x nds <*> Seq.map get_node_y nds
+  <*> Seq.map (fun n -> n |> get_node_x |> scale) nds
+  <*> Seq.map (fun n -> n |> get_node_y |> scale) nds
 
-let finalWrite record_array =
+let finalWrite record_array cleaner =
+  print_string "\nwriting Wfs Score\n" ;
+  flush stdout ;
   record_array |> Array.to_seq
   |> Seq.filter_map (fun x -> x)
-  |> rolandifier |> List.of_seq |> Wfs.score "roland_ants"
+  |> Seq.take 256 |> rolandifier |> List.of_seq |> Wfs.score "roland_ants"
   |> Wfs.score_to_string
-  |> Toolkit.write_string_to_file "wfs_score"
+  |> Toolkit.write_string_to_file "wfs_score.uscore" ;
+  print_endline "✅ wfs score written"
 
 let array_as_infinite_stream arr =
   let length = Array.length arr in
@@ -1094,10 +1141,14 @@ let makeSum arrarr () =
          process_audio_stream arr |> hold (st (idx + 1)) )
   |> Array.to_list
 
+let slower_compute n arr =
+  let open Cisp in
+  pulse (st n) (only_compute arr) (st ())
+
 let one_voice inputArr =
   let clone = duplicateArrArr inputArr in
   let sigL, sigR = stereosig 1 clone in
-  [Cisp.syncEffect sigL (only_compute clone); sigR]
+  [Cisp.syncEffect sigL (slower_compute 10 clone); sigR]
 
 (* Create an infinite sequence from a mutable array that's updated elsewhere *)
 
@@ -1336,13 +1387,13 @@ let seqs_to_arrays_in_sync (seqs : float Seq.t list) (n : int) :
 let fold_stereo_pairs_to_flat_list pairs =
   Seq.fold_left (fun acc (sql, sqr) -> sql :: sqr :: acc) [] pairs
 
-let non_realtime2 arrarr filename =
+let non_realtime2 dur arrarr filename =
   let str =
     Cisp.rangei 0 7
     |> Cisp.fmap (fun _ -> one_voice arrarr)
     |> List.of_seq |> List.concat
   in
-  let audio_data = seqs_to_arrays_in_sync str (120 * 48000) in
+  let audio_data = seqs_to_arrays_in_sync str (dur * 48000) in
   Sndfile.write_multichannel_array audio_data 48000 filename Sndfile.WAV_24
 
 let nonrealtime record_length arrarr =
@@ -1363,10 +1414,10 @@ let nonrealtime record_length arrarr =
 let jackMain array1 array2 otherEffect () =
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
-      [only_compute array1; only_compute array2; push_nodes (); otherEffect]
+      [slower_compute 10 array1; push_nodes (); otherEffect]
   in
   Jack.playSeqs 0 Process.sample_rate
-    (bunch 1 array1 () @ bunch 1 array2 () @ [applyEffects (Cisp.st 0.0)])
+    (bunch 2 array1 () @ [applyEffects (Cisp.st 0.0)])
 
 let floatToMidi flt = flt *. 128.0 |> floor |> int_of_float
 
@@ -1445,7 +1496,7 @@ let csoundWithEffect () =
   |> Cisp.effectsSync [only_compute phers; push_nodes ()]
   |> createCsound "antscore.sco"
 
-let rt = true
+let rt = false
 
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
@@ -1454,22 +1505,24 @@ We need a function that reacts to a ctrl+c  to stop the program and write the sc
 The score we might built
 *)
 
+let reset_record_array arr = Array.fill arr 0 (Array.length arr) None
+
 let () =
-  let handle_sigint _ =
+  let record_array = Array.make 1_000 None in
+  let handle_end () =
     print_string "lets close this and write to file" ;
+    let _ = Thread.create finalWrite record_array in
     ()
   in
-  let () = Sys.set_signal Sys.sigint (Sys.Signal_handle handle_sigint) in
   if rt then
     let phers = mkPheromonesArr in
     let array1, array2 = (duplicateArrArr phers, duplicateArrArr phers) in
     (* recording materials *)
-    let record_array = Array.init 100000 (fun _ -> None) in
     let otherEffect = nodes_history record_array array1 in
-    let _ = Thread.create (jackMain array1 array2 (Cisp.st ())) () in
+    let _ = Thread.create (jackMain array1 array2 otherEffect) () in
     (*
      let array1 = duplicateArrArr pheromones in *)
-    let _ = Thread.create osc_thread_function () in
+    let _ = Thread.create (osc_thread_function handle_end) () in
     let _ = Thread.create (dream_thread array1 nodes) () in
     (* let _ = Thread.create midiOut array1 in *)
     (* let _ = csoundWithEffect () in *)
@@ -1483,9 +1536,9 @@ let () =
       ignore (Sys.command "jack_lsp -c -A | grep ocaml")
     in*)
     while true do
-      Unix.sleep 60
+      Unix.sleep 1
     done
   else
     let pheromones = mkPheromonesArr in
-    non_realtime2 pheromones
-      "/Users/casperschipper/Music/ants/many_ants3d_BIG_longer.wav"
+    non_realtime2 120 pheromones
+      "/Users/casperschipper/Music/ants/many_ants_20.wav"

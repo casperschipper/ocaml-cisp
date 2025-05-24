@@ -48,5 +48,4 @@ let fromStreams instr starts durs paramLst =
     let lines = List.map event_to_string events in
     let oc = open_out filename in
     List.iter (fun line -> output_string oc (line ^ "\n")) lines;
-    output_string oc "\ne";
     close_out oc

@@ -115,6 +115,10 @@ let rec update_nth lst n x =
   | head :: tail, n when n > 0 -> head :: update_nth tail (n - 1) x  (* Recurse to the nth element *)
   | _ -> lst  (* If n is out of bounds, return the original list *)
 
+let write_string_to_file filename content =
+  let oc = open_out filename in  (* open file for writing *)
+  output_string oc content;     (* write the string *)
+  close_out oc                  (* close the file *)
 
 let%test "modBy mod x" =
   let input = [0; 1; 2; 3; 4; 5; 6] in

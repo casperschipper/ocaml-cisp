@@ -18,7 +18,7 @@ let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 49
+let max_tour = 14
 
 let brownian = 0.0001
 
@@ -190,6 +190,30 @@ let controllers_to_string ctr =
     ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants ctr.max_tour
     ctr.brownian
 
+type ctrlMsg 
+  = Alpha of float
+  | Beta of float
+  | Deposit of float
+  | Evaporation of float
+  | Exploration of float 
+  | NumAnts of int
+  | MaxTour of int
+  | Brownian of float
+
+let update msg ctrl = 
+  match msg with 
+  | Alpha x -> {ctrl with alpha= x}
+  | Beta x -> { ctrl with beta = x}
+  | Deposit d -> { ctrl with deposit = d }
+  | NumAnts na -> { ctrl with num_ants = na }
+  | Evaporation eva ->  { ctrl with evaporation = eva }
+  | Exploration exp -> { ctrl with exploration_bias = exp }
+  | MaxTour mt -> { ctrl with max_tour = mt }
+  | Brownian brown -> { ctrl with brownian = brown }
+
+
+
+
 let initial =
   { alpha
   ; beta
@@ -335,6 +359,8 @@ let print_node = function
 let get_node_id (Node n) = n.id
 
 let get_node_x (Node n) = n.x
+
+let get_node_y (Node n) = n.y
 
 let get_node_z (Node n) = n.z
 
@@ -1018,6 +1044,30 @@ let push_nodes () =
          () )
   |> hold (st 100)
 
+let nodes_history recordsArray phers =
+  let nds = nodesStream phers () in
+  let idx = 0 in
+  let open Cisp in
+  let writeOneNode idx node = recordsArray.(idx) <- Some node in
+  let nodeWriter = Seq.map2 writeOneNode count nds in
+  pulse (st 100) (st ()) nodeWriter
+
+(*start duration envelope index transpose x y*)
+let rolandifier nds =
+  let open Wfs in
+  let open Cisp in
+  rolandEvent
+  <$> walk 0.0 (st 0.01)
+  <*> st 0.1 <*> st Wfs.defaultEnv <*> Seq.map get_node_id nds <*> st 1.0
+  <*> Seq.map get_node_x nds <*> Seq.map get_node_y nds
+
+let finalWrite record_array =
+  record_array |> Array.to_seq
+  |> Seq.filter_map (fun x -> x)
+  |> rolandifier |> List.of_seq |> Wfs.score "roland_ants"
+  |> Wfs.score_to_string
+  |> Toolkit.write_string_to_file "wfs_score"
+
 let array_as_infinite_stream arr =
   let length = Array.length arr in
   if length = 0 then failwith "Cannot create stream from empty array"
@@ -1310,14 +1360,13 @@ let nonrealtime record_length arrarr =
     (!Process.sample_rate |> floor |> int_of_float)
     "/Users/casperschipper/Music/ants/file2_Smaller_tour.wav" Sndfile.WAV_32
 
-let jackMain array1 array2 array3 () =
+let jackMain array1 array2 otherEffect () =
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
-      [only_compute array1; only_compute array2; push_nodes ()]
+      [only_compute array1; only_compute array2; push_nodes (); otherEffect]
   in
   Jack.playSeqs 0 Process.sample_rate
-    ( bunch 1 array1 () @ bunch 1 array2 () @ bunch 2 array3 ()
-    @ [applyEffects (Cisp.st 0.0)] )
+    (bunch 1 array1 () @ bunch 1 array2 () @ [applyEffects (Cisp.st 0.0)])
 
 let floatToMidi flt = flt *. 128.0 |> floor |> int_of_float
 
@@ -1357,50 +1406,73 @@ let midiOut phers =
   in
   Midi.playMidi f Process.sample_rate
 
+let csoundGrain = 0.0125
+
 let createCsound filename nodes =
   let open Csound in
   let indexes = nodes |> Seq.map (fun n -> n |> get_node_id) in
   let indexesPar = indexes |> Seq.map Csound.intPar in
+  let transposePar =
+    indexes
+    |> Seq.map (fun i ->
+           i |> float_of_int
+           |> Cisp.linlin 0.0 49.0 (-12.0) 12.0
+           |> Cisp.mtor |> Csound.floatPar )
+  in
   let offsets =
-    indexes |> Seq.map (fun nid -> nid |> ( * ) 44100 |> Csound.intPar)
+    indexes |> Seq.map (fun nid -> (nid + 24) mod 120 * 44100 |> Csound.intPar)
   in
   let open Cisp in
   let score =
     Csound.fromStreams 1
-      (walk 0.0 (st 0.1))
-      (st 0.5)
+      (walk 0.0 (st csoundGrain))
+      (st 0.2)
       [ offsets
-      ; st (Csound.floatPar 1.0)
+      ; transposePar
       ; indexesPar
-      ; st (floatPar 0.001)
-      ; st (floatPar 0.5)
+      ; st (floatPar 0.00001)
+      ; st (floatPar 0.2)
       ; st (floatPar 0.0)
       ; st (floatPar 0.0) ]
   in
   render_cscore_to_file score filename
 
 let csoundWithEffect () =
+  let n = 240.0 /. csoundGrain |> int_of_float in
+  let _ = Cisp.debugi "amount" n in
   let phers = mkPheromonesArr in
-  nodesStream phers () |> Seq.take 1200
+  nodesStream phers () |> Seq.take n
   |> Cisp.effectsSync [only_compute phers; push_nodes ()]
   |> createCsound "antscore.sco"
 
 let rt = true
 
+(*
+Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
+
+We need a function that reacts to a ctrl+c  to stop the program and write the score.
+The score we might built
+*)
+
 let () =
+  let handle_sigint _ =
+    print_string "lets close this and write to file" ;
+    ()
+  in
+  let () = Sys.set_signal Sys.sigint (Sys.Signal_handle handle_sigint) in
   if rt then
-    (* let array1, array2 =
-      (duplicateArrArr pheromones, duplicateArrArr pheromones)
-    in
-    let array3 = duplicateArrArr pheromones in
-     let _ = Thread.create (jackMain array1 array2 array3) () in *)
+    let phers = mkPheromonesArr in
+    let array1, array2 = (duplicateArrArr phers, duplicateArrArr phers) in
+    (* recording materials *)
+    let record_array = Array.init 100000 (fun _ -> None) in
+    let otherEffect = nodes_history record_array array1 in
+    let _ = Thread.create (jackMain array1 array2 (Cisp.st ())) () in
     (*
-     let array1 = duplicateArrArr pheromones in
+     let array1 = duplicateArrArr pheromones in *)
     let _ = Thread.create osc_thread_function () in
     let _ = Thread.create (dream_thread array1 nodes) () in
-    let _ = Thread.create midiOut array1 in
-    *)
-    csoundWithEffect ()
+    (* let _ = Thread.create midiOut array1 in *)
+    (* let _ = csoundWithEffect () in *)
     (* let _ =
       print_int
         (Sys.command
@@ -1409,10 +1481,10 @@ let () =
         (Sys.command
            "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in" ) ;
       ignore (Sys.command "jack_lsp -c -A | grep ocaml")
-    in
+    in*)
     while true do
       Unix.sleep 60
-    done *)
+    done
   else
     let pheromones = mkPheromonesArr in
     non_realtime2 pheromones

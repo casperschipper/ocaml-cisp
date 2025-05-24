@@ -68,6 +68,9 @@ val sec : 'a * 'b -> 'b
 (* flatten array of arrays *)
 val flatten : 'a array array -> 'a array
 
+val write_string_to_file : string -> string -> unit
+
+
 
 
  

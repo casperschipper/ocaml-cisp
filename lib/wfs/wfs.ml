@@ -29,15 +29,18 @@ let wfsPos x y = {x; y}
   @return A value representing the constructed Roland event.
 *)
 let rolandEvent start duration envelope index transpose x y =
-  { start ; duration ; envelope ; sound = Roland { index; transpose }; position = wfsPos x y }
+  { start
+  ; duration
+  ; envelope
+  ; sound= Roland {index; transpose}
+  ; position= wfsPos x y }
 
-let defaultEnv = DefaultEnv 
+let defaultEnv = DefaultEnv
 
 let rolandPath =
   "/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav"
 
 let rolandLength = 5732610
-
 
 let quote str = "\"" ^ str ^ "\""
 
@@ -81,9 +84,38 @@ let event_to_string {start; duration; envelope; sound; position} =
 
 let score title events = Score {title; events}
 
+(* Splits a list into sublists of size n *)
+let chunk_list n lst =
+  if n <= 0 then invalid_arg "chunk_list: chunk size must be > 0" ;
+  (* Helper function to build the result using tail recursion *)
+  let rec aux acc current count remaining =
+    match remaining with
+    | [] ->
+        (* Add the last chunk if it exists *)
+        if current = [] then List.rev acc else List.rev (List.rev current :: acc)
+    | x :: xs ->
+        let current = x :: current in
+        let count = count + 1 in
+        if count = n then
+          (* When chunk reaches desired size, add to accumulator *)
+          aux (List.rev current :: acc) [] 0 xs
+        else
+          (* Continue building current chunk *)
+          aux acc current count xs
+  in
+  aux [] [] 0 lst
+
+let uscore_folder events =
+  let evt_strs = List.map event_to_string events |> String.concat ",\n" in
+  "UScore(\n" ^ evt_strs ^ " )\n"
+
 let score_to_string (Score {title; events}) =
-  let evt_strs = List.map event_to_string events |> String.concat "," in
-  "UScore(" ^ evt_strs ^ ").name_(" ^ quote title ^ ")"
+  let score_content =
+    if List.length events > 200 then
+      events |> chunk_list 200 |> List.map uscore_folder |> String.concat ","
+    else events |> List.map event_to_string |> String.concat ","
+  in
+  "UScore(\n" ^ score_content ^ ").name_(" ^ quote title ^ ")"
 
 (*** test *)
 

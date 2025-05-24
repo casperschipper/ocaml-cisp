@@ -65,6 +65,7 @@
         const rect = svg.getBoundingClientRect();
         const x = (e.clientX - rect.left) / window_width;
         const y = (e.clientY - rect.top) / window_height;
+        const z = 0.0;
 
 
         // Update node position
@@ -76,7 +77,7 @@
 
         // Optionally: send to OCaml over WebSocket
         if (socket.readyState === WebSocket.OPEN && rest === 0) {
-          socket.send(JSON.stringify({ drag: { node_id, x, y } }));
+          socket.send(JSON.stringify({ drag: { node_id, x, y, z } }));
         }
       }
 

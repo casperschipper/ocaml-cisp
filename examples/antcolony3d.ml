@@ -10,7 +10,7 @@ let num_nodes = 49
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
-let evaporation = 0.48
+let evaporation = 0.43
 
 let exploration_bias = 0.0001
 
@@ -18,7 +18,7 @@ let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 30
+let max_tour = 14
 
 let brownian = 0.0001
 
@@ -1089,7 +1089,10 @@ let nodes_history recordsArray phers =
   let idx = 0 in
   let open Cisp in
   let writeOneNode idx node =
-    if idx < size - 1 then recordsArray.(idx) <- Some node else ()
+    if idx < size - 1 then recordsArray.(idx) <- Some node else 
+      if idx = size then
+        print_endline "📼 recording completed"
+      else ()
   in
   let nodeWriter = Seq.map2 writeOneNode count nds in
   pulse (st 441) nodeWriter (st ())
@@ -1105,12 +1108,12 @@ let rolandifier nds =
   <*> Seq.map (fun n -> n |> get_node_x |> scale) nds
   <*> Seq.map (fun n -> n |> get_node_y |> scale) nds
 
-let finalWrite record_array cleaner =
+let finalWrite record_array  =
   print_string "\nwriting Wfs Score\n" ;
   flush stdout ;
   record_array |> Array.to_seq
   |> Seq.filter_map (fun x -> x)
-  |> Seq.take 256 |> rolandifier |> List.of_seq |> Wfs.score "roland_ants"
+  |> Seq.take 1000 |> rolandifier |> List.of_seq |> Wfs.score "roland_ants"
   |> Wfs.score_to_string
   |> Toolkit.write_string_to_file "wfs_score.uscore" ;
   print_endline "✅ wfs score written"
@@ -1496,7 +1499,7 @@ let csoundWithEffect () =
   |> Cisp.effectsSync [only_compute phers; push_nodes ()]
   |> createCsound "antscore.sco"
 
-let rt = false
+let rt = true
 
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
@@ -1505,10 +1508,9 @@ We need a function that reacts to a ctrl+c  to stop the program and write the sc
 The score we might built
 *)
 
-let reset_record_array arr = Array.fill arr 0 (Array.length arr) None
 
 let () =
-  let record_array = Array.make 1_000 None in
+  let record_array = Array.init 2_048 (fun _ -> None) in
   let handle_end () =
     print_string "lets close this and write to file" ;
     let _ = Thread.create finalWrite record_array in

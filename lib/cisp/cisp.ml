@@ -132,6 +132,8 @@ let effect = effectSync
 *)
 let currentSampleCounter = ref 0
 
+
+
 let updateCurrentSample () = currentSampleCounter := !currentSampleCounter + 1
 
 let rec masterClock () = Cons (updateCurrentSample (), masterClock)

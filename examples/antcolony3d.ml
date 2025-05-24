@@ -10,15 +10,15 @@ let num_nodes = 49
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
-let evaporation = 0.4
+let evaporation = 0.48
 
-let exploration_bias = 0.0002
+let exploration_bias = 0.0001
 
 let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 20
+let max_tour = 30
 
 let brownian = 0.0001
 
@@ -1057,7 +1057,7 @@ let stereosig holder pheromones =
 let bunch s pheromones () =
   let open Cisp in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
-  let stereos = [s] |> List.to_seq |> fmap (fun n -> stereosig n pheromones) in
+  let stereos = [s*2;s*3] |> List.to_seq |> fmap (fun n -> stereosig n pheromones) in
   let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
 
@@ -1389,7 +1389,7 @@ let fold_stereo_pairs_to_flat_list pairs =
 
 let non_realtime2 dur arrarr filename =
   let str =
-    Cisp.rangei 0 7
+    Cisp.rangei 0 15
     |> Cisp.fmap (fun _ -> one_voice arrarr)
     |> List.of_seq |> List.concat
   in
@@ -1417,7 +1417,7 @@ let jackMain array1 array2 otherEffect () =
       [slower_compute 10 array1; push_nodes (); otherEffect]
   in
   Jack.playSeqs 0 Process.sample_rate
-    (bunch 2 array1 () @ [applyEffects (Cisp.st 0.0)])
+    (bunch 1 array1 () @ [applyEffects (Cisp.st 0.0)])
 
 let floatToMidi flt = flt *. 128.0 |> floor |> int_of_float
 
@@ -1541,4 +1541,4 @@ let () =
   else
     let pheromones = mkPheromonesArr in
     non_realtime2 120 pheromones
-      "/Users/casperschipper/Music/ants/many_ants_20.wav"
+      "/Users/casperschipper/Music/ants/slower_convolve.wav"

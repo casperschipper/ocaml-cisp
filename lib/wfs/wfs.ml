@@ -78,7 +78,7 @@ let event_to_string {start; duration; envelope; sound; position} =
       ^ ", [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("
       ^ quote rolandPath ^ ", " ^ string_of_int rolandLength ^ ", 1, 44100,"
       ^ sampStart ^ "," ^ sampEnd ^ "," ^ trans
-      ^ ", false) ] ], [ 'wfsSource', [ 'point', "
+      ^ ", false).hasGlobal_(true) ] ], [ 'wfsSource', [ 'point', "
       ^ position_to_point_str position
       ^ " ] ])\n"
 

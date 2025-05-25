@@ -1098,13 +1098,15 @@ let nodes_history recordsArray phers =
   pulse (st 441) nodeWriter (st ())
 
 (*start duration envelope index transpose x y*)
+let pitch_of_z z = 
+  (z *. 24.0) -. 12.0 |> Cisp.mtor 
 let rolandifier nds =
   let open Wfs in
   let open Cisp in
   let scale x = linlin 0.0 1.0 (-20.0) 20.0 x in
   rolandEvent
-  <$> walk 0.0 (st 0.1)
-  <*> st 0.1 <*> st Wfs.defaultEnv <*> Seq.map get_node_id nds <*> st 1.0
+  <$> walk 0.0 (st 0.02)
+  <*> st 0.1 <*> st Wfs.defaultEnv <*> Seq.map get_node_id nds <*> Seq.map (fun n -> n|>  get_node_z |> pitch_of_z) nds
   <*> Seq.map (fun n -> n |> get_node_x |> scale) nds
   <*> Seq.map (fun n -> n |> get_node_y |> scale) nds
 
@@ -1113,7 +1115,7 @@ let finalWrite record_array  =
   flush stdout ;
   record_array |> Array.to_seq
   |> Seq.filter_map (fun x -> x)
-  |> Seq.take 1000 |> rolandifier |> List.of_seq |> Wfs.score "roland_ants"
+  |> rolandifier |> List.of_seq |> Wfs.score "roland_ants"
   |> Wfs.score_to_string
   |> Toolkit.write_string_to_file "wfs_score.uscore" ;
   print_endline "✅ wfs score written"
@@ -1510,7 +1512,7 @@ The score we might built
 
 
 let () =
-  let record_array = Array.init 2_048 (fun _ -> None) in
+  let record_array = Array.init 4_048 (fun _ -> None) in
   let handle_end () =
     print_string "lets close this and write to file" ;
     let _ = Thread.create finalWrite record_array in

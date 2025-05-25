@@ -1,0 +1,2001 @@
+UScore(Uscore(UChain(0.0, 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1190700,1234800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.0367299084615462 ,-9.4118885925537334 ) ] ]))
+,
+UChain(0.10000000000000001 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.683212028055751 ,-1.8811398667592605 ) ] ]))
+,
+UChain(0.20000000000000001 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1278900,1323000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.064113237830966 ,-15.378818345073601 ) ] ]))
+,
+UChain(0.30000000000000004 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,617400,661500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.760095736915087 ,4.1329071111325799 ) ] ]))
+,
+UChain(0.40000000000000002 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.450772755829156 ,1.5167855177097289 ) ] ]))
+,
+UChain(0.5 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.514789652959969 ,-14.206564755906701 ) ] ]))
+,
+UChain(0.59999999999999998 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.039116920550656 ,8.4871906088192706 ) ] ]))
+,
+UChain(0.69999999999999996 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.152488208077019 ,0.39321684359265863 ) ] ]))
+,
+UChain(0.79999999999999993 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.934408887187015 ,3.4862682683399537 ) ] ]))
+,
+UChain(0.89999999999999991 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.68004588085083 ,0.63844790882622071 ) ] ]))
+,
+UChain(0.99999999999999989 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.505142725790309 ,-5.5033595673319802 ) ] ]))
+,
+UChain(1.0999999999999999 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.236016154893225 ,2.9436108913242132 ) ] ]))
+,
+UChain(1.2 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3664784811969275 ,7.3011059579968052 ) ] ]))
+,
+UChain(1.3 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5765785614403449 ,19.346044541793702 ) ] ]))
+,
+UChain(1.4000000000000001 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.14854800583510741 ,5.3080664335611649 ) ] ]))
+,
+UChain(1.5000000000000002 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(1.6000000000000003 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.476774193722874 ,9.6992597074412892 ) ] ]))
+,
+UChain(1.7000000000000004 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5302506488099326 ,6.1036321181593989 ) ] ]))
+,
+UChain(1.8000000000000005 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.932327132988053 ,3.4862328130963016 ) ] ]))
+,
+UChain(1.9000000000000006 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.677498794328343 ,0.64117622942278185 ) ] ]))
+,
+UChain(2.0000000000000004 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.505827191026309 ,-5.5046319628542495 ) ] ]))
+,
+UChain(2.1000000000000005 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.237921782263337 ,2.9436125862118345 ) ] ]))
+,
+UChain(2.2000000000000006 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3679041351288532 ,7.3037751110917171 ) ] ]))
+,
+UChain(2.3000000000000007 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5765785614403449 ,19.346044541793702 ) ] ]))
+,
+UChain(2.4000000000000008 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.14971488602892435 ,5.3113403453115238 ) ] ]))
+,
+UChain(2.5000000000000009 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(2.600000000000001 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.4802582202735497 ,9.699013424391163 ) ] ]))
+,
+UChain(2.7000000000000011 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5283624194073857 ,6.1052016887274752 ) ] ]))
+,
+UChain(2.8000000000000012 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.930790178595313 ,3.4852863375958165 ) ] ]))
+,
+UChain(2.9000000000000012 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.675481865743462 ,0.64197464843221752 ) ] ]))
+,
+UChain(3.0000000000000013 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.506622288136544 ,-5.5074872723146839 ) ] ]))
+,
+UChain(3.1000000000000014 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.235937387663412 ,2.9466459450993598 ) ] ]))
+,
+UChain(3.2000000000000015 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3671103324820564 ,7.302097225758204 ) ] ]))
+,
+UChain(3.3000000000000016 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.273872827459826 ,12.352680512904858 ) ] ]))
+,
+UChain(3.4000000000000017 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.6210105410144706 ,-6.5183765934378757 ) ] ]))
+,
+UChain(3.5000000000000018 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8442439847067664 ,18.517166807835164 ) ] ]))
+,
+UChain(3.6000000000000019 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,837900,882000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.11646586227853861 ,14.467484880373739 ) ] ]))
+,
+UChain(3.700000000000002 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5874567586667556 ,-6.4352340515804851 ) ] ]))
+,
+UChain(3.800000000000002 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(3.9000000000000021 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.4800756754876776 ,9.7023941741784228 ) ] ]))
+,
+UChain(4.0000000000000018 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5318757906796403 ,6.1040998449293538 ) ] ]))
+,
+UChain(4.1000000000000014 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.19560720314163 ,7.661706902314247 ) ] ]))
+,
+UChain(4.2000000000000011 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.929171185466817 ,3.4891808804785285 ) ] ]))
+,
+UChain(4.3000000000000007 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.678842126919129 ,0.6385413513697058 ) ] ]))
+,
+UChain(4.4000000000000004 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.504596781983947 ,-5.511310804202207 ) ] ]))
+,
+UChain(4.5 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.237508584437204 ,2.9439752508673989 ) ] ]))
+,
+UChain(4.5999999999999996 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3680424198322259 ,7.2988124124047049 ) ] ]))
+,
+UChain(4.6999999999999993 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5803471652936829 ,19.346794992567759 ) ] ]))
+,
+UChain(4.7999999999999989 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.15381058311366935 ,5.3124267307320139 ) ] ]))
+,
+UChain(4.8999999999999986 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.403280211243267 ,-6.1260456300086279 ) ] ]))
+,
+UChain(4.9999999999999982 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3458123783002414 ,19.842536396828748 ) ] ]))
+,
+UChain(5.0999999999999979 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,617400,661500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.76454492578501 ,4.1377002944329178 ) ] ]))
+,
+UChain(5.1999999999999975 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.448790304837321 ,1.5136744812584757 ) ] ]))
+,
+UChain(5.2999999999999972 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.510350037751273 ,-14.199121289794197 ) ] ]))
+,
+UChain(5.3999999999999968 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.036448103423762 ,8.4796764183422226 ) ] ]))
+,
+UChain(5.4999999999999964 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.142326620193478 ,0.39155570188031508 ) ] ]))
+,
+UChain(5.5999999999999961 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.927692287333137 ,3.4924747236682485 ) ] ]))
+,
+UChain(5.6999999999999957 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.677930493600641 ,0.64054229252542338 ) ] ]))
+,
+UChain(5.7999999999999954 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.50843282217026 ,-5.5135831449156285 ) ] ]))
+,
+UChain(5.899999999999995 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.240998643189172 ,2.9421802301927658 ) ] ]))
+,
+UChain(5.9999999999999947 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3699394284361119 ,7.2998547464499275 ) ] ]))
+,
+UChain(6.0999999999999943 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5815495646762479 ,19.350498056965716 ) ] ]))
+,
+UChain(6.199999999999994 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.1537362927042274 ,5.3117439608433115 ) ] ]))
+,
+UChain(6.2999999999999936 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.405818761363481 ,-6.1288844337878157 ) ] ]))
+,
+UChain(6.3999999999999932 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3433336138464558 ,19.836725673455682 ) ] ]))
+,
+UChain(6.4999999999999929 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,617400,661500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.764979608734343 ,4.1415085138274943 ) ] ]))
+,
+UChain(6.5999999999999925 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.449187341906335 ,1.5101787648553699 ) ] ]))
+,
+UChain(6.6999999999999922 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.507499370847817 ,-14.201425419053246 ) ] ]))
+,
+UChain(6.7999999999999918 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.037823574023683 ,8.4761045486801869 ) ] ]))
+,
+UChain(6.8999999999999915 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.143437632138518 ,0.39376818370977063 ) ] ]))
+,
+UChain(6.9999999999999911 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.927550601402896 ,3.4911297664428176 ) ] ]))
+,
+UChain(7.0999999999999908 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.674729930528493 ,0.63694522351663174 ) ] ]))
+,
+UChain(7.1999999999999904 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.510426725749642 ,-5.5164082331099866 ) ] ]))
+,
+UChain(7.2999999999999901 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.241706288969706 ,2.9397206560613665 ) ] ]))
+,
+UChain(7.3999999999999897 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3679450912797106 ,7.2950746371246744 ) ] ]))
+,
+UChain(7.4999999999999893 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5840437654710282 ,19.352542603679751 ) ] ]))
+,
+UChain(7.599999999999989 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.15692423031318459 ,5.3154847473964573 ) ] ]))
+,
+UChain(7.6999999999999886 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.407613238190695 ,-6.1280925398407433 ) ] ]))
+,
+UChain(7.7999999999999883 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3422072087124803 ,19.834838975311868 ) ] ]))
+,
+UChain(7.8999999999999879 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.622588648737956 ,15.38489873918067 ) ] ]))
+,
+UChain(7.9999999999999876 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.055926956030925012 ,10.673828723860623 ) ] ]))
+,
+UChain(8.0999999999999872 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.846070089826318 ,18.508504020954209 ) ] ]))
+,
+UChain(8.1999999999999869 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,837900,882000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.11850424154794093 ,14.471658186016212 ) ] ]))
+,
+UChain(8.2999999999999865 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.589278756541427 ,-6.4361105084320558 ) ] ]))
+,
+UChain(8.3999999999999861 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(8.4999999999999858 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.4853413216094662 ,9.7024605756604387 ) ] ]))
+,
+UChain(8.5999999999999854 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5357807345244838 ,6.1058343082208655 ) ] ]))
+,
+UChain(8.6999999999999851 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.198757247980986 ,7.650738050579613 ) ] ]))
+,
+UChain(8.7999999999999847 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.922719803387611 ,3.4948426362424412 ) ] ]))
+,
+UChain(8.8999999999999844 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.675110576059359 ,0.63502181087186305 ) ] ]))
+,
+UChain(8.999999999999984 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.516320198804511 ,-5.5171268530237594 ) ] ]))
+,
+UChain(9.0999999999999837 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.514166847642716 ,-14.203844987395337 ) ] ]))
+,
+UChain(9.1999999999999833 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.7001582811538536 ,15.68092150377387 ) ] ]))
+,
+UChain(9.2999999999999829 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2084697466352274 ,3.8779734692637424 ) ] ]))
+,
+UChain(9.3999999999999826 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1688172144288718 ,2.9516876017758076 ) ] ]))
+,
+UChain(9.4999999999999822 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.87200559509641895 ,-4.7035025115874234 ) ] ]))
+,
+UChain(9.5999999999999819 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.603732244279402 ,-16.926261513834799 ) ] ]))
+,
+UChain(9.6999999999999815 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,573300,617400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.14718322649469373 ,9.6442536098540934 ) ] ]))
+,
+UChain(9.7999999999999812 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3856965752607673 ,2.0018875880644416 ) ] ]))
+,
+UChain(9.8999999999999808 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.037869722356696 ,8.4730644797089294 ) ] ]))
+,
+UChain(9.9999999999999805 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.144057859374019 ,0.39664681818016856 ) ] ]))
+,
+UChain(10.09999999999998 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.922388078371293 ,3.4950804806990332 ) ] ]))
+,
+UChain(10.19999999999998 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.677659508306686 ,0.64185884103718394 ) ] ]))
+,
+UChain(10.299999999999979 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.515699309484118 ,-5.5195730340116134 ) ] ]))
+,
+UChain(10.399999999999979 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.242911993999535 ,2.9388275623627358 ) ] ]))
+,
+UChain(10.499999999999979 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.364997159133897 ,7.296766320229402 ) ] ]))
+,
+UChain(10.599999999999978 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.586253332380021 ,19.354942971169216 ) ] ]))
+,
+UChain(10.699999999999978 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.15717231937733889 ,5.3118639663328615 ) ] ]))
+,
+UChain(10.799999999999978 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3875568736397978 ,2.0044886526548211 ) ] ]))
+,
+UChain(10.899999999999977 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.040912171424292 ,8.4764063423096303 ) ] ]))
+,
+UChain(10.999999999999977 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.141206119821712 ,0.39616779033149641 ) ] ]))
+,
+UChain(11.099999999999977 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.918399304460308 ,3.4926521225550378 ) ] ]))
+,
+UChain(11.199999999999976 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.681414113899914 ,0.64317335262488839 ) ] ]))
+,
+UChain(11.299999999999976 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.518774655033761 ,-5.5195543617042127 ) ] ]))
+,
+UChain(11.399999999999975 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.508229206216392 ,-14.204812467855236 ) ] ]))
+,
+UChain(11.499999999999975 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.6948795129685386 ,15.67983719483275 ) ] ]))
+,
+UChain(11.599999999999975 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2052373973434722 ,3.8812675082225123 ) ] ]))
+,
+UChain(11.699999999999974 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.954399778840454 ,16.02772508610537 ) ] ]))
+,
+UChain(11.799999999999974 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.053695777400060152 ,10.670982658584816 ) ] ]))
+,
+UChain(11.899999999999974 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8502481552318564 ,18.499767321979583 ) ] ]))
+,
+UChain(11.999999999999973 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,837900,882000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.11431682562479617 ,14.46797473686361 ) ] ]))
+,
+UChain(12.099999999999973 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5915799627328333 ,-6.430251312825872 ) ] ]))
+,
+UChain(12.199999999999973 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(12.299999999999972 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.4913138938719595 ,9.7003539040012665 ) ] ]))
+,
+UChain(12.399999999999972 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.275211836039727 ,12.352174999252261 ) ] ]))
+,
+UChain(12.499999999999972 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.622546213979124 ,-6.5142585956714854 ) ] ]))
+,
+UChain(12.599999999999971 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.519816448181174 ,-5.5231892209118083 ) ] ]))
+,
+UChain(12.699999999999971 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.244324036089807 ,2.9340796264868896 ) ] ]))
+,
+UChain(12.799999999999971 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3590210425132785 ,7.2955584416129993 ) ] ]))
+,
+UChain(12.89999999999997 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5825174248615936 ,19.353674713356028 ) ] ]))
+,
+UChain(12.99999999999997 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.15570013351600576 ,5.3108799404235718 ) ] ]))
+,
+UChain(13.099999999999969 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3851535313219152 ,2.0025115836194951 ) ] ]))
+,
+UChain(13.199999999999969 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.436395102901987 ,1.5056876810621889 ) ] ]))
+,
+UChain(13.299999999999969 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.50841551443521 ,-14.203046762779861 ) ] ]))
+,
+UChain(13.399999999999968 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3888495772400953 ,-0.24921385573674737 ) ] ]))
+,
+UChain(13.499999999999968 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1014300,1058400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.05834875667562 ,5.1874942483663178 ) ] ]))
+,
+UChain(13.599999999999968 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.4897270921322132 ,9.6992888276838407 ) ] ]))
+,
+UChain(13.699999999999967 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5359568641332704 ,6.1069343894035111 ) ] ]))
+,
+UChain(13.799999999999967 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.196827169711861 ,7.6465757781886401 ) ] ]))
+,
+UChain(13.899999999999967 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.915498816017486 ,3.4971747330978031 ) ] ]))
+,
+UChain(13.999999999999966 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.682603041267349 ,0.64108278119197504 ) ] ]))
+,
+UChain(14.099999999999966 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.519149574276723 ,-5.5179366602327518 ) ] ]))
+,
+UChain(14.199999999999966 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.504837207480389 ,-14.200360306286274 ) ] ]))
+,
+UChain(14.299999999999965 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.6967546994251155 ,15.674465669554127 ) ] ]))
+,
+UChain(14.399999999999965 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2127791201340177 ,3.880165168680807 ) ] ]))
+,
+UChain(14.499999999999964 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1634312212566087 ,2.9479211727014576 ) ] ]))
+,
+UChain(14.599999999999964 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.87247122039316949 ,-4.7067392839365452 ) ] ]))
+,
+UChain(14.699999999999964 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6059852579206644 ,-16.927811184885837 ) ] ]))
+,
+UChain(14.799999999999963 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.4913473111607818 ,9.6975996188823785 ) ] ]))
+,
+UChain(14.899999999999963 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5398851702087129 ,6.1079643194079436 ) ] ]))
+,
+UChain(14.999999999999963 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.198328123915839 ,7.6463297457624302 ) ] ]))
+,
+UChain(15.099999999999962 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.918173192792615 ,3.4941729204020078 ) ] ]))
+,
+UChain(15.199999999999962 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,926100,970200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-4.7969685661984318 ,12.847312991352609 ) ] ]))
+,
+UChain(15.299999999999962 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.274686302445591 ,12.34452158487624 ) ] ]))
+,
+UChain(15.399999999999961 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.6195030596871867 ,-6.5183018383147839 ) ] ]))
+,
+UChain(15.499999999999961 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.516217818454679 ,-5.5194386919680216 ) ] ]))
+,
+UChain(15.599999999999961 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.50825921881049 ,-14.196522412307074 ) ] ]))
+,
+UChain(15.69999999999996 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.691452656668619 ,15.670608779651873 ) ] ]))
+,
+UChain(15.79999999999996 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2091207802648682 ,3.8808216536847251 ) ] ]))
+,
+UChain(15.899999999999959 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1660919373672094 ,2.9467445309917872 ) ] ]))
+,
+UChain(15.999999999999959 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.87010526788819931 ,-4.7088126268053188 ) ] ]))
+,
+UChain(16.099999999999959 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,352800,396900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.230726679953797 ,-7.480579730313397 ) ] ]))
+,
+UChain(16.19999999999996 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1367100,1411200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.980586463209221 ,-12.252068228186147 ) ] ]))
+,
+UChain(16.299999999999962 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.685686140421868 ,-1.8836148548128429 ) ] ]))
+,
+UChain(16.399999999999963 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1190700,1234800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.0464460905657242 ,-9.4270825255537147 ) ] ]))
+,
+UChain(16.499999999999964 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1719900,1764000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.646750328111327 ,1.8827590304230757 ) ] ]))
+,
+UChain(16.599999999999966 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.197119089693963 ,7.6394481553847626 ) ] ]))
+,
+UChain(16.699999999999967 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.92212836494412 ,3.4947930417241668 ) ] ]))
+,
+UChain(16.799999999999969 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,926100,970200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-4.7918717977623988 ,12.845674099326798 ) ] ]))
+,
+UChain(16.89999999999997 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.27310278993847 ,12.342553440829942 ) ] ]))
+,
+UChain(16.999999999999972 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.6211439243620021 ,-6.5217273810502459 ) ] ]))
+,
+UChain(17.099999999999973 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.522687741472982 ,-5.5139622085906943 ) ] ]))
+,
+UChain(17.199999999999974 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.510671765770571 ,-14.198320878688946 ) ] ]))
+,
+UChain(17.299999999999976 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.389283695644016 ,-0.24587549573003242 ) ] ]))
+,
+UChain(17.399999999999977 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1014300,1058400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.061267533340214 ,5.1814048881842645 ) ] ]))
+,
+UChain(17.499999999999979 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.4974888901143268 ,9.6998384912333346 ) ] ]))
+,
+UChain(17.59999999999998 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.543263115701528 ,6.0967707189809994 ) ] ]))
+,
+UChain(17.699999999999982 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.199195541691585 ,7.6356339258710859 ) ] ]))
+,
+UChain(17.799999999999983 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.919527454622871 ,3.4957248363605142 ) ] ]))
+,
+UChain(17.899999999999984 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,926100,970200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-4.7890062668099764 ,12.847501354481805 ) ] ]))
+,
+UChain(17.999999999999986 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.271773085767091 ,12.3451613412219 ) ] ]))
+,
+UChain(18.099999999999987 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.6222070430643019 ,-6.5198594758985484 ) ] ]))
+,
+UChain(18.199999999999989 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.522238131187358 ,-5.512736498764057 ) ] ]))
+,
+UChain(18.29999999999999 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.507949022375634 ,-14.200036772365426 ) ] ]))
+,
+UChain(18.399999999999991 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3872118684517174 ,-0.2453057293355454 ) ] ]))
+,
+UChain(18.499999999999993 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1014300,1058400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.060160159601281 ,5.1800850794833941 ) ] ]))
+,
+UChain(18.599999999999994 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.494391649685058 ,9.7037316329010537 ) ] ]))
+,
+UChain(18.699999999999996 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5435506204512688 ,6.0982037568691183 ) ] ]))
+,
+UChain(18.799999999999997 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.203061810061321 ,7.6385318757623155 ) ] ]))
+,
+UChain(18.899999999999999 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.919953615089307 ,3.4990944207343011 ) ] ]))
+,
+UChain(19 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,926100,970200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-4.7903737828227761 ,12.843844277365326 ) ] ]))
+,
+UChain(19.100000000000001 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.27116422075056 ,12.348681593245701 ) ] ]))
+,
+UChain(19.200000000000003 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3848815198771023 ,1.9959515223171298 ) ] ]))
+,
+UChain(19.300000000000004 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.048831276828677 ,8.4810373829837893 ) ] ]))
+,
+UChain(19.400000000000006 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.6924938316112033 ,15.670389806759339 ) ] ]))
+,
+UChain(19.500000000000007 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2122534936001088 ,3.8829492562491996 ) ] ]))
+,
+UChain(19.600000000000009 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1677281940626614 ,2.9479559364465002 ) ] ]))
+,
+UChain(19.70000000000001 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.8702404714894918 ,-4.7090306004354376 ) ] ]))
+,
+UChain(19.800000000000011 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6063458214130164 ,-16.9336114800101 ) ] ]))
+,
+UChain(19.900000000000013 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.4978501986970461 ,9.7062286581170589 ) ] ]))
+ )
+,Uscore(UChain(20.000000000000014 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5435130165923621 ,6.1018064847822995 ) ] ]))
+,
+UChain(20.100000000000016 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.199950471614201 ,7.6408225755424963 ) ] ]))
+,
+UChain(20.200000000000017 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.919536467086097 ,3.4969439627143695 ) ] ]))
+,
+UChain(20.300000000000018 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,926100,970200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-4.7890703752107378 ,12.845189096892975 ) ] ]))
+,
+UChain(20.40000000000002 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.273346161694825 ,12.351006029171373 ) ] ]))
+,
+UChain(20.500000000000021 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.6182843018058524 ,-6.5209682584824442 ) ] ]))
+,
+UChain(20.600000000000023 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.525582837686249 ,-5.5185121999166276 ) ] ]))
+,
+UChain(20.700000000000024 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.504024223250479 ,-14.19957673172155 ) ] ]))
+,
+UChain(20.800000000000026 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3820048872819433 ,-0.24574312685087252 ) ] ]))
+,
+UChain(20.900000000000027 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1014300,1058400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.056764655422953 ,5.1748207433427451 ) ] ]))
+,
+UChain(21.000000000000028 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1984500,2028600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(15.712444979872572 ,6.6304794255292965 ) ] ]))
+,
+UChain(21.10000000000003 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3611373969221017 ,7.2919717233840409 ) ] ]))
+,
+UChain(21.200000000000031 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5728186292121271 ,19.352825527511612 ) ] ]))
+,
+UChain(21.300000000000033 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.15832543537516397 ,5.3081884140410152 ) ] ]))
+,
+UChain(21.400000000000034 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3852194526976911 ,1.9964095287966233 ) ] ]))
+,
+UChain(21.500000000000036 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.423910758125821 ,1.4918502905082898 ) ] ]))
+,
+UChain(21.600000000000037 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.95688612606682 ,16.026436071377468 ) ] ]))
+,
+UChain(21.700000000000038 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.044936528727053116 ,10.667894278876226 ) ] ]))
+,
+UChain(21.80000000000004 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8460543418848783 ,18.496572295277542 ) ] ]))
+,
+UChain(21.900000000000041 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,837900,882000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.12838728895161688 ,14.466524220601574 ) ] ]))
+,
+UChain(22.000000000000043 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5887767765449281 ,-6.4333988783979219 ) ] ]))
+,
+UChain(22.100000000000044 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(22.200000000000045 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.4977952361363078 ,9.709661558661594 ) ] ]))
+,
+UChain(22.300000000000047 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.548581426730105 ,6.1022107988637986 ) ] ]))
+,
+UChain(22.400000000000048 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.204353170414057 ,7.6404379777158216 ) ] ]))
+,
+UChain(22.50000000000005 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.916267598977095 ,3.49286201763372 ) ] ]))
+,
+UChain(22.600000000000051 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,926100,970200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-4.7929625683012045 ,12.847813061700325 ) ] ]))
+,
+UChain(22.700000000000053 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.271402094585969 ,12.350090759226742 ) ] ]))
+,
+UChain(22.800000000000054 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.6128019445599016 ,-6.5225508022977285 ) ] ]))
+,
+UChain(22.900000000000055 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.527761749357342 ,-5.5236466342853241 ) ] ]))
+,
+UChain(23.000000000000057 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.504030225607092 ,-14.195495392674776 ) ] ]))
+,
+UChain(23.100000000000058 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3839862748605878 ,-0.24209069003547246 ) ] ]))
+,
+UChain(23.20000000000006 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1014300,1058400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.057911958065553 ,5.1726411236254588 ) ] ]))
+,
+UChain(23.300000000000061 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1984500,2028600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(15.71389774584857 ,6.6299252614167958 ) ] ]))
+,
+UChain(23.400000000000063 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.365419668897939 ,7.2903091608602866 ) ] ]))
+,
+UChain(23.500000000000064 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5707114917256648 ,19.351633825093963 ) ] ]))
+,
+UChain(23.600000000000065 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.16341515243224691 ,5.3082532654625014 ) ] ]))
+,
+UChain(23.700000000000067 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3788026296984377 ,1.9939828919675584 ) ] ]))
+,
+UChain(23.800000000000068 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.423653931926392 ,1.4941019949458045 ) ] ]))
+,
+UChain(23.90000000000007 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.955100277707892 ,16.033060374009924 ) ] ]))
+,
+UChain(24.000000000000071 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.041433109796127354 ,10.665540330311106 ) ] ]))
+,
+UChain(24.100000000000072 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8443700823577078 ,18.493139867593769 ) ] ]))
+,
+UChain(24.200000000000074 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,837900,882000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.1221004415241933 ,14.466838851234129 ) ] ]))
+,
+UChain(24.300000000000075 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5853294653971508 ,-6.4355519673322314 ) ] ]))
+,
+UChain(24.400000000000077 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(24.500000000000078 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.4986500651330914 ,9.7089673316859315 ) ] ]))
+,
+UChain(24.60000000000008 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5559351417205241 ,6.1007990533224632 ) ] ]))
+,
+UChain(24.700000000000081 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.199033297114724 ,7.6465579672269079 ) ] ]))
+,
+UChain(24.800000000000082 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.919859963329484 ,3.4899138954292974 ) ] ]))
+,
+UChain(24.900000000000084 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,926100,970200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-4.794903722557093 ,12.841974530606963 ) ] ]))
+,
+UChain(25.000000000000085 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.269606813515598 ,12.345295600761443 ) ] ]))
+,
+UChain(25.100000000000087 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.6145344733680798 ,-6.5203967457610439 ) ] ]))
+,
+UChain(25.200000000000088 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.530538536994557 ,-5.5248201343523506 ) ] ]))
+,
+UChain(25.30000000000009 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.498314017012987 ,-14.195742698244729 ) ] ]))
+,
+UChain(25.400000000000091 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.382714895029034 ,-0.24363036329728249 ) ] ]))
+,
+UChain(25.500000000000092 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1630925752010537 ,2.9521406107538661 ) ] ]))
+,
+UChain(25.600000000000094 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.86772006006747837 ,-4.7049029248802032 ) ] ]))
+,
+UChain(25.700000000000095 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.604723975564216 ,-16.924300391497347 ) ] ]))
+,
+UChain(25.800000000000097 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5020566538319464 ,9.7109149791603055 ) ] ]))
+,
+UChain(25.900000000000098 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5545179792617274 ,6.1018313219200282 ) ] ]))
+,
+UChain(26.000000000000099 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.205360798457278 ,7.6492198690812874 ) ] ]))
+,
+UChain(26.100000000000101 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.922144890799213 ,3.4884002489775057 ) ] ]))
+,
+UChain(26.200000000000102 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.239381142214608 ,2.9391513138585479 ) ] ]))
+,
+UChain(26.300000000000104 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3720350274278079 ,7.2880036051558061 ) ] ]))
+,
+UChain(26.400000000000105 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5682393264881056 ,19.349975739311837 ) ] ]))
+,
+UChain(26.500000000000107 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.16421406872282773 ,5.3138351659799454 ) ] ]))
+,
+UChain(26.600000000000108 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3719589977531719 ,1.9924891234387676 ) ] ]))
+,
+UChain(26.700000000000109 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.04186674355449 ,8.4716438419103426 ) ] ]))
+,
+UChain(26.800000000000111 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5682393264881056 ,19.349975739311837 ) ] ]))
+,
+UChain(26.900000000000112 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.16421406872282773 ,5.3138351659799454 ) ] ]))
+,
+UChain(27.000000000000114 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3719589977531719 ,1.9924891234387676 ) ] ]))
+,
+UChain(27.100000000000115 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.420731958151382 ,1.4971474076752322 ) ] ]))
+,
+UChain(27.200000000000117 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.954550590178146 ,16.033289198003651 ) ] ]))
+,
+UChain(27.300000000000118 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.039643542705622981 ,10.669165499672953 ) ] ]))
+,
+UChain(27.400000000000119 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8516331002650404 ,18.493612319885365 ) ] ]))
+,
+UChain(27.500000000000121 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,837900,882000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.11836731337869111 ,14.471200145025481 ) ] ]))
+,
+UChain(27.600000000000122 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5831264485457854 ,-6.4348579852658165 ) ] ]))
+,
+UChain(27.700000000000124 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(27.800000000000125 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.50617642162943 ,9.709857290987344 ) ] ]))
+,
+UChain(27.900000000000126 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.549900123849695 ,6.1057809285854781 ) ] ]))
+,
+UChain(28.000000000000128 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.203300075747192 ,7.6506374618050677 ) ] ]))
+,
+UChain(28.100000000000129 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.916588557008673 ,3.4867891248660721 ) ] ]))
+,
+UChain(28.200000000000131 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.237899110924566 ,2.9367763145093528 ) ] ]))
+,
+UChain(28.300000000000132 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3718281020763321 ,7.29207688104339 ) ] ]))
+,
+UChain(28.400000000000134 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5655359850862394 ,19.355497338291272 ) ] ]))
+,
+UChain(28.500000000000135 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.16318660081925618 ,5.311359628635195 ) ] ]))
+,
+UChain(28.600000000000136 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3750553118647288 ,1.992803213082408 ) ] ]))
+,
+UChain(28.700000000000138 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.415576623692729 ,1.4982603032529074 ) ] ]))
+,
+UChain(28.800000000000139 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.953771641893541 ,16.033762602802586 ) ] ]))
+,
+UChain(28.900000000000141 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.271744275237555 ,12.342297645496014 ) ] ]))
+,
+UChain(29.000000000000142 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.143364422226991 ,8.6565657292545559 ) ] ]))
+,
+UChain(29.100000000000144 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,617400,661500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.768037442156803 ,4.156745761271341 ) ] ]))
+,
+UChain(29.200000000000145 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.041958880382523 ,8.4686024849497699 ) ] ]))
+,
+UChain(29.300000000000146 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.6845022149284246 ,15.670240148569704 ) ] ]))
+,
+UChain(29.400000000000148 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2215151809486393 ,3.8799343042122292 ) ] ]))
+,
+UChain(29.500000000000149 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1676005664785363 ,2.9526592626441728 ) ] ]))
+,
+UChain(29.600000000000151 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.86359682926014258 ,-4.7011226979753147 ) ] ]))
+,
+UChain(29.700000000000152 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6063030080371585 ,-16.928550338084349 ) ] ]))
+,
+UChain(29.800000000000153 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5018117776288031 ,9.7101852208664639 ) ] ]))
+,
+UChain(29.900000000000155 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5555372946357586 ,6.1072989157479096 ) ] ]))
+,
+UChain(30.000000000000156 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.207183540089375 ,7.651512305032746 ) ] ]))
+,
+UChain(30.100000000000158 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.916755251225393 ,3.4871684977773176 ) ] ]))
+,
+UChain(30.200000000000159 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.236551872858916 ,2.9380896386355948 ) ] ]))
+,
+UChain(30.300000000000161 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3718050846056293 ,7.2958441026659004 ) ] ]))
+,
+UChain(30.400000000000162 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.568359634462595 ,19.35821560312613 ) ] ]))
+,
+UChain(30.500000000000163 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.16986307755529673 ,5.3140079199149248 ) ] ]))
+,
+UChain(30.600000000000165 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3726676165715732 ,1.9920369418588901 ) ] ]))
+,
+UChain(30.700000000000166 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.421494735666858 ,1.5013614663535924 ) ] ]))
+,
+UChain(30.800000000000168 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.948562496279612 ,16.029797225025959 ) ] ]))
+,
+UChain(30.900000000000169 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.270773587167515 ,12.338592913396877 ) ] ]))
+,
+UChain(31.000000000000171 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.149021649910445 ,8.6521893615429946 ) ] ]))
+,
+UChain(31.100000000000172 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,617400,661500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.762363256271865 ,4.1573606866289392 ) ] ]))
+,
+UChain(31.200000000000173 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.040213238804672 ,8.4663615965800698 ) ] ]))
+,
+UChain(31.300000000000175 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.681707635622915 ,15.672912684006626 ) ] ]))
+,
+UChain(31.400000000000176 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2264032247524259 ,3.8782502405953156 ) ] ]))
+,
+UChain(31.500000000000178 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1738458620602383 ,2.9533115686325084 ) ] ]))
+,
+UChain(31.600000000000179 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.86042061586747209 ,-4.7024928790531213 ) ] ]))
+,
+UChain(31.70000000000018 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6101317404207558 ,-16.932394523349327 ) ] ]))
+,
+UChain(31.800000000000182 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5061387774226969 ,9.7093608582675905 ) ] ]))
+,
+UChain(31.900000000000183 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5488885293777725 ,6.1070208370067247 ) ] ]))
+,
+UChain(32.000000000000185 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.20840819515514 ,7.6522609149066056 ) ] ]))
+,
+UChain(32.100000000000186 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.919459966428798 ,3.4883447458243033 ) ] ]))
+,
+UChain(32.200000000000188 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.238984153190046 ,2.9395650965638032 ) ] ]))
+,
+UChain(32.300000000000189 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3750165872002116 ,7.3008949759368358 ) ] ]))
+,
+UChain(32.40000000000019 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5655205243409043 ,19.359961006267131 ) ] ]))
+,
+UChain(32.500000000000192 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17403871402248416 ,5.3146490858853701 ) ] ]))
+,
+UChain(32.600000000000193 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3716442103445301 ,1.9875881302919174 ) ] ]))
+,
+UChain(32.700000000000195 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.42350270905823 ,1.5001280426497088 ) ] ]))
+,
+UChain(32.800000000000196 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.945362118947418 ,16.027437482599431 ) ] ]))
+,
+UChain(32.900000000000198 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.26968793736037 ,12.337629055959898 ) ] ]))
+,
+UChain(33.000000000000199 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.149316817233 ,8.6517707691371939 ) ] ]))
+,
+UChain(33.1000000000002 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,617400,661500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.765172316652603 ,4.1553139004606177 ) ] ]))
+,
+UChain(33.200000000000202 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.040233626615688 ,8.4659996290799455 ) ] ]))
+,
+UChain(33.300000000000203 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.6804031181545938 ,15.668779338407962 ) ] ]))
+,
+UChain(33.400000000000205 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2248004454094108 ,3.8827992473015049 ) ] ]))
+,
+UChain(33.500000000000206 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1708432029210494 ,2.9507768852515248 ) ] ]))
+,
+UChain(33.600000000000207 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85924375358956251 ,-4.704779238898622 ) ] ]))
+,
+UChain(33.700000000000209 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6119666313903811 ,-16.930915567639254 ) ] ]))
+,
+UChain(33.80000000000021 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5077446801349081 ,9.7067933306488072 ) ] ]))
+,
+UChain(33.900000000000212 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5511118264226846 ,6.1017759794154269 ) ] ]))
+,
+UChain(34.000000000000213 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.202331227223544 ,7.6489694863778723 ) ] ]))
+,
+UChain(34.100000000000215 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.918566447696586 ,3.4922035538837726 ) ] ]))
+,
+UChain(34.200000000000216 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.234694033786466 ,2.9440037998354018 ) ] ]))
+,
+UChain(34.300000000000217 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3729868424755729 ,7.2996761131031507 ) ] ]))
+,
+UChain(34.400000000000219 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5617379411645782 ,19.360574713935797 ) ] ]))
+,
+UChain(34.50000000000022 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17287804337201784 ,5.316608711717099 ) ] ]))
+,
+UChain(34.600000000000222 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3669636346809408 ,1.9853863162707031 ) ] ]))
+,
+UChain(34.700000000000223 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.425202238631872 ,1.4989081222002776 ) ] ]))
+,
+UChain(34.800000000000225 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.943692467115421 ,16.025192086794316 ) ] ]))
+,
+UChain(34.900000000000226 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.269869381750482 ,12.340132009989023 ) ] ]))
+,
+UChain(35.000000000000227 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.683452163803363 ,-1.9047429288672224 ) ] ]))
+,
+UChain(35.100000000000229 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(35.20000000000023 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.146022506853344 ,0.37600051418737568 ) ] ]))
+,
+UChain(35.300000000000232 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.149576544170888 ,8.6452824941006199 ) ] ]))
+,
+UChain(35.400000000000233 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,617400,661500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.762815056591386 ,4.1560727707829681 ) ] ]))
+,
+UChain(35.500000000000234 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.042391456083081 ,8.4657597758817715 ) ] ]))
+,
+UChain(35.600000000000236 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.6832236621945658 ,15.668740644731276 ) ] ]))
+,
+UChain(35.700000000000237 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2287542918124679 ,3.887566195269665 ) ] ]))
+,
+UChain(35.800000000000239 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1766952850807257 ,2.9478307075103372 ) ] ]))
+,
+UChain(35.90000000000024 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85490021454734055 ,-4.7072876182434094 ) ] ]))
+,
+UChain(36.000000000000242 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6071796097314492 ,-16.92847683515226 ) ] ]))
+,
+UChain(36.100000000000243 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5075875942225636 ,9.7008471642333216 ) ] ]))
+,
+UChain(36.200000000000244 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5496869513941096 ,6.1010852390626313 ) ] ]))
+,
+UChain(36.300000000000246 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.196999915405424 ,7.6452813114167206 ) ] ]))
+,
+UChain(36.400000000000247 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.925719969023794 ,3.4943817547185763 ) ] ]))
+,
+UChain(36.500000000000249 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.234340501742448 ,2.949083666675496 ) ] ]))
+,
+UChain(36.60000000000025 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3710353873755086 ,7.2995289818712239 ) ] ]))
+,
+UChain(36.700000000000252 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5620497334403205 ,19.36406156695584 ) ] ]))
+,
+UChain(36.800000000000253 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17281122797653481 ,5.3157246337505448 ) ] ]))
+,
+UChain(36.900000000000254 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3635255820387369 ,1.9829857193284051 ) ] ]))
+,
+UChain(37.000000000000256 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.428560799726299 ,1.497155108197803 ) ] ]))
+,
+UChain(37.100000000000257 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.941755086846808 ,16.022600560788717 ) ] ]))
+,
+UChain(37.200000000000259 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.273682078201862 ,12.34353505400421 ) ] ]))
+,
+UChain(37.30000000000026 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.151126898998388 ,8.6433768528691104 ) ] ]))
+,
+UChain(37.400000000000261 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,617400,661500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.755530947939896 ,4.1586799103768346 ) ] ]))
+,
+UChain(37.500000000000263 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.047980858798379 ,8.4664953814066912 ) ] ]))
+,
+UChain(37.600000000000264 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.6827108898675975 ,15.666367700523608 ) ] ]))
+,
+UChain(37.700000000000266 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2289584613993672 ,3.8925124819849088 ) ] ]))
+,
+UChain(37.800000000000267 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1806698042185833 ,2.9501739506726077 ) ] ]))
+,
+UChain(37.900000000000269 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85903900446367309 ,-4.7057281780825573 ) ] ]))
+,
+UChain(38.00000000000027 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6093388341794266 ,-16.928125665229054 ) ] ]))
+,
+UChain(38.100000000000271 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5090909890001143 ,9.6982544721550568 ) ] ]))
+,
+UChain(38.200000000000273 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.546941293257043 ,6.1020468381765713 ) ] ]))
+,
+UChain(38.300000000000274 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.202023289785412 ,7.643090136650561 ) ] ]))
+,
+UChain(38.400000000000276 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.922988106397462 ,3.4944242269887793 ) ] ]))
+,
+UChain(38.500000000000277 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.24052476274688 ,2.9465635025359216 ) ] ]))
+,
+UChain(38.600000000000279 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3757954145344584 ,7.3012967907366377 ) ] ]))
+,
+UChain(38.70000000000028 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5666566988887176 ,19.365742631451841 ) ] ]))
+,
+UChain(38.800000000000281 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17264851913326495 ,5.3143073045211242 ) ] ]))
+,
+UChain(38.900000000000283 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3639646897937228 ,1.9799808550565645 ) ] ]))
+,
+UChain(39.000000000000284 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.426279030467732 ,1.5009707849362997 ) ] ]))
+,
+UChain(39.100000000000286 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.941716770675196 ,16.024362521799031 ) ] ]))
+,
+UChain(39.200000000000287 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.271671696283228 ,12.345242231589054 ) ] ]))
+,
+UChain(39.300000000000288 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.157086622212429 ,8.6382230626791987 ) ] ]))
+,
+UChain(39.40000000000029 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.491140476331172 ,-14.193708523035816 ) ] ]))
+,
+UChain(39.500000000000291 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3732839176165594 ,-0.24341348171905919 ) ] ]))
+,
+UChain(39.600000000000293 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1806341497507047 ,2.9510461154080803 ) ] ]))
+,
+UChain(39.700000000000294 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.8619671168623011 ,-4.7067236271302848 ) ] ]))
+,
+UChain(39.800000000000296 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6118528636114435 ,-16.933529639294093 ) ] ]))
+,
+UChain(39.900000000000297 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5125965585078749 ,9.7031859401170237 ) ] ]))
+ )
+,Uscore(UChain(40.000000000000298 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.547183792714371 ,6.0986903787519697 ) ] ]))
+,
+UChain(40.1000000000003 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.204038157735372 ,7.6436220515070463 ) ] ]))
+,
+UChain(40.200000000000301 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.927205081302086 ,3.495773739950212 ) ] ]))
+,
+UChain(40.300000000000303 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.2368986520876 ,2.945794898668459 ) ] ]))
+,
+UChain(40.400000000000304 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3691725273999076 ,7.3069543914067969 ) ] ]))
+,
+UChain(40.500000000000306 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5657074675839833 ,19.371311002372067 ) ] ]))
+,
+UChain(40.600000000000307 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17577497420222965 ,5.3112856026105959 ) ] ]))
+,
+UChain(40.700000000000308 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3590592594648108 ,1.9758410124091785 ) ] ]))
+,
+UChain(40.80000000000031 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.420076254847693 ,1.4986699285076144 ) ] ]))
+,
+UChain(40.900000000000311 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.941927260982203 ,16.026378309181545 ) ] ]))
+,
+UChain(41.000000000000313 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.271975698421024 ,12.346555148247887 ) ] ]))
+,
+UChain(41.100000000000314 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.152570898446609 ,8.6353202726045595 ) ] ]))
+,
+UChain(41.200000000000315 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.489217835183986 ,-14.194038623907245 ) ] ]))
+,
+UChain(41.300000000000317 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3740490485492138 ,-0.24191504382713225 ) ] ]))
+,
+UChain(41.400000000000318 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1858616699613354 ,2.9494952097715998 ) ] ]))
+,
+UChain(41.50000000000032 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85814492088998939 ,-4.7077753132119486 ) ] ]))
+,
+UChain(41.600000000000321 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6141499678168012 ,-16.930283508255553 ) ] ]))
+,
+UChain(41.700000000000323 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5120077097838518 ,9.7060322809737052 ) ] ]))
+,
+UChain(41.800000000000324 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5494652831982796 ,6.1006459782965816 ) ] ]))
+,
+UChain(41.900000000000325 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.200267279625701 ,7.6475696177852859 ) ] ]))
+,
+UChain(42.000000000000327 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.927147145713754 ,3.4956711988085454 ) ] ]))
+,
+UChain(42.100000000000328 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.237827271960011 ,2.9466005932486139 ) ] ]))
+,
+UChain(42.20000000000033 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3712803591711618 ,7.3109298583576221 ) ] ]))
+,
+UChain(42.300000000000331 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5660032934913715 ,19.369608166524319 ) ] ]))
+,
+UChain(42.400000000000333 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17243810364258927 ,5.3120090402022146 ) ] ]))
+,
+UChain(42.500000000000334 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3555349726422081 ,1.9774608799029458 ) ] ]))
+,
+UChain(42.600000000000335 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.420714447261165 ,1.4968489211119351 ) ] ]))
+,
+UChain(42.700000000000337 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.943632330049494 ,16.031324182461862 ) ] ]))
+,
+UChain(42.800000000000338 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.270986069020779 ,12.341470969164195 ) ] ]))
+,
+UChain(42.90000000000034 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.156669422352675 ,8.6379324507669963 ) ] ]))
+,
+UChain(43.000000000000341 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.492498577088835 ,-14.195110995907358 ) ] ]))
+,
+UChain(43.100000000000342 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.372339451715173 ,-0.24112934351332882 ) ] ]))
+,
+UChain(43.200000000000344 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1882893914070216 ,2.9485271618947051 ) ] ]))
+,
+UChain(43.300000000000345 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85415663058546976 ,-4.704486907698147 ) ] ]))
+,
+UChain(43.400000000000347 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6104632027421615 ,-16.928128308497225 ) ] ]))
+,
+UChain(43.500000000000348 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5107053498566554 ,9.7034646190418261 ) ] ]))
+,
+UChain(43.60000000000035 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5507271735935895 ,6.103711255494777 ) ] ]))
+,
+UChain(43.700000000000351 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.195337575353257 ,7.6483125603961932 ) ] ]))
+,
+UChain(43.800000000000352 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.923933022373152 ,3.4983104881462568 ) ] ]))
+,
+UChain(43.900000000000354 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.240646211122531 ,2.9433019679471784 ) ] ]))
+,
+UChain(44.000000000000355 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3701958445769966 ,7.3103257249212605 ) ] ]))
+,
+UChain(44.100000000000357 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5636255212415295 ,19.368367553970746 ) ] ]))
+,
+UChain(44.200000000000358 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17258226049082115 ,5.3098098326809762 ) ] ]))
+,
+UChain(44.30000000000036 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3549426102227566 ,1.9768827886066243 ) ] ]))
+,
+UChain(44.400000000000361 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5774093131781077 ,-6.4276805740355014 ) ] ]))
+,
+UChain(44.500000000000362 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(44.600000000000364 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.138304271334633 ,0.37673885501364524 ) ] ]))
+,
+UChain(44.700000000000365 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.152669928527544 ,8.6343504187376077 ) ] ]))
+,
+UChain(44.800000000000367 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.493085831835565 ,-14.193954845071632 ) ] ]))
+,
+UChain(44.900000000000368 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3734804256856439 ,-0.23527466725148827 ) ] ]))
+,
+UChain(45.000000000000369 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.187144299941659 ,2.9480645405772155 ) ] ]))
+,
+UChain(45.100000000000371 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85510520305055238 ,-4.7007612844462603 ) ] ]))
+,
+UChain(45.200000000000372 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6159665468901561 ,-16.925419581306357 ) ] ]))
+,
+UChain(45.300000000000374 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5098583267820853 ,9.6982634330968853 ) ] ]))
+,
+UChain(45.400000000000375 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5526107142386296 ,6.1065488179735539 ) ] ]))
+,
+UChain(45.500000000000377 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.196581393973061 ,7.6523125938917458 ) ] ]))
+,
+UChain(45.600000000000378 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.919956731501568 ,3.5029171274605053 ) ] ]))
+,
+UChain(45.700000000000379 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.235286800063324 ,2.9424125442290405 ) ] ]))
+,
+UChain(45.800000000000381 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3762533613664871 ,7.3145642543499045 ) ] ]))
+,
+UChain(45.900000000000382 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5594276018654285 ,19.367641301693908 ) ] ]))
+,
+UChain(46.000000000000384 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17799868833200172 ,5.3099691771168667 ) ] ]))
+,
+UChain(46.100000000000385 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3572078962868659 ,1.9714362683609465 ) ] ]))
+,
+UChain(46.200000000000387 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5732171790258311 ,-6.4289260000004456 ) ] ]))
+,
+UChain(46.300000000000388 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(46.400000000000389 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.141010898305399 ,0.37923658870539168 ) ] ]))
+,
+UChain(46.500000000000391 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.154957185982795 ,8.6378250920338076 ) ] ]))
+,
+UChain(46.600000000000392 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.492296945091422 ,-14.192279527836325 ) ] ]))
+,
+UChain(46.700000000000394 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3768466001750728 ,-0.23465886473053477 ) ] ]))
+,
+UChain(46.800000000000395 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1832677979712489 ,2.9484601922318632 ) ] ]))
+,
+UChain(46.900000000000396 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85766110946022156 ,-4.6979246003942681 ) ] ]))
+,
+UChain(47.000000000000398 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6226575345422209 ,-16.928111011901606 ) ] ]))
+,
+UChain(47.100000000000399 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5076080022124376 ,9.7040850428974501 ) ] ]))
+,
+UChain(47.200000000000401 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5551463256604841 ,6.1061797910302129 ) ] ]))
+,
+UChain(47.300000000000402 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.194412763229394 ,7.6552954649169935 ) ] ]))
+,
+UChain(47.400000000000404 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.921089221373684 ,3.5016593784654315 ) ] ]))
+,
+UChain(47.500000000000405 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.238590844646605 ,2.9398312140901872 ) ] ]))
+,
+UChain(47.600000000000406 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3757617384037477 ,7.3106613743725335 ) ] ]))
+,
+UChain(47.700000000000408 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.557514746417521 ,19.366451466086964 ) ] ]))
+,
+UChain(47.800000000000409 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17652386500450756 ,5.3082481535079484 ) ] ]))
+,
+UChain(47.900000000000411 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3557765400674846 ,1.9750294483595709 ) ] ]))
+,
+UChain(48.000000000000412 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5752107241639415 ,-6.4312028087886786 ) ] ]))
+,
+UChain(48.100000000000414 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(48.200000000000415 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.144134813602426 ,0.37549942773480449 ) ] ]))
+,
+UChain(48.300000000000416 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.150984126375636 ,8.6399071474531741 ) ] ]))
+,
+UChain(48.400000000000418 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.495476432922381 ,-14.193079962300752 ) ] ]))
+,
+UChain(48.500000000000419 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3786508407655678 ,-0.23861726260341998 ) ] ]))
+,
+UChain(48.600000000000421 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1801217053672506 ,2.9488545784524955 ) ] ]))
+,
+UChain(48.700000000000422 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85857593151452694 ,-4.6993526291759853 ) ] ]))
+,
+UChain(48.800000000000423 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6213713222263757 ,-16.928472212465842 ) ] ]))
+,
+UChain(48.900000000000425 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5102434672766218 ,9.7039296657383378 ) ] ]))
+,
+UChain(49.000000000000426 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5542788939098378 ,6.1069897532460171 ) ] ]))
+,
+UChain(49.100000000000428 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.193349330320874 ,7.6516078373352592 ) ] ]))
+,
+UChain(49.200000000000429 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.920137958880442 ,3.4979258303268157 ) ] ]))
+,
+UChain(49.300000000000431 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.237153279336148 ,2.9411567757918267 ) ] ]))
+,
+UChain(49.400000000000432 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3728209817127821 ,7.308392936235486 ) ] ]))
+,
+UChain(49.500000000000433 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8639648800129898 ,18.503847843830911 ) ] ]))
+,
+UChain(49.600000000000435 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,837900,882000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.11457718719538379 ,14.472474507092215 ) ] ]))
+,
+UChain(49.700000000000436 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5788410549752587 ,-6.4333970015412962 ) ] ]))
+,
+UChain(49.800000000000438 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(49.900000000000439 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.141865937201825 ,0.37673992117438715 ) ] ]))
+,
+UChain(50.000000000000441 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.154074854484559 ,8.6389768867312799 ) ] ]))
+,
+UChain(50.100000000000442 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.501738021167142 ,-14.192049397464491 ) ] ]))
+,
+UChain(50.200000000000443 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3806868111305501 ,-0.23475755756843908 ) ] ]))
+,
+UChain(50.300000000000445 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1730338575647661 ,2.9444034018303711 ) ] ]))
+,
+UChain(50.400000000000446 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85692012412614371 ,-4.6973204227225303 ) ] ]))
+,
+UChain(50.500000000000448 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6219137462446573 ,-16.927051652020488 ) ] ]))
+,
+UChain(50.600000000000449 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5114461480008394 ,9.6995397263153471 ) ] ]))
+,
+UChain(50.70000000000045 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5512198989636898 ,6.1055554872569218 ) ] ]))
+,
+UChain(50.800000000000452 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.192420029153791 ,7.6537141711431778 ) ] ]))
+,
+UChain(50.900000000000453 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.921353510046666 ,3.5044472059561471 ) ] ]))
+,
+UChain(51.000000000000455 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.235200536433943 ,2.9421304411989713 ) ] ]))
+,
+UChain(51.100000000000456 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.371363699907687 ,7.3092816635079361 ) ] ]))
+,
+UChain(51.200000000000458 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5649269321305015 ,19.371035763362659 ) ] ]))
+,
+UChain(51.300000000000459 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17703056947683038 ,5.305012990542588 ) ] ]))
+,
+UChain(51.40000000000046 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3539135240494136 ,1.9824682096300394 ) ] ]))
+,
+UChain(51.500000000000462 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5784485059619282 ,-6.4358661182491588 ) ] ]))
+,
+UChain(51.600000000000463 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(51.700000000000465 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.137343612474584 ,0.3784817807745311 ) ] ]))
+,
+UChain(51.800000000000466 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.156232618169685 ,8.637475633865229 ) ] ]))
+,
+UChain(51.900000000000468 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.504142666476813 ,-14.19450880816186 ) ] ]))
+,
+UChain(52.000000000000469 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3848304563112706 ,-0.24161129268184922 ) ] ]))
+,
+UChain(52.10000000000047 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1684291847460688 ,2.9443795282272456 ) ] ]))
+,
+UChain(52.200000000000472 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.86039636544807507 ,-4.6931141895993704 ) ] ]))
+,
+UChain(52.300000000000473 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6149141928263941 ,-16.92608440350941 ) ] ]))
+,
+UChain(52.400000000000475 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5157465701339756 ,9.6994844769460808 ) ] ]))
+,
+UChain(52.500000000000476 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5473737004329173 ,6.1054843617358934 ) ] ]))
+,
+UChain(52.600000000000477 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.197343161396326 ,7.6540490328889055 ) ] ]))
+,
+UChain(52.700000000000479 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.917620910775263 ,3.507197617474902 ) ] ]))
+,
+UChain(52.80000000000048 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.233557019054807 ,2.9410430167022028 ) ] ]))
+,
+UChain(52.900000000000482 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3754524396977539 ,7.3115899862182854 ) ] ]))
+,
+UChain(53.000000000000483 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5686002151393463 ,19.373948536263981 ) ] ]))
+,
+UChain(53.100000000000485 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17744956698171777 ,5.3003934566334587 ) ] ]))
+,
+UChain(53.200000000000486 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3509979312095042 ,1.9796876259679452 ) ] ]))
+,
+UChain(53.300000000000487 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.703440447659617 ,0.6511210613591345 ) ] ]))
+,
+UChain(53.400000000000489 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1664485437348144 ,2.9424060437045085 ) ] ]))
+,
+UChain(53.50000000000049 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85891029584475032 ,-4.691074969164994 ) ] ]))
+,
+UChain(53.600000000000492 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3429896428204682 ,19.838926507576854 ) ] ]))
+,
+UChain(53.700000000000493 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.40379026433159 ,-6.1176588670709613 ) ] ]))
+,
+UChain(53.800000000000495 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.524747821232417 ,-5.5114003287747231 ) ] ]))
+,
+UChain(53.900000000000496 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.506326836409585 ,-14.19712742869314 ) ] ]))
+,
+UChain(54.000000000000497 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3863255887335466 ,-0.24238395526713585 ) ] ]))
+,
+UChain(54.100000000000499 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1664485437348144 ,2.9424060437045085 ) ] ]))
+,
+UChain(54.2000000000005 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85891029584475032 ,-4.691074969164994 ) ] ]))
+,
+UChain(54.300000000000502 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6180281272199335 ,-16.927411007199662 ) ] ]))
+,
+UChain(54.400000000000503 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5143088244444192 ,9.697751729928159 ) ] ]))
+,
+UChain(54.500000000000504 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5423838192952282 ,6.1065100740831246 ) ] ]))
+,
+UChain(54.600000000000506 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.200521987435291 ,7.6547473121145293 ) ] ]))
+,
+UChain(54.700000000000507 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.919383341977717 ,3.5071466278325403 ) ] ]))
+,
+UChain(54.800000000000509 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.23796184046158 ,2.9453647669719007 ) ] ]))
+,
+UChain(54.90000000000051 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3738310329996759 ,7.3137164804688215 ) ] ]))
+,
+UChain(55.000000000000512 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5680884963677855 ,19.371257424421195 ) ] ]))
+,
+UChain(55.100000000000513 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17835828185799762 ,5.2972547461878161 ) ] ]))
+,
+UChain(55.200000000000514 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3503974173926867 ,1.9854046896549438 ) ] ]))
+,
+UChain(55.300000000000516 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.708475848072046 ,0.65366675894883208 ) ] ]))
+,
+UChain(55.400000000000517 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1612739775015175 ,2.9414558798211132 ) ] ]))
+,
+UChain(55.500000000000519 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85192232309870164 ,-4.6946009829876427 ) ] ]))
+,
+UChain(55.60000000000052 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6195231646639949 ,-16.931801602601116 ) ] ]))
+,
+UChain(55.700000000000522 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5090543734103807 ,9.6997531640092802 ) ] ]))
+,
+UChain(55.800000000000523 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5420672853884803 ,6.105604239962692 ) ] ]))
+,
+UChain(55.900000000000524 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.199606594949032 ,7.6576484390015231 ) ] ]))
+,
+UChain(56.000000000000526 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.919722287136745 ,3.5020600712896721 ) ] ]))
+,
+UChain(56.100000000000527 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.236701147435781 ,2.9449038297934482 ) ] ]))
+,
+UChain(56.200000000000529 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3754928380426765 ,7.3110307315592271 ) ] ]))
+,
+UChain(56.30000000000053 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5648465554149604 ,19.372614349862634 ) ] ]))
+,
+UChain(56.400000000000531 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17583396079431601 ,5.3004240690425997 ) ] ]))
+,
+UChain(56.500000000000533 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3468623482401241 ,1.9877182994579279 ) ] ]))
+,
+UChain(56.600000000000534 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.571091253568512 ,-6.4360785291445133 ) ] ]))
+,
+UChain(56.700000000000536 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(56.800000000000537 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.139974061038941 ,0.38271152965279054 ) ] ]))
+,
+UChain(56.900000000000539 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.164967886700428 ,8.6371543883728421 ) ] ]))
+,
+UChain(57.00000000000054 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.607287146982472 ,15.370877774109356 ) ] ]))
+,
+UChain(57.100000000000541 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1323000,1367100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.908527898525335 ,-9.2247292205653135 ) ] ]))
+,
+UChain(57.200000000000543 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1367100,1411200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.979062428479562 ,-12.279994556743896 ) ] ]))
+,
+UChain(57.300000000000544 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5097866885813627 ,9.7034640659535789 ) ] ]))
+,
+UChain(57.400000000000546 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5408893344733503 ,6.1081312444339231 ) ] ]))
+,
+UChain(57.500000000000547 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.205895288322326 ,7.6625918000171556 ) ] ]))
+,
+UChain(57.600000000000549 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.917936479421854 ,3.4998436911405317 ) ] ]))
+,
+UChain(57.70000000000055 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.236963915648889 ,2.9449953493888037 ) ] ]))
+,
+UChain(57.800000000000551 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3762648365095451 ,7.3075144505362299 ) ] ]))
+,
+UChain(57.900000000000553 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5654361442571951 ,19.378389873407752 ) ] ]))
+,
+UChain(58.000000000000554 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17246410433685355 ,5.3026296248710514 ) ] ]))
+,
+UChain(58.100000000000556 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3515064541154995 ,1.9932845227473228 ) ] ]))
+,
+UChain(58.200000000000557 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.708373278480089 ,0.64496127521394442 ) ] ]))
+,
+UChain(58.300000000000558 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1557759635163087 ,2.9463850585215035 ) ] ]))
+,
+UChain(58.40000000000056 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85538834463719127 ,-4.6945150260503743 ) ] ]))
+,
+UChain(58.500000000000561 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6181324844043341 ,-16.932675713627646 ) ] ]))
+,
+UChain(58.600000000000563 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1719900,1764000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.65321923462183 ,1.8773097586170495 ) ] ]))
+,
+UChain(58.700000000000564 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.688999226719089 ,-1.9042156899029394 ) ] ]))
+,
+UChain(58.800000000000566 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8516846705922099 ,18.507863262988529 ) ] ]))
+,
+UChain(58.900000000000567 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,837900,882000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.12326456027919486 ,14.481581230727013 ) ] ]))
+,
+UChain(59.000000000000568 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.5652382454303906 ,-6.4370168733808413 ) ] ]))
+,
+UChain(59.10000000000057 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(59.200000000000571 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.138373478859243 ,0.38130776342934602 ) ] ]))
+,
+UChain(59.300000000000573 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.161472890412828 ,8.6400536396070891 ) ] ]))
+,
+UChain(59.400000000000574 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.60690741367609 ,15.371112347265527 ) ] ]))
+,
+UChain(59.500000000000576 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1323000,1367100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.909185214770005 ,-9.2270240075783665 ) ] ]))
+,
+UChain(59.600000000000577 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1367100,1411200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.978914944100655 ,-12.274582327683849 ) ] ]))
+,
+UChain(59.700000000000578 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5133255187981582 ,9.7061071454250492 ) ] ]))
+,
+UChain(59.80000000000058 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1940400,1984500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(4.5359340968671447 ,6.102216902301496 ) ] ]))
+,
+UChain(59.900000000000581 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.200105585583604 ,7.6603482189608485 ) ] ]))
+ )
+,Uscore(UChain(60.000000000000583 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.923128137699766 ,3.4982098841444342 ) ] ]))
+,
+UChain(60.100000000000584 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.239054204454508 ,2.9487007527161957 ) ] ]))
+,
+UChain(60.200000000000585 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.378270779894649 ,7.3008861789901935 ) ] ]))
+,
+UChain(60.300000000000587 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5682696470104807 ,19.37513667079719 ) ] ]))
+,
+UChain(60.400000000000588 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17745221747296647 ,5.3050412985852136 ) ] ]))
+,
+UChain(60.50000000000059 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3568926650669164 ,1.9908474505102713 ) ] ]))
+,
+UChain(60.600000000000591 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.709000956144594 ,0.64827877446556936 ) ] ]))
+,
+UChain(60.700000000000593 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1547587370259222 ,2.9431270557262712 ) ] ]))
+,
+UChain(60.800000000000594 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.853084068884713 ,-4.6945999307815871 ) ] ]))
+,
+UChain(60.900000000000595 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6209480008553787 ,-16.93919302845342 ) ] ]))
+,
+UChain(61.000000000000597 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1719900,1764000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.659769366788403 ,1.8731431089075468 ) ] ]))
+,
+UChain(61.100000000000598 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.688540420570051 ,-1.8996463451851575 ) ] ]))
+,
+UChain(61.2000000000006 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.41221792067088 ,1.5083620113874163 ) ] ]))
+,
+UChain(61.300000000000601 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.142615055664329 ,0.38116894580374705 ) ] ]))
+,
+UChain(61.400000000000603 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.163229549095671 ,8.639125672616057 ) ] ]))
+,
+UChain(61.500000000000604 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.611491476045014 ,15.370470167229652 ) ] ]))
+,
+UChain(61.600000000000605 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1323000,1367100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.911775768225326 ,-9.2275826976745954 ) ] ]))
+,
+UChain(61.700000000000607 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,837900,882000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.12397142606522804 ,14.47639148515529 ) ] ]))
+,
+UChain(61.800000000000608 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1102500,1146600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(5.564422967391951 ,-6.4370416845744121 ) ] ]))
+,
+UChain(61.90000000000061 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(62.000000000000611 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.142963659272214 ,0.37862178759790144 ) ] ]))
+,
+UChain(62.100000000000612 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1190700,1234800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.0453587692177586 ,-9.4334103369798292 ) ] ]))
+,
+UChain(62.200000000000614 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.6363396110975792 ,-6.4859246942478084 ) ] ]))
+,
+UChain(62.300000000000615 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.686668096011299 ,-1.9004094669610305 ) ] ]))
+,
+UChain(62.400000000000617 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8570016045669906 ,18.513231367432677 ) ] ]))
+,
+UChain(62.500000000000618 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,352800,396900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.220260015596342 ,-7.4813824251646244 ) ] ]))
+,
+UChain(62.60000000000062 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.923461544457098 ,3.5001847100257955 ) ] ]))
+,
+UChain(62.700000000000621 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1278900,1323000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.055177145627852 ,-15.384527653676901 ) ] ]))
+,
+UChain(62.800000000000622 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.032890309895361458 ,10.653905110486054 ) ] ]))
+,
+UChain(62.900000000000624 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3608836293721791 ,1.9911133167094297 ) ] ]))
+,
+UChain(63.000000000000625 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.709788479822256 ,0.64954096621793855 ) ] ]))
+,
+UChain(63.100000000000627 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1562660021959994 ,2.9446921807304083 ) ] ]))
+,
+UChain(63.200000000000628 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85748076253412187 ,-4.6965198835860384 ) ] ]))
+,
+UChain(63.30000000000063 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6200576531426467 ,-16.938021234883028 ) ] ]))
+,
+UChain(63.400000000000631 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5133816624436625 ,9.6978036233766129 ) ] ]))
+,
+UChain(63.500000000000632 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.406926129168383 ,-6.1183105803793598 ) ] ]))
+,
+UChain(63.600000000000634 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.519440774354969 ,-5.5110634483268566 ) ] ]))
+,
+UChain(63.700000000000635 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.515405393110154 ,-14.198967184594194 ) ] ]))
+,
+UChain(63.800000000000637 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3704628593079686 ,-0.24333498667887143 ) ] ]))
+,
+UChain(63.900000000000638 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3771988051465787 ,7.2995407190184114 ) ] ]))
+,
+UChain(64.000000000000639 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5744073857549967 ,19.380429304409418 ) ] ]))
+,
+UChain(64.100000000000634 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.032066825052652 ,8.4735602058101236 ) ] ]))
+,
+UChain(64.200000000000628 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1984500,2028600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(15.694262656659692 ,6.6288134053474712 ) ] ]))
+,
+UChain(64.300000000000622 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6197431934259363 ,-16.939464248930214 ) ] ]))
+,
+UChain(64.400000000000617 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1719900,1764000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.657882461449361 ,1.8681200984442636 ) ] ]))
+,
+UChain(64.500000000000611 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.69089648662283 ,-1.9014299498132781 ) ] ]))
+,
+UChain(64.600000000000605 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.421780439217759 ,1.5113797891438052 ) ] ]))
+,
+UChain(64.7000000000006 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.141687724014567 ,0.37393686748722121 ) ] ]))
+,
+UChain(64.800000000000594 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1190700,1234800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.0480908076357482 ,-9.4340166020295673 ) ] ]))
+,
+UChain(64.900000000000588 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.6385035560813375 ,-6.4853449780728294 ) ] ]))
+,
+UChain(65.000000000000583 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.69089648662283 ,-1.9014299498132781 ) ] ]))
+,
+UChain(65.100000000000577 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.421780439217759 ,1.5113797891438052 ) ] ]))
+,
+UChain(65.200000000000571 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.036591952046034493 ,10.648940682038589 ) ] ]))
+,
+UChain(65.300000000000566 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3580105224464676 ,1.9905973311639746 ) ] ]))
+,
+UChain(65.40000000000056 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.714248385764616 ,0.64814139056700082 ) ] ]))
+,
+UChain(65.500000000000554 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.6848058370102033 ,15.660791278296525 ) ] ]))
+,
+UChain(65.600000000000549 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,573300,617400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.16021998188756825 ,9.6581373821715655 ) ] ]))
+,
+UChain(65.700000000000543 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1146600,1190700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-4.9633309658110125 ,-2.4258940346243163 ) ] ]))
+,
+UChain(65.800000000000537 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1573392319581917 ,2.9416816666516654 ) ] ]))
+,
+UChain(65.900000000000531 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85632280671730676 ,-4.6987442198148628 ) ] ]))
+,
+UChain(66.000000000000526 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6228801319036044 ,-16.936240154243734 ) ] ]))
+,
+UChain(66.10000000000052 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5198141941931915 ,9.7006952839646274 ) ] ]))
+,
+UChain(66.200000000000514 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.410313038216835 ,-6.1139946564466481 ) ] ]))
+,
+UChain(66.300000000000509 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.522667954151856 ,-5.5085462688525055 ) ] ]))
+,
+UChain(66.400000000000503 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.515089588099265 ,-14.197135617230378 ) ] ]))
+,
+UChain(66.500000000000497 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3737255346137598 ,-0.2466815468185346 ) ] ]))
+,
+UChain(66.600000000000492 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3822019877372558 ,7.300997729964962 ) ] ]))
+,
+UChain(66.700000000000486 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1984500,2028600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(15.695896029953914 ,6.6360757937205861 ) ] ]))
+,
+UChain(66.80000000000048 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,352800,396900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.223386486222942 ,-7.4776131018799035 ) ] ]))
+,
+UChain(66.900000000000475 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.920579441647629 ,3.5065726994301638 ) ] ]))
+,
+UChain(67.000000000000469 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.227755087506104 ,2.9414439305879725 ) ] ]))
+,
+UChain(67.100000000000463 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3840108752550648 ,7.2995044289021349 ) ] ]))
+,
+UChain(67.200000000000458 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5770495774599302 ,19.386529104103985 ) ] ]))
+,
+UChain(67.300000000000452 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3459909639492764 ,19.837295773964684 ) ] ]))
+,
+UChain(67.400000000000446 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.043876446521202705 ,10.647624920525978 ) ] ]))
+,
+UChain(67.500000000000441 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3638904945551853 ,1.9951067296667757 ) ] ]))
+,
+UChain(67.600000000000435 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.710449264409322 ,0.64111151852084269 ) ] ]))
+,
+UChain(67.700000000000429 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1592127602948175 ,2.9403760856561068 ) ] ]))
+,
+UChain(67.800000000000423 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85309340445138382 ,-4.7048996594774088 ) ] ]))
+,
+UChain(67.900000000000418 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6173428757684536 ,-16.933217124763342 ) ] ]))
+,
+UChain(68.000000000000412 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5192101721977069 ,9.7065703907720291 ) ] ]))
+,
+UChain(68.100000000000406 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.40969618278757 ,-6.1134107531631692 ) ] ]))
+,
+UChain(68.200000000000401 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.523695790418525 ,-5.5105897189910351 ) ] ]))
+,
+UChain(68.300000000000395 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.510481905586694 ,-14.19397128615641 ) ] ]))
+,
+UChain(68.400000000000389 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3687408045190654 ,-0.25139984671626037 ) ] ]))
+,
+UChain(68.500000000000384 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3812497982776115 ,7.3002223950276912 ) ] ]))
+,
+UChain(68.600000000000378 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5783497567840743 ,19.388368649461938 ) ] ]))
+,
+UChain(68.700000000000372 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3463766029198183 ,19.837712799467436 ) ] ]))
+,
+UChain(68.800000000000367 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.041733678343809366 ,10.644041509146987 ) ] ]))
+,
+UChain(68.900000000000361 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8585385426486702 ,18.516896224279634 ) ] ]))
+,
+UChain(69.000000000000355 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,352800,396900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.222465117011232 ,-7.4753163146857338 ) ] ]))
+,
+UChain(69.10000000000035 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.357879581864375 ,1.9936114786264936 ) ] ]))
+,
+UChain(69.200000000000344 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.711383944461605 ,0.63830011432282507 ) ] ]))
+,
+UChain(69.300000000000338 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1611317680688646 ,2.9436476268926848 ) ] ]))
+,
+UChain(69.400000000000333 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.84956349804516496 ,-4.7015935237133499 ) ] ]))
+,
+UChain(69.500000000000327 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6212876957385545 ,-16.931606097890718 ) ] ]))
+,
+UChain(69.600000000000321 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5182856331058385 ,9.7104188684594526 ) ] ]))
+,
+UChain(69.700000000000315 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.414742539274737 ,-6.1126136093811034 ) ] ]))
+,
+UChain(69.80000000000031 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.52188217462712 ,-5.5072359824989174 ) ] ]))
+,
+UChain(69.900000000000304 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.510627139942187 ,-14.19424013415399 ) ] ]))
+,
+UChain(70.000000000000298 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3668169018817053 ,-0.25025180821491189 ) ] ]))
+,
+UChain(70.100000000000293 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3773401607696742 ,7.2985105157321062 ) ] ]))
+,
+UChain(70.200000000000287 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5791537367876418 ,19.389088446197963 ) ] ]))
+,
+UChain(70.300000000000281 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3475224557338574 ,19.839946580681087 ) ] ]))
+,
+UChain(70.400000000000276 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.046076623664419447 ,10.648039717480234 ) ] ]))
+,
+UChain(70.50000000000027 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3615302083421663 ,1.9952326318275349 ) ] ]))
+,
+UChain(70.600000000000264 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.709207007865519 ,0.63503167964666041 ) ] ]))
+,
+UChain(70.700000000000259 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1578752123651705 ,2.9404408375326208 ) ] ]))
+,
+UChain(70.800000000000253 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.84379633294133338 ,-4.6985365438140381 ) ] ]))
+,
+UChain(70.900000000000247 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6194294390184236 ,-16.932293911468136 ) ] ]))
+,
+UChain(71.000000000000242 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5114262283366919 ,9.711617852705885 ) ] ]))
+,
+UChain(71.100000000000236 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.41785594771148 ,-6.1086527590798472 ) ] ]))
+,
+UChain(71.20000000000023 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.522900967732491 ,-5.5041604829941182 ) ] ]))
+,
+UChain(71.300000000000225 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,573300,617400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.16248322134125637 ,9.6582393007691802 ) ] ]))
+,
+UChain(71.400000000000219 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.952912323252498 ,16.044740561957273 ) ] ]))
+,
+UChain(71.500000000000213 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.269514091391112 ,12.343443468065146 ) ] ]))
+,
+UChain(71.600000000000207 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.158213161764742 ,8.641641317204737 ) ] ]))
+,
+UChain(71.700000000000202 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.608114535155753 ,15.369650682426856 ) ] ]))
+,
+UChain(71.800000000000196 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1014300,1058400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.035967821591779 ,5.1841844153851824 ) ] ]))
+,
+UChain(71.90000000000019 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1573742524903832 ,2.9443495734472958 ) ] ]))
+,
+UChain(72.000000000000185 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.84698873334107194 ,-4.6987763498969599 ) ] ]))
+,
+UChain(72.100000000000179 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6231599670240646 ,-16.932900338153694 ) ] ]))
+,
+UChain(72.200000000000173 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5130697028416806 ,9.7131730500264268 ) ] ]))
+,
+UChain(72.300000000000168 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.415507193574708 ,-6.1102833895375692 ) ] ]))
+,
+UChain(72.400000000000162 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.529329057886777 ,-5.5008231887939658 ) ] ]))
+,
+UChain(72.500000000000156 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.513105153870669 ,-14.193940352160894 ) ] ]))
+,
+UChain(72.600000000000151 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3670494857218882 ,-0.25487687707204998 ) ] ]))
+,
+UChain(72.700000000000145 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.376600051464921 ,7.2935433793664473 ) ] ]))
+,
+UChain(72.800000000000139 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2116800,2160900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.8136437936350047 ,-13.305214965909533 ) ] ]))
+,
+UChain(72.900000000000134 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.144652449595043 ,0.36895726627248937 ) ] ]))
+,
+UChain(73.000000000000128 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.155926465302361 ,8.638861559078773 ) ] ]))
+,
+UChain(73.100000000000122 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.605592747409386 ,15.370242003963916 ) ] ]))
+,
+UChain(73.200000000000117 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1014300,1058400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.038214970373041 ,5.1832615155054995 ) ] ]))
+,
+UChain(73.300000000000111 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1612672804927602 ,2.9424815853995323 ) ] ]))
+,
+UChain(73.400000000000105 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.84977725048836827 ,-4.696020872922448 ) ] ]))
+,
+UChain(73.500000000000099 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6210599091226028 ,-16.930675863885597 ) ] ]))
+,
+UChain(73.600000000000094 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5092907232552015 ,9.7144507927956312 ) ] ]))
+,
+UChain(73.700000000000088 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.418785325640822 ,-6.1124393181369774 ) ] ]))
+,
+UChain(73.800000000000082 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.526464036141428 ,-5.5034431895371299 ) ] ]))
+,
+UChain(73.900000000000077 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.516744482955634 ,-14.197341131574857 ) ] ]))
+,
+UChain(74.000000000000071 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1323000,1367100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.91296997447364 ,-9.2293906618176269 ) ] ]))
+,
+UChain(74.100000000000065 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1367100,1411200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.983990436042298 ,-12.283080262413124 ) ] ]))
+,
+UChain(74.20000000000006 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.270601335813097 ,12.343188817977197 ) ] ]))
+,
+UChain(74.300000000000054 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.153160789729764 ,8.6427985178269662 ) ] ]))
+,
+UChain(74.400000000000048 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.606879571959155 ,15.371174538884116 ) ] ]))
+,
+UChain(74.500000000000043 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1014300,1058400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.037629560863298 ,5.1804456355935091 ) ] ]))
+,
+UChain(74.600000000000037 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1625833598226816 ,2.9410553053289368 ) ] ]))
+,
+UChain(74.700000000000031 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85253602956883334 ,-4.6967004418601928 ) ] ]))
+,
+UChain(74.800000000000026 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6235199440937751 ,-16.931071241098206 ) ] ]))
+,
+UChain(74.90000000000002 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5120907019735386 ,9.7152857441665663 ) ] ]))
+,
+UChain(75.000000000000014 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.416928409373373 ,-6.1090387758051286 ) ] ]))
+,
+UChain(75.100000000000009 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.526111634964284 ,-5.4999574809104583 ) ] ]))
+,
+UChain(75.200000000000003 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.514376037719657 ,-14.200903109559505 ) ] ]))
+,
+UChain(75.299999999999997 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3658037757198187 ,-0.25234949452413113 ) ] ]))
+,
+UChain(75.399999999999991 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.380927286889265 ,7.2883320993877465 ) ] ]))
+,
+UChain(75.499999999999986 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5814140401709165 ,19.38675950812716 ) ] ]))
+,
+UChain(75.59999999999998 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17362408867795942 ,5.3058565630666132 ) ] ]))
+,
+UChain(75.699999999999974 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3560286989760248 ,1.9924995124459111 ) ] ]))
+,
+UChain(75.799999999999969 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.703554614631472 ,0.63517183033786839 ) ] ]))
+,
+UChain(75.899999999999963 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1665664621732628 ,2.9374205696097722 ) ] ]))
+,
+UChain(75.999999999999957 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85652275979325676 ,-4.6938619247691822 ) ] ]))
+,
+UChain(76.099999999999952 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.626225961384292 ,-16.9327614246058 ) ] ]))
+,
+UChain(76.199999999999946 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5073101961584978 ,9.7195940713514659 ) ] ]))
+,
+UChain(76.29999999999994 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,749700,793800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(6.8717568040784105 ,-4.9838661144732992 ) ] ]))
+,
+UChain(76.399999999999935 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.272986649610861 ,12.338177555357621 ) ] ]))
+,
+UChain(76.499999999999929 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.150817058581403 ,8.6392490446076931 ) ] ]))
+,
+UChain(76.599999999999923 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.599815732512585 ,15.37206700115612 ) ] ]))
+,
+UChain(76.699999999999918 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1014300,1058400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.033416534287447 ,5.183198836568339 ) ] ]))
+,
+UChain(76.799999999999912 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1628532531087039 ,2.9397726601805285 ) ] ]))
+,
+UChain(76.899999999999906 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85299417089827578 ,-4.6973008061162735 ) ] ]))
+,
+UChain(76.999999999999901 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6238806718384211 ,-16.935933056618712 ) ] ]))
+,
+UChain(77.099999999999895 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5073101961584978 ,9.7195940713514659 ) ] ]))
+,
+UChain(77.199999999999889 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.420292111625564 ,-6.1089435355076738 ) ] ]))
+,
+UChain(77.299999999999883 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.520661783403161 ,-5.4999682260617959 ) ] ]))
+,
+UChain(77.399999999999878 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.517972505214455 ,-14.198268877180144 ) ] ]))
+,
+UChain(77.499999999999872 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3665867343203439 ,-0.25198946288560675 ) ] ]))
+,
+UChain(77.599999999999866 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3808750121592315 ,7.2901371125218617 ) ] ]))
+,
+UChain(77.699999999999861 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5855811787235718 ,19.389449761143759 ) ] ]))
+,
+UChain(77.799999999999855 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3477891536401501 ,19.841342434378912 ) ] ]))
+,
+UChain(77.899999999999849 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.060823137390730864 ,10.633577624959445 ) ] ]))
+,
+UChain(77.999999999999844 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.353995829328499 ,1.9928049622987754 ) ] ]))
+,
+UChain(78.099999999999838 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.705930481951661 ,0.64177355915341572 ) ] ]))
+,
+UChain(78.199999999999832 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1594854398825873 ,2.9428099905168903 ) ] ]))
+,
+UChain(78.299999999999827 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85194376988631859 ,-4.6989947536897798 ) ] ]))
+,
+UChain(78.399999999999821 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6197917347021948 ,-16.941500358428367 ) ] ]))
+,
+UChain(78.499999999999815 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5072880619632549 ,9.7224739594963605 ) ] ]))
+,
+UChain(78.59999999999981 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.418453056356473 ,-6.1125116062531104 ) ] ]))
+,
+UChain(78.699999999999804 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.523075214624901 ,-5.5035480987010166 ) ] ]))
+,
+UChain(78.799999999999798 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.514275293331487 ,-14.194795932478341 ) ] ]))
+,
+UChain(78.899999999999793 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3666689648505912 ,-0.25588711811601605 ) ] ]))
+,
+UChain(78.999999999999787 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3826499725958161 ,7.2921912781239717 ) ] ]))
+,
+UChain(79.099999999999781 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5867611691821981 ,19.391207713897785 ) ] ]))
+,
+UChain(79.199999999999775 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3473437151885541 ,19.84550405416001 ) ] ]))
+,
+UChain(79.29999999999977 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.063017060685297555 ,10.630859324161079 ) ] ]))
+,
+UChain(79.399999999999764 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.687492541188799 ,-1.8963822175998946 ) ] ]))
+,
+UChain(79.499999999999758 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.42372653961425 ,1.52863445764154 ) ] ]))
+,
+UChain(79.599999999999753 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.151889068344104 ,0.37210072415175599 ) ] ]))
+,
+UChain(79.699999999999747 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.145126946449992 ,8.6434953758589028 ) ] ]))
+,
+UChain(79.799999999999741 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.602339505287475 ,15.374147873495211 ) ] ]))
+,
+UChain(79.899999999999736 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.525192972610602 ,-5.5012651176442766 ) ] ]))
+ )
+,Uscore(UChain(79.99999999999973 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.513356253245703 ,-14.19148966150137 ) ] ]))
+,
+UChain(80.099999999999724 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.366364547248148 ,-0.25792813917028035 ) ] ]))
+,
+UChain(80.199999999999719 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3788738754698713 ,7.2960319751615543 ) ] ]))
+,
+UChain(80.299999999999713 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5880179961345964 ,19.390898889154972 ) ] ]))
+,
+UChain(80.399999999999707 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3442619514758967 ,19.847225093579365 ) ] ]))
+,
+UChain(80.499999999999702 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.060742495822023734 ,10.627284764184758 ) ] ]))
+,
+UChain(80.599999999999696 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8614895956331683 ,18.522148111271271 ) ] ]))
+,
+UChain(80.69999999999969 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.188154714283893 ,7.6795451443710183 ) ] ]))
+,
+UChain(80.799999999999685 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.93594313863905 ,3.4940886183283437 ) ] ]))
+,
+UChain(80.899999999999679 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.227733779492196 ,2.948325420578839 ) ] ]))
+,
+UChain(80.999999999999673 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.598999340151636 ,15.377537607607415 ) ] ]))
+,
+UChain(81.099999999999667 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.526514778635113 ,-5.5017272692015133 ) ] ]))
+,
+UChain(81.199999999999662 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.516327025949597 ,-14.192890476377682 ) ] ]))
+,
+UChain(81.299999999999656 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3671234257585994 ,-0.25443139178858321 ) ] ]))
+,
+UChain(81.39999999999965 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3770648794334059 ,7.2977142420994223 ) ] ]))
+,
+UChain(81.499999999999645 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5899382514768745 ,19.387131469042753 ) ] ]))
+,
+UChain(81.599999999999639 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.344246006242809 ,19.845274678953722 ) ] ]))
+,
+UChain(81.699999999999633 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.05740806778515628 ,10.628856279481314 ) ] ]))
+,
+UChain(81.799999999999628 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,882000,926100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.8606844060037133 ,18.523671618026327 ) ] ]))
+,
+UChain(81.899999999999622 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.18866379751768 ,7.6804886394001093 ) ] ]))
+,
+UChain(81.999999999999616 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.93097842548157 ,3.4965209000614683 ) ] ]))
+,
+UChain(82.099999999999611 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.229714587372387 ,2.9468032379900055 ) ] ]))
+,
+UChain(82.199999999999605 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3770648794334059 ,7.2977142420994223 ) ] ]))
+,
+UChain(82.299999999999599 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5895253166895151 ,19.384825249636187 ) ] ]))
+,
+UChain(82.399999999999594 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3470881602675107 ,19.845518044490706 ) ] ]))
+,
+UChain(82.499999999999588 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.054312175174355826 ,10.629358716186946 ) ] ]))
+,
+UChain(82.599999999999582 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3519438946009807 ,1.9913210569364326 ) ] ]))
+,
+UChain(82.699999999999577 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.698724596523569 ,0.64639141983905191 ) ] ]))
+,
+UChain(82.799999999999571 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1640963736538374 ,2.9499826312281874 ) ] ]))
+,
+UChain(82.899999999999565 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85794713630464425 ,-4.6943460537429811 ) ] ]))
+,
+UChain(82.999999999999559 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6269741961245385 ,-16.949008774320411 ) ] ]))
+,
+UChain(83.099999999999554 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2296798957191246 ,3.8844431589741557 ) ] ]))
+,
+UChain(83.199999999999548 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.689197265248298 ,-1.8876846368339506 ) ] ]))
+,
+UChain(83.299999999999542 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.42243366292676 ,1.5279531291101911 ) ] ]))
+,
+UChain(83.399999999999537 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.154708707582957 ,0.37273585000035414 ) ] ]))
+,
+UChain(83.499999999999531 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.147393449803879 ,8.6497649574527493 ) ] ]))
+,
+UChain(83.599999999999525 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.603356672452374 ,15.375838929568983 ) ] ]))
+,
+UChain(83.69999999999952 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.525255650694648 ,-5.5028464122616905 ) ] ]))
+,
+UChain(83.799999999999514 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.521232547754444 ,-14.194763688234026 ) ] ]))
+,
+UChain(83.899999999999508 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.371934112930278 ,-0.25284546213184766 ) ] ]))
+,
+UChain(83.999999999999503 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3804515769600387 ,7.293737162119398 ) ] ]))
+,
+UChain(84.099999999999497 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5891811543186307 ,19.386824018556421 ) ] ]))
+,
+UChain(84.199999999999491 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.1749711170812196 ,5.3158287765111334 ) ] ]))
+,
+UChain(84.299999999999486 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3510723188932259 ,1.9917435866595445 ) ] ]))
+,
+UChain(84.39999999999948 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.70166144859073 ,0.6454007065094336 ) ] ]))
+,
+UChain(84.499999999999474 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1610141840198098 ,2.9483724088489893 ) ] ]))
+,
+UChain(84.599999999999469 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,617400,661500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(17.769298624577988 ,4.1485632121009441 ) ] ]))
+,
+UChain(84.699999999999463 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1058400,1102500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(14.057801169026241 ,8.4828968579715216 ) ] ]))
+,
+UChain(84.799999999999457 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1984500,2028600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(15.698763934973762 ,6.6321539911846328 ) ] ]))
+,
+UChain(84.899999999999451 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,352800,396900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.206548098134011 ,-7.4874605164589809 ) ] ]))
+,
+UChain(84.999999999999446 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1190700,1234800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.067078574698201 ,-9.4352947716710069 ) ] ]))
+,
+UChain(85.09999999999944 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2072700,2116800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-9.6603684193878543 ,-6.4962226774175029 ) ] ]))
+,
+UChain(85.199999999999434 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.692153282741179 ,-1.8889177383937517 ) ] ]))
+,
+UChain(85.299999999999429 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.419219383512598 ,1.5241246642742734 ) ] ]))
+,
+UChain(85.399999999999423 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.159734541745923 ,0.37104200457361181 ) ] ]))
+,
+UChain(85.499999999999417 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.14570170447573 ,8.6459647155832755 ) ] ]))
+,
+UChain(85.599999999999412 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.607452022620645 ,15.370410712099275 ) ] ]))
+,
+UChain(85.699999999999406 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.53028779981954 ,-5.500385490148898 ) ] ]))
+,
+UChain(85.7999999999994 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.517421359944315 ,-14.195977815927559 ) ] ]))
+,
+UChain(85.899999999999395 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3695439734388035 ,-0.25664287678733411 ) ] ]))
+,
+UChain(85.999999999999389 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3776613010320879 ,7.2982971997077106 ) ] ]))
+,
+UChain(86.099999999999383 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5898104988009254 ,19.385475064172823 ) ] ]))
+,
+UChain(86.199999999999378 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3474991733723094 ,19.835676123538523 ) ] ]))
+,
+UChain(86.299999999999372 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.052187711671656256 ,10.624886437167165 ) ] ]))
+,
+UChain(86.399999999999366 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3522794674732839 ,1.9951514941259418 ) ] ]))
+,
+UChain(86.499999999999361 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.701247628064229 ,0.6458577648150543 ) ] ]))
+,
+UChain(86.599999999999355 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1625478813019239 ,2.9551705171970521 ) ] ]))
+,
+UChain(86.699999999999349 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.85901378253400829 ,-4.6939133110962894 ) ] ]))
+,
+UChain(86.799999999999343 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6263933193405453 ,-16.951084956179635 ) ] ]))
+,
+UChain(86.899999999999338 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5122259093380297 ,9.7244758470321102 ) ] ]))
+,
+UChain(86.999999999999332 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,264600,308700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.424924731911556 ,-6.1231320971929222 ) ] ]))
+,
+UChain(87.099999999999326 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.233374618659667 ,3.8864957123868704 ) ] ]))
+,
+UChain(87.199999999999321 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.687609893244034 ,-1.8921611550118378 ) ] ]))
+,
+UChain(87.299999999999315 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.41863734974601 ,1.5256479188389793 ) ] ]))
+,
+UChain(87.399999999999309 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.159756194923714 ,0.37039325307939741 ) ] ]))
+,
+UChain(87.499999999999304 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.148697710484601 ,8.644205375418835 ) ] ]))
+,
+UChain(87.599999999999298 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.606473207706888 ,15.366304588831463 ) ] ]))
+,
+UChain(87.699999999999292 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.532161475954911 ,-5.4950440157035558 ) ] ]))
+,
+UChain(87.799999999999287 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.520189290977978 ,-14.195526203948718 ) ] ]))
+,
+UChain(87.899999999999281 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3677247860975754 ,-0.26037181964291056 ) ] ]))
+,
+UChain(87.999999999999275 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3801599159975106 ,7.2966367660446929 ) ] ]))
+,
+UChain(88.09999999999927 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5897319891491613 ,19.383603673170327 ) ] ]))
+,
+UChain(88.199999999999264 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3466683608406029 ,19.838315965206977 ) ] ]))
+,
+UChain(88.299999999999258 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.054038523525818949 ,10.628281193584645 ) ] ]))
+,
+UChain(88.399999999999253 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3479796585893564 ,1.9915033169350016 ) ] ]))
+,
+UChain(88.499999999999247 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.705021092038873 ,0.64088250576291639 ) ] ]))
+,
+UChain(88.599999999999241 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1602376179496412 ,2.9533711441028743 ) ] ]))
+,
+UChain(88.699999999999235 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1719900,1764000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.652297041331543 ,1.8774367156109051 ) ] ]))
+,
+UChain(88.79999999999923 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.685001145554835 ,-1.8881824814606296 ) ] ]))
+,
+UChain(88.899999999999224 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.417436984726983 ,1.5245983593805024 ) ] ]))
+,
+UChain(88.999999999999218 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.162583538826064 ,0.36864481552055128 ) ] ]))
+,
+UChain(89.099999999999213 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.152633050509927 ,8.6413629112371826 ) ] ]))
+,
+UChain(89.199999999999207 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.604828072082579 ,15.368249883703356 ) ] ]))
+,
+UChain(89.299999999999201 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.532448388534878 ,-5.4964303309835678 ) ] ]))
+,
+UChain(89.399999999999196 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.515918749440171 ,-14.19606866143153 ) ] ]))
+,
+UChain(89.49999999999919 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3642667520181853 ,-0.25692895276417271 ) ] ]))
+,
+UChain(89.599999999999184 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3800720858122704 ,7.2945297673802401 ) ] ]))
+,
+UChain(89.699999999999179 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5907034890167915 ,19.383167092857235 ) ] ]))
+,
+UChain(89.799999999999173 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3499550326853864 ,19.841133755159831 ) ] ]))
+,
+UChain(89.899999999999167 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.053305481328396187 ,10.629164517716205 ) ] ]))
+,
+UChain(89.999999999999162 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3461159126758124 ,1.9908062736552967 ) ] ]))
+,
+UChain(90.099999999999156 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.705826055743392 ,0.64313375309344334 ) ] ]))
+,
+UChain(90.19999999999915 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1531274655726094 ,2.9558782628773317 ) ] ]))
+,
+UChain(90.299999999999145 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.86416716563839646 ,-4.6910501622153467 ) ] ]))
+,
+UChain(90.399999999999139 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6294908948478413 ,-16.955410600473165 ) ] ]))
+,
+UChain(90.499999999999133 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.5221033540433222 ,9.7255511211431802 ) ] ]))
+,
+UChain(90.599999999999127 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.191679664602511 ,7.6788517818701285 ) ] ]))
+,
+UChain(90.699999999999122 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.921459179239235 ,3.491194858267197 ) ] ]))
+,
+UChain(90.799999999999116 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.229992894270509 ,2.9503783011193496 ) ] ]))
+,
+UChain(90.89999999999911 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.377577676418654 ,7.2919467882279365 ) ] ]))
+,
+UChain(90.999999999999105 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5944813861213381 ,19.38428768651875 ) ] ]))
+,
+UChain(91.099999999999099 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3493331388696852 ,19.841850400380427 ) ] ]))
+,
+UChain(91.199999999999093 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.056478151514995911 ,10.626567262403736 ) ] ]))
+,
+UChain(91.299999999999088 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3500751160143341 ,1.9947391817124149 ) ] ]))
+,
+UChain(91.399999999999082 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.707985701700835 ,0.64389127636186316 ) ] ]))
+,
+UChain(91.499999999999076 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1502295028640255 ,2.9575362522079818 ) ] ]))
+,
+UChain(91.599999999999071 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.86426020536645165 ,-4.6883439560853279 ) ] ]))
+,
+UChain(91.699999999999065 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6269298909745209 ,-16.955439591462167 ) ] ]))
+,
+UChain(91.799999999999059 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2305370000975469 ,3.8917608424755601 ) ] ]))
+,
+UChain(91.899999999999054 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17417001909790564 ,5.3100764535358325 ) ] ]))
+,
+UChain(91.999999999999048 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.677920659977197 ,-1.893673362731223 ) ] ]))
+,
+UChain(92.099999999999042 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.416063368368338 ,1.5308391340367455 ) ] ]))
+,
+UChain(92.199999999999037 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.159829034821586 ,0.37025940383131672 ) ] ]))
+,
+UChain(92.299999999999031 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.153746042915643 ,8.6482131412779673 ) ] ]))
+,
+UChain(92.399999999999025 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.607199249251753 ,15.369821500960178 ) ] ]))
+,
+UChain(92.499999999999019 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.533112962293032 ,-5.5012110671767234 ) ] ]))
+,
+UChain(92.599999999999014 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.517814415021867 ,-14.201073291677069 ) ] ]))
+,
+UChain(92.699999999999008 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3664530026296919 ,-0.26151935718822683 ) ] ]))
+,
+UChain(92.799999999999002 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3800844186141745 ,7.2940173032919198 ) ] ]))
+,
+UChain(92.899999999998997 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5909803886231155 ,19.382954736533989 ) ] ]))
+,
+UChain(92.999999999998991 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3521788710616747 ,19.838053939492269 ) ] ]))
+,
+UChain(93.099999999998985 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.057096043162245813 ,10.626350132844475 ) ] ]))
+,
+UChain(93.19999999999898 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3498313287061068 ,1.988980192017733 ) ] ]))
+,
+UChain(93.299999999998974 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.704483269336993 ,0.64292555241808547 ) ] ]))
+,
+UChain(93.399999999998968 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1456793434681742 ,2.9568164899735327 ) ] ]))
+,
+UChain(93.499999999998963 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.86249606012562818 ,-4.6921780205179182 ) ] ]))
+,
+UChain(93.599999999998957 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6285265256663415 ,-16.962218324059894 ) ] ]))
+,
+UChain(93.699999999998951 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,220500,264600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-6.525348934157174 ,9.7263559365963168 ) ] ]))
+,
+UChain(93.799999999998946 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1896300,1940400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.188479656932429 ,7.6746328208376058 ) ] ]))
+,
+UChain(93.89999999999894 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,970200,1014300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(11.921879822646805 ,3.4902782802172627 ) ] ]))
+,
+UChain(93.999999999998934 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1631700,1675800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(12.231105805806806 ,2.9572845959929994 ) ] ]))
+,
+UChain(94.099999999998929 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3836305283293724 ,7.2968004393829577 ) ] ]))
+,
+UChain(94.199999999998923 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5909749990123356 ,19.385225870678411 ) ] ]))
+,
+UChain(94.299999999998917 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.353747320798421 ,19.834788044146357 ) ] ]))
+,
+UChain(94.399999999998911 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.058389456311960242 ,10.627781523328355 ) ] ]))
+,
+UChain(94.499999999998906 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3517022670691801 ,1.9907057725299682 ) ] ]))
+,
+UChain(94.5999999999989 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.707802236689496 ,0.64386609941214257 ) ] ]))
+,
+UChain(94.699999999998894 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1486279898337379 ,2.959068069433628 ) ] ]))
+,
+UChain(94.799999999998889 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.86019394751036593 ,-4.6928620186106951 ) ] ]))
+,
+UChain(94.899999999998883 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1323000,1367100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(16.912682776820098 ,-9.2462646910532786 ) ] ]))
+,
+UChain(94.999999999998877 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,749700,793800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(6.8736016369856445 ,-4.9936297359483746 ) ] ]))
+,
+UChain(95.099999999998872 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.265428267963006 ,12.327799829951086 ) ] ]))
+,
+UChain(95.199999999998866 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.156907787472804 ,8.6455460753044377 ) ] ]))
+,
+UChain(95.29999999999886 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.610877050662985 ,15.376007135021151 ) ] ]))
+,
+UChain(95.399999999998855 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.538550259202831 ,-5.4976291928477261 ) ] ]))
+,
+UChain(95.499999999998849 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.518491337072369 ,-14.203979801927151 ) ] ]))
+,
+UChain(95.599999999998843 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3645561354219335 ,-0.25496685891744919 ) ] ]))
+,
+UChain(95.699999999998838 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3814712403213667 ,7.301773396906639 ) ] ]))
+,
+UChain(95.799999999998832 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5891759933767591 ,19.392286468859645 ) ] ]))
+,
+UChain(95.899999999998826 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3522104919730449 ,19.839020658439598 ) ] ]))
+,
+UChain(95.99999999999882 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.055189894759355429 ,10.626890763372314 ) ] ]))
+,
+UChain(96.099999999998815 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,529200,573300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.3513363593540704 ,1.9956468395090976 ) ] ]))
+,
+UChain(96.199999999998809 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.703075002840077 ,0.64291363900187193 ) ] ]))
+,
+UChain(96.299999999998803 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1501239422354743 ,2.9565314335794257 ) ] ]))
+,
+UChain(96.399999999998798 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,132300,176400,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.86402539355424857 ,-4.6892632725143883 ) ] ]))
+,
+UChain(96.499999999998792 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,176400,220500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-2.6268836859073597 ,-16.959934728284658 ) ] ]))
+,
+UChain(96.599999999998786 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,396900,441000,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.2312314337462098 ,3.8913371440824829 ) ] ]))
+,
+UChain(96.699999999998781 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,661500,705600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(0.17006101734802215 ,5.3061508388616252 ) ] ]))
+,
+UChain(96.799999999998775 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,0,44100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-15.666229441438315 ,-1.8899430736245026 ) ] ]))
+,
+UChain(96.899999999998769 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,88200,132300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.412035888987639 ,1.5311577931225306 ) ] ]))
+,
+UChain(96.999999999998764 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,44100,88200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-12.156490812871091 ,0.37851961681871771 ) ] ]))
+,
+UChain(97.099999999998758 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.154271098974242 ,8.6466629092557099 ) ] ]))
+,
+UChain(97.199999999998752 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.609071827505787 ,15.370247627594292 ) ] ]))
+,
+UChain(97.299999999998747 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.535906296094078 ,-5.4961324328471957 ) ] ]))
+,
+UChain(97.399999999998741 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.517323383451011 ,-14.204558298670133 ) ] ]))
+,
+UChain(97.499999999998735 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3708766253007223 ,-0.25467122361985117 ) ] ]))
+,
+UChain(97.59999999999873 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3755636595872831 ,7.3030076017574919 ) ] ]))
+,
+UChain(97.699999999998724 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5915150535920186 ,19.392023251645373 ) ] ]))
+,
+UChain(97.799999999998718 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3493557613707576 ,19.84442901182685 ) ] ]))
+,
+UChain(97.899999999998712 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.054867709510091345 ,10.624749997458309 ) ] ]))
+,
+UChain(97.999999999998707 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.6872830235295417 ,15.65410397395663 ) ] ]))
+,
+UChain(98.099999999998701 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.959920915733996 ,16.038327734218353 ) ] ]))
+,
+UChain(98.199999999998695 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.268629549566704 ,12.325705286155753 ) ] ]))
+,
+UChain(98.29999999999869 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.151598648686655 ,8.6452443147456304 ) ] ]))
+,
+UChain(98.399999999998684 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.609807711149084 ,15.369501518767246 ) ] ]))
+,
+UChain(98.499999999998678 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1411200,1455300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.542699689288924 ,-5.4968704252811795 ) ] ]))
+,
+UChain(98.599999999998673 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1852200,1896300,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-16.520731983373363 ,-14.202859985402837 ) ] ]))
+,
+UChain(98.699999999998667 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1543500,1587600,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-7.3702173290643591 ,-0.25815215484643828 ) ] ]))
+,
+UChain(98.799999999998661 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1499400,1543500,1 , false) ] ], [ 'wfsSource', [ 'point', Point(2.3727684807865712 ,7.3055168445325647 ) ] ]))
+,
+UChain(98.899999999998656 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,308700,352800,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-1.5914941946764949 ,19.388491151665249 ) ] ]))
+,
+UChain(98.99999999999865 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1808100,1852200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-8.3521845747467296 ,19.844884953994839 ) ] ]))
+,
+UChain(99.099999999998644 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1234800,1278900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-0.051551247663943478 ,10.624449739895008 ) ] ]))
+,
+UChain(99.199999999998639 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,441000,485100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-3.6863573825928775 ,15.654810672566519 ) ] ]))
+,
+UChain(99.299999999998633 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1587600,1631700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-11.961278122971702 ,16.034971145273254 ) ] ]))
+,
+UChain(99.399999999998627 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,1764000,1808100,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.269941061953528 ,12.325126528664057 ) ] ]))
+,
+UChain(99.499999999998622 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,793800,837900,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-18.153093043512751 ,8.6462281432845742 ) ] ]))
+,
+UChain(99.599999999998616 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,705600,749700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-17.613783628649387 ,15.36606982564415 ) ] ]))
+,
+UChain(99.69999999999861 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,926100,970200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-4.770066284776842 ,12.878291800123019 ) ] ]))
+,
+UChain(99.799999999998604 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,485100,529200,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-13.698612138220447 ,0.6402981032617161 ) ] ]))
+,
+UChain(99.899999999998599 , 0.0,0.10000000000000001 , [ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav", 5732610, 1, 44100,2028600,2072700,1 , false) ] ], [ 'wfsSource', [ 'point', Point(-5.1501198585594299 ,2.9505205872599749 ) ] ]))
+ )
+).name_("roland_ants")

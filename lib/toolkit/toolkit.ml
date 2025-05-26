@@ -156,3 +156,18 @@ let fst (x, _) = x
 let sec (_, y) = y
 
 let flatten arr = arr |> Array.fold_left Array.append [||]
+
+let generate_timestamp_filename ?(prefix="tmp_") ?(suffix="") () =
+  let time = Unix.localtime (Unix.time ()) in
+  let filename = Printf.sprintf "%s%02d_%02d_%02d_%02d%s"
+    prefix
+    (time.Unix.tm_mon + 1)
+    time.Unix.tm_mday
+    time.Unix.tm_hour
+    time.Unix.tm_min
+    suffix
+  in
+  filename
+
+let quote str =   
+  "\"" ^ str ^ "\""

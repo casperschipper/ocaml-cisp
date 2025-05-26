@@ -1,7 +1,6 @@
 module S = Lo.Server
-
 open Ants
- 
+
 let () = Process.sample_rate := 48000.0
 
 let alpha = 1.0 (*  prefer paths with lots of pheromone *)
@@ -9,7 +8,7 @@ let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 let beta = 1.0 (* prefer paths that are shorter *)
 
 let num_nodes = 49
- 
+
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
 let evaporation = 0.43
@@ -20,16 +19,14 @@ let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 14
+let max_tour = 15
 
-let brownian = 0.0001
- 
-(* to update parameters over OSC and/or websocket while the audio thread is running *) 
+let brownian = 0.0
+
+(* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
 
 let shortest = ref 0.0
-
-
 
 let update_position x y z_opt (Node old) =
   Node {id= old.id; x; y; z= Option.value ~default:0.0 z_opt; sync= Modified}
@@ -53,7 +50,7 @@ let mkNode id x y z = Node {id; x; y; z; sync= Pristine}
 (* [|(0.25, 0.25); (0.75, 0.25); (0.75, 0.75); (0.25, 0.75)|] *)
 
 let nodes =
-  let seed = 123 (*121*) |> Cisp.debugi "my random seed" in
+  let seed = 124 (*121*) |> Cisp.debugi "my random seed" in
   (* let seed = Random.int 12000 |> Cisp.debugi "myseed" in *)
   (* generate_grid n_side *)
   Spacegen.generate_random_points_3d ~seed ~count:num_nodes ~max_x:1.0
@@ -373,7 +370,7 @@ let osc_thread_function write_history_callback () =
   in
   while true do
     S.recv server ;
-    print_endline "osc" ;
+    (* print_endline "osc" ; *)
     swap_buffers ()
     (* Swap buffers at a safe point, can be adjusted based on needs *)
   done
@@ -1120,7 +1117,7 @@ let nodes_history recordsArray phers =
     else ()
   in
   let nodeWriter = Seq.map2 writeOneNode count nds in
-  pulse (st 441) nodeWriter (st ())
+  pulse (st 44) nodeWriter (st ())
 
 (*start duration envelope index transpose x y*)
 let pitch_of_z z = (z *. 24.0) -. 12.0 |> Cisp.mtor
@@ -1150,7 +1147,7 @@ let createCsound2 filename nodes =
     let channel = node |> get_node_id |> intPar in
     let dur2 = dur |> floatPar in
     let attack = 0.00001 |> floatPar in
-    let decay = 0.1 |> floatPar in
+    let decay = dur |> floatPar in
     let sustain = 0.0 |> floatPar in
     let release = 0.0 |> floatPar in
     fromArgs 1 start dur offset trans channel dur2 attack decay sustain release
@@ -1158,12 +1155,57 @@ let createCsound2 filename nodes =
   map2 from_node nodes count |> List.of_seq |> Csound.mkScore
   |> render_cscore_to_file filename
 
+
+type dist_node = DistNode of {d: float; node: node}
+
+let get_delta (DistNode dn) = dn.d
+
+let get_dist_node (DistNode dn) = dn.node
+
+let distnode a b = DistNode {d= distance a b; node= a}
+
+let rec distanced_nodes nodes () =
+  let open Seq in
+  match nodes () with
+  | Cons (first, tail) -> (
+    match tail () with
+    | Cons (second, tail2) -> Cons (distnode first second, distanced_nodes tail)
+    | Nil -> Nil )
+  | Nil -> Nil
+
+let createCsound3 filename nodes =
+  let dnodes = distanced_nodes nodes in
+  let open Csound in
+  let open Cisp in
+  let tsteps = dnodes |> fmap (fun n -> (get_delta n) *. 0.01) in
+  let starts = 
+    walk 0.0 tsteps
+  in
+  let from_node start node number =
+    let dur = 128.0 /. 44100.0 in
+    let offset = 44100 * get_node_id node |> intPar in
+    let trans = node |> get_node_z |> linlin 0.0 1.0 (-12.0) 12.0 |> floatPar in
+    let channel = node |> get_node_id |> intPar in
+    let dur2 = dur |> floatPar in
+    let attack = 0.00001 |> floatPar in
+    let decay = dur *. Toolkit.rvfi 0.5 3.0 |> floatPar in
+    let sustain = 0.0 |> floatPar in
+    let release = 0.0 |> floatPar in
+    fromArgs 1 start dur offset trans channel dur2 attack decay sustain release
+  in
+  map3 from_node starts nodes count |> List.of_seq |> Csound.mkScore
+  |> render_cscore_to_file filename
+
 let csoundWithEffect nodes =
   let n = 120.0 /. csoundGrain |> int_of_float in
   let _ = Cisp.debugi "amount" n in
   nodes |> Seq.take n |> createCsound2 "antscore2.sco" ;
-  Printf.printf "Finished Csound, result = %d"
-    (Sys.command "csound -j8 csound/play_samples.csd") ;
+  let output_file_name =
+    Toolkit.generate_timestamp_filename ~prefix:"output" ~suffix:".wav" ()
+  in
+  print_endline output_file_name ;
+  Sys.command ("csound -j8 csound/play_samples.csd -o " ^ output_file_name)
+  |> Printf.printf "Finished Csound, result = %d" ;
   print_endline "🔈 csound is finished"
 
 let num_channels = 49
@@ -1171,17 +1213,14 @@ let num_channels = 49
 (* Define a simple pulse function: e.g., a small Gaussian centered at 0. *)
 let finalWrite record_array =
   print_endline "\nwriting Wfs Score\n" ;
-  let nodes = 
-  record_array |> Array.to_seq
-  |> Seq.filter_map (fun x -> x)
-  in
+  let nodes = record_array |> Array.to_seq |> Seq.filter_map (fun x -> x) in
   nodes |> rolandifier |> List.of_seq |> Wfs.score "roland_ants"
   |> Wfs.score_to_string
   |> Toolkit.write_string_to_file "wfs_score.uscore" ;
-  print_endline "✅ wfs score written";
-  nodes |> csoundWithEffect;
-  print_endline "write just the nodes";
-  nodes |> Ants.write_node_seq_to_file "nodes.json";
+  print_endline "✅ wfs score written" ;
+  nodes |> csoundWithEffect ;
+  print_endline "write just the nodes" ;
+  nodes |> Ants.write_node_seq_to_file "nodes.json" ;
   print_endline "✅ nodes json written"
 
 let array_as_infinite_stream arr =
@@ -1526,7 +1565,6 @@ let midiOut phers =
   in
   Midi.playMidi f Process.sample_rate
 
-
 let createCsound filename nodes =
   let open Csound in
   let indexes = nodes |> Seq.map (fun n -> n |> get_node_id) in
@@ -1556,12 +1594,7 @@ let createCsound filename nodes =
   in
   render_cscore_to_file filename score
 
-
-
-type mode
-  = Realtime
-  | NonRealtime
-  | FromNodes
+type mode = Realtime | NonRealtime | FromNodes
 
 let program_mode = Realtime
 (*
@@ -1572,25 +1605,25 @@ The score we might built
 *)
 
 let () =
-  let record_array = Array.init 65_536 (fun _ -> None) in
+  let record_array = Array.init 262_144 (fun _ -> None) in
   let handle_end () =
     print_string "lets close this and write to file" ;
     let _ = Thread.create finalWrite record_array in
     ()
   in
   match program_mode with
-  | Realtime -> 
-    let phers = mkPheromonesArr in
-    let array1, array2 = (duplicateArrArr phers, duplicateArrArr phers) in
-    (* recording materials *)
-    let otherEffect = nodes_history record_array array1 in
-    let _ = Thread.create (jackMain array1 array2 otherEffect) () in
-    (*
+  | Realtime ->
+      let phers = mkPheromonesArr in
+      let array1, array2 = (duplicateArrArr phers, duplicateArrArr phers) in
+      (* recording materials *)
+      let otherEffect = nodes_history record_array array1 in
+      let _ = Thread.create (jackMain array1 array2 otherEffect) () in
+      (*
      let array1 = duplicateArrArr pheromones in *)
-    let _ = Thread.create (osc_thread_function handle_end) () in
-    let _ = Thread.create (dream_thread array1 nodes) () in
-    (* let _ = Thread.create midiOut array1 in *)
-    (* let _ =
+      let _ = Thread.create (osc_thread_function handle_end) () in
+      let _ = Thread.create (dream_thread array1 nodes) () in
+      (* let _ = Thread.create midiOut array1 in *)
+      (* let _ =
       print_int
         (Sys.command
            "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1" ) ;
@@ -1599,12 +1632,11 @@ let () =
            "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in" ) ;
       ignore (Sys.command "jack_lsp -c -A | grep ocaml")
     in*)
-    while true do
-      Unix.sleep 1
-    done
-  | NonRealtime -> 
-    let pheromones = mkPheromonesArr in
-    non_realtime2 120 pheromones
-      "/Users/casperschipper/Music/ants/slower_convolve.wav"
-  | FromNodes  -> 
-    ()
+      while true do
+        Unix.sleep 1
+      done
+  | NonRealtime ->
+      let pheromones = mkPheromonesArr in
+      non_realtime2 120 pheromones
+        "/Users/casperschipper/Music/ants/slower_convolve.wav"
+  | FromNodes -> ()

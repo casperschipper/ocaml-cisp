@@ -69,6 +69,11 @@ val sec : 'a * 'b -> 'b
 val flatten : 'a array array -> 'a array
 
 val write_string_to_file : string -> string -> unit
+val generate_timestamp_filename :
+  ?prefix:string -> ?suffix:string -> unit -> string
+
+val quote : string -> string
+
 
 
 

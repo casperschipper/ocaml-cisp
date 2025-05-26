@@ -2,7 +2,7 @@
 <CsOptions>
 ; Output 64-channel WAV file
 ; Adjust filename and sample rate/format as needed
--o output113.wav -W -d --format=wav --sample-rate=48000 --nchnls=64
+-W -d --format=wav --sample-rate=48000 --nchnls=64
 </CsOptions>
 <CsInstruments>
 sr = 48000

@@ -2,7 +2,7 @@
 <CsOptions>
 ; Output 64-channel WAV file
 ; Adjust filename and sample rate/format as needed
--o test1.wav -W -d --format=wav --sample-rate=48000 --nchnls=64
+-o output113.wav -W -d --format=wav --sample-rate=48000 --nchnls=64
 </CsOptions>
 <CsInstruments>
 sr = 48000
@@ -112,7 +112,7 @@ endin
 
 <CsScore>
 ; p1 inst ; p2 start ; p3 dur ; p4 = offset (in samples) ; p5 = transpose ratio (1 = original pitch) ; p6 = output channel (0–63) ; p7 = duration in seconds ; p8–p11 = ADSR (a, d, s, r)
-#include "../antscore.sco"
+#include "../antscore2.sco"
 
 </CsScore>
 </CsoundSynthesizer>

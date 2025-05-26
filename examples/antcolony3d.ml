@@ -1,5 +1,7 @@
 module S = Lo.Server
 
+open Ants
+ 
 let () = Process.sample_rate := 48000.0
 
 let alpha = 1.0 (*  prefer paths with lots of pheromone *)
@@ -7,7 +9,7 @@ let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 let beta = 1.0 (* prefer paths that are shorter *)
 
 let num_nodes = 49
-
+ 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
 let evaporation = 0.43
@@ -21,15 +23,13 @@ let num_ants = 10
 let max_tour = 14
 
 let brownian = 0.0001
-
-(* to update parameters over OSC and/or websocket while the audio thread is running *)
+ 
+(* to update parameters over OSC and/or websocket while the audio thread is running *) 
 let buffer_mutex = Mutex.create ()
 
 let shortest = ref 0.0
 
-type sync = Modified | Synced | Pristine
 
-type node = Node of {id: int; x: float; y: float; z: float; sync: sync}
 
 let update_position x y z_opt (Node old) =
   Node {id= old.id; x; y; z= Option.value ~default:0.0 z_opt; sync= Modified}
@@ -948,6 +948,30 @@ let justThePath pheromones repeats =
   let init = (random_index (), 0) in
   Cisp.recursive c init u eval |> Cisp.hold (st repeats) |> Seq.unzip
 
+(* this turns the segments into points that we can render in a csound score *)
+type point = {x: float; y: float; z: float; t: float}
+
+(* let distance a b =
+  let dx = a.x -. b.x in
+  let dy = a.y -. b.y in
+  let dz = a.z -. b.z in
+  sqrt (dx *. dx +. dy *. dy +. dz *. dz) *)
+
+let node_to_point_seq (scale : float) (speed : float) (nodes : node Seq.t) :
+    point Seq.t =
+  let rec aux prev rest () =
+    match (prev, rest ()) with
+    | Some (Node a), Seq.Cons (Node b, tl) ->
+        let dist = distance (Node a) (Node b) in
+        let t = dist /. speed in
+        Seq.Cons ({x= a.x; y= a.y; z= a.z; t}, aux (Some (Node b)) tl)
+    | Some (Node a), Seq.Nil ->
+        Seq.Cons ({x= a.x; y= a.y; z= a.z; t= 0.0}, fun () -> Seq.Nil)
+    | None, Seq.Cons (Node b, tl) -> aux (Some (Node b)) tl ()
+    | None, Seq.Nil -> Seq.Nil
+  in
+  aux None nodes
+
 (* let justThePathButLines =
   let interpolate_segment ~start ~stop ~samples =
     let step = (stop -. start) /. float_of_int samples in
@@ -1057,7 +1081,9 @@ let stereosig holder pheromones =
 let bunch s pheromones () =
   let open Cisp in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
-  let stereos = [s*2;s*3] |> List.to_seq |> fmap (fun n -> stereosig n pheromones) in
+  let stereos =
+    [s * 2; s * 3] |> List.to_seq |> fmap (fun n -> stereosig n pheromones)
+  in
   let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
 
@@ -1089,36 +1115,74 @@ let nodes_history recordsArray phers =
   let idx = 0 in
   let open Cisp in
   let writeOneNode idx node =
-    if idx < size - 1 then recordsArray.(idx) <- Some node else 
-      if idx = size then
-        print_endline "📼 recording completed"
-      else ()
+    if idx < size - 1 then recordsArray.(idx) <- Some node
+    else if idx = size then print_endline "📼 recording completed"
+    else ()
   in
   let nodeWriter = Seq.map2 writeOneNode count nds in
   pulse (st 441) nodeWriter (st ())
 
 (*start duration envelope index transpose x y*)
-let pitch_of_z z = 
-  (z *. 24.0) -. 12.0 |> Cisp.mtor 
+let pitch_of_z z = (z *. 24.0) -. 12.0 |> Cisp.mtor
+
 let rolandifier nds =
   let open Wfs in
   let open Cisp in
   let scale x = linlin 0.0 1.0 (-20.0) 20.0 x in
   rolandEvent
   <$> walk 0.0 (st 0.02)
-  <*> st 0.1 <*> st Wfs.defaultEnv <*> Seq.map get_node_id nds <*> Seq.map (fun n -> n|>  get_node_z |> pitch_of_z) nds
+  <*> st 0.1 <*> st Wfs.defaultEnv <*> Seq.map get_node_id nds
+  <*> Seq.map (fun n -> n |> get_node_z |> pitch_of_z) nds
   <*> Seq.map (fun n -> n |> get_node_x |> scale) nds
   <*> Seq.map (fun n -> n |> get_node_y |> scale) nds
 
-let finalWrite record_array  =
-  print_string "\nwriting Wfs Score\n" ;
-  flush stdout ;
+let csoundGrain = 128.0 /. 44100.0
+
+
+let createCsound2 filename nodes =
+  let open Csound in
+  let open Cisp in
+  let from_node node number =
+    let start = 0.001 *. (number |> float_of_int) in
+    let dur = 128.0 /. 44100.0 in
+    let offset = 44100 * get_node_id node |> intPar in
+    let trans = node |> get_node_z |> linlin 0.0 1.0 (-12.0) 12.0 |> floatPar in
+    let channel = node |> get_node_id |> intPar in
+    let dur2 = dur |> floatPar in
+    let attack = 0.00001 |> floatPar in
+    let decay = 0.1 |> floatPar in
+    let sustain = 0.0 |> floatPar in
+    let release = 0.0 |> floatPar in
+    fromArgs 1 start dur offset trans channel dur2 attack decay sustain release
+  in
+  map2 from_node nodes count |> List.of_seq |> Csound.mkScore
+  |> render_cscore_to_file filename
+
+let csoundWithEffect nodes =
+  let n = 120.0 /. csoundGrain |> int_of_float in
+  let _ = Cisp.debugi "amount" n in
+  nodes |> Seq.take n |> createCsound2 "antscore2.sco" ;
+  Printf.printf "Finished Csound, result = %d"
+    (Sys.command "csound -j8 csound/play_samples.csd") ;
+  print_endline "🔈 csound is finished"
+
+let num_channels = 49
+
+(* Define a simple pulse function: e.g., a small Gaussian centered at 0. *)
+let finalWrite record_array =
+  print_endline "\nwriting Wfs Score\n" ;
+  let nodes = 
   record_array |> Array.to_seq
   |> Seq.filter_map (fun x -> x)
-  |> rolandifier |> List.of_seq |> Wfs.score "roland_ants"
+  in
+  nodes |> rolandifier |> List.of_seq |> Wfs.score "roland_ants"
   |> Wfs.score_to_string
   |> Toolkit.write_string_to_file "wfs_score.uscore" ;
-  print_endline "✅ wfs score written"
+  print_endline "✅ wfs score written";
+  nodes |> csoundWithEffect;
+  print_endline "write just the nodes";
+  nodes |> Ants.write_node_seq_to_file "nodes.json";
+  print_endline "✅ nodes json written"
 
 let array_as_infinite_stream arr =
   let length = Array.length arr in
@@ -1462,7 +1526,6 @@ let midiOut phers =
   in
   Midi.playMidi f Process.sample_rate
 
-let csoundGrain = 0.0125
 
 let createCsound filename nodes =
   let open Csound in
@@ -1491,18 +1554,16 @@ let createCsound filename nodes =
       ; st (floatPar 0.0)
       ; st (floatPar 0.0) ]
   in
-  render_cscore_to_file score filename
+  render_cscore_to_file filename score
 
-let csoundWithEffect () =
-  let n = 240.0 /. csoundGrain |> int_of_float in
-  let _ = Cisp.debugi "amount" n in
-  let phers = mkPheromonesArr in
-  nodesStream phers () |> Seq.take n
-  |> Cisp.effectsSync [only_compute phers; push_nodes ()]
-  |> createCsound "antscore.sco"
 
-let rt = true
 
+type mode
+  = Realtime
+  | NonRealtime
+  | FromNodes
+
+let program_mode = Realtime
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
 
@@ -1510,15 +1571,15 @@ We need a function that reacts to a ctrl+c  to stop the program and write the sc
 The score we might built
 *)
 
-
 let () =
-  let record_array = Array.init 4_048 (fun _ -> None) in
+  let record_array = Array.init 65_536 (fun _ -> None) in
   let handle_end () =
     print_string "lets close this and write to file" ;
     let _ = Thread.create finalWrite record_array in
     ()
   in
-  if rt then
+  match program_mode with
+  | Realtime -> 
     let phers = mkPheromonesArr in
     let array1, array2 = (duplicateArrArr phers, duplicateArrArr phers) in
     (* recording materials *)
@@ -1529,7 +1590,6 @@ let () =
     let _ = Thread.create (osc_thread_function handle_end) () in
     let _ = Thread.create (dream_thread array1 nodes) () in
     (* let _ = Thread.create midiOut array1 in *)
-    (* let _ = csoundWithEffect () in *)
     (* let _ =
       print_int
         (Sys.command
@@ -1542,7 +1602,9 @@ let () =
     while true do
       Unix.sleep 1
     done
-  else
+  | NonRealtime -> 
     let pheromones = mkPheromonesArr in
     non_realtime2 120 pheromones
       "/Users/casperschipper/Music/ants/slower_convolve.wav"
+  | FromNodes  -> 
+    ()

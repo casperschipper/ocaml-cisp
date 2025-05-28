@@ -1114,7 +1114,7 @@ let push_nodes () =
   countTill (num_nodes - 1)
   |> fmap (fun idx ->
          let new_node = move_node_by_promille nodes.(idx) in
-        ignore (update_matrix_2 idx new_node nodes distance_array) ;
+         ignore (update_matrix_2 idx new_node nodes distance_array) ;
          () )
   |> hold (st 100)
 
@@ -1258,9 +1258,7 @@ let makeSum arrarr () =
          process_audio_stream arr |> hold (st (idx + 1)) )
   |> Array.to_list
 
-let rec live_speed () =
-  Seq.Cons (!current_buffer.speed_of_comp, live_speed)
-  
+let rec live_speed () = Seq.Cons (!current_buffer.speed_of_comp, live_speed)
 
 let slower_compute arr =
   let open Cisp in
@@ -1533,11 +1531,15 @@ let nonrealtime record_length arrarr =
     "/Users/casperschipper/Music/ants/file2_Smaller_tour.wav" Sndfile.WAV_32
 
 let record_list_of_channels prefix duration_in_secs lst =
-  let nsamps = !Process.sample_rate *. duration_in_secs |> floor |> int_of_float in
+  let nsamps =
+    !Process.sample_rate *. duration_in_secs |> floor |> int_of_float
+  in
   let arrays = seqs_to_arrays_in_sync lst nsamps in
   Sndfile.write_multichannel_array arrays
     (!Process.sample_rate |> floor |> int_of_float)
-    ("/Users/casperschipper/Music/ants/" ^ Toolkit.generate_timestamp_filename ~prefix:prefix ~suffix:".wav" ()) Sndfile.WAV_32
+    ( "/Users/casperschipper/Music/ants/"
+    ^ Toolkit.generate_timestamp_filename ~prefix ~suffix:".wav" () )
+    Sndfile.WAV_32
 
 let ssp_signal ?(interp = true) node_to_amp nodes =
   let dnodes = nodes |> distanced_nodes in
@@ -1545,7 +1547,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
   let amps = nodes |> fmap (fun x -> (node_to_amp x *. 2.0) -. 1.0) in
   if interp then
     let ts =
-      dnodes |> fmap (fun x -> get_delta x |> linlin 0.0 1.4 0.00001 0.001)
+      dnodes |> fmap (fun x -> get_delta x |> linlin 0.0 1.4 0.000001 0.0006)
     in
     render_waveform_minimal (zip amps ts)
   else
@@ -1555,36 +1557,54 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
     in
     hold samps amps
 
-let push_nodes_slower =
-  Cisp.pulse live_speed (push_nodes ()) (Cisp.st ())
-
+let push_nodes_slower = Cisp.pulse live_speed (push_nodes ()) (Cisp.st ())
 
 let jackMain array1 array2 otherEffect () =
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
-      [slower_compute array1; slower_compute array2; push_nodes_slower; otherEffect]
+      [ slower_compute array1
+      ; slower_compute array2
+      ; push_nodes_slower
+      ; otherEffect ]
   in
   Jack.playSeqs 0 Process.sample_rate
     ( [ ssp_signal ~interp:true get_node_x (nodesStream array1 ())
       ; ssp_signal ~interp:true get_node_y (nodesStream array2 ())
-      ; ssp_signal ~interp:true get_node_x (nodesStream array2 ()) |> Cisp.hold (Cisp.st 2) ]
+      ; ssp_signal ~interp:true get_node_x (nodesStream array2 ())
+        |> Cisp.hold (Cisp.st 2) ]
     @ [applyEffects (Cisp.st 0.0)] )
+
+let monitor_sample_count label n_interval sq =
+  let open Cisp in
+  zipWith
+    (fun idx x ->
+      if Toolkit.modBy n_interval idx = 0 then (
+        print_endline (label ^ " " ^ string_of_int idx) ;
+        x )
+      else x )
+    count sq
 
 let non_realtime_jackMain title motherArray =
   let voice phers =
     let clone = duplicateArrArr phers in
-    let withEffect = nodesStream clone () |> Cisp.effectSync (slower_compute clone) in
-    ssp_signal ~interp:true get_node_x withEffect 
+    let withEffect =
+      nodesStream clone () |> Cisp.effectSync (slower_compute clone)
+    in
+    ssp_signal ~interp:true get_node_x withEffect
   in
-  let channels =   Cisp.rangei 0 31 |> Seq.map (fun _ -> voice motherArray) |> List.of_seq in
+  let channels =
+    Cisp.rangei 0 31 |> Seq.map (fun _ -> voice motherArray) |> List.of_seq
+  in
   let with_push =
     match channels with
     | [] -> []
-    | hd::tail -> (Cisp.effectSync (push_nodes_slower ) hd) :: tail
+    | hd :: tail -> 
+      let counted = 
+        monitor_sample_count "channel 1, index: " (!Process.sample_rate |> int_of_float) hd
+      in
+      Cisp.effectSync push_nodes_slower counted :: tail
   in
   record_list_of_channels title record_duration with_push
-
- 
 
 let floatToMidi flt = flt *. 128.0 |> floor |> int_of_float
 
@@ -1655,7 +1675,7 @@ let createCsound filename nodes =
 
 type mode = Realtime | NonRealtime | FromNodes
 
-let program_mode = NonRealtime
+let program_mode = Realtime
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
 
@@ -1698,5 +1718,5 @@ let () =
       (* let pheromones = mkPheromonesArr in
       non_realtime2 120 pheromones
         "/Users/casperschipper/Music/ants/slower_convolve.wav" *)
-    non_realtime_jackMain "sing_ants_" (mkPheromonesArr)
+      non_realtime_jackMain "sing_ants_" mkPheromonesArr
   | FromNodes -> ()

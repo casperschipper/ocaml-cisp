@@ -3,7 +3,7 @@ open Ants
 
 let () = Process.sample_rate := 48000.0
 
-let record_duration = 120.0
+let record_duration = 5.0
 
 let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
@@ -13,19 +13,21 @@ let num_nodes = 49
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
-let evaporation = 0.5
+let evaporation = 0.45
 
-let exploration_bias = 0.00000001
+let exploration_bias = 0.0002
 
 let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 4
+let max_tour = 9
 
-let brownian = 0.01
+let brownian = 0.0002
 
-let speed_of_comp = 1500
+let viable_threshold = 2.67
+
+let speed_of_comp = 20
 
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
@@ -176,7 +178,8 @@ type controllers =
   ; exploration_bias: float
   ; max_tour: int
   ; brownian: float
-  ; speed_of_comp: int }
+  ; speed_of_comp: int
+  ; viable_threshold: float }
 
 let controllers_to_string ctr =
   Printf.sprintf
@@ -189,9 +192,10 @@ let controllers_to_string ctr =
     \  max_tour: %d\n\
     \  brownian: %.2f\n\
     \  speed_of_comp: %d\n\
+    \  viable_threshold: %f\n\
      }"
     ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants ctr.max_tour
-    ctr.brownian ctr.speed_of_comp
+    ctr.brownian ctr.speed_of_comp ctr.viable_threshold
 
 type indexed_point = IndexedPoint of {idx: int; x: float; y: float; z: float}
 
@@ -205,6 +209,7 @@ type ctrlMsg =
   | MaxTour of int
   | Brownian of float
   | SpeedOfComp of int
+  | ViableThreshold of float
 
 type oscMessage =
   | CtrlUpdate of ctrlMsg
@@ -223,6 +228,7 @@ let update_ctrl msg ctrl =
   | MaxTour mt -> {ctrl with max_tour= mt}
   | Brownian brown -> {ctrl with brownian= brown}
   | SpeedOfComp sp -> {ctrl with speed_of_comp= sp}
+  | ViableThreshold v -> {ctrl with viable_threshold= v}
 
 let initial =
   { alpha
@@ -233,7 +239,8 @@ let initial =
   ; exploration_bias
   ; max_tour
   ; brownian
-  ; speed_of_comp }
+  ; speed_of_comp
+  ; viable_threshold }
 
 let set_alpha a ctrl = {ctrl with alpha= a}
 
@@ -366,6 +373,9 @@ let parse_osc_message path data =
   | "/speed_of_comp" ->
       data |> handle_int_arg
       |> withDefault (fun s -> CtrlUpdate (SpeedOfComp s))
+  | "/viable_threshold" ->
+      data |> handle_float_arg
+      |> withDefault (fun v -> CtrlUpdate (ViableThreshold v))
   | _ -> Noop
 
 let handle_osc_message_parse finish_history_callback path data =
@@ -932,10 +942,52 @@ let otherSignal pheromones () =
   in
   Cisp.recursive c 0 u eval |> hold (st 30) |> sinosc2
 
+let nodesStream pheromones () =
+  let open Cisp in
+  let random_index () = Toolkit.rvi 0 num_nodes in
+  let c = st () in
+  let u () model =
+    let phers = Array.get pheromones model in
+    let weighted =
+      Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
+    in
+    let next_pher = pick_weighted weighted in
+    match next_pher with
+    | Some i -> i
+    | None -> random_index ()
+  in
+  let eval inp = nodes.(inp) in
+  let init = random_index () in
+  Cisp.recursive c init u eval
+
+let play_node_stereo (Node node) = (node.x -. 0.5, node.y -. 0.5)
+
 (* this creates a stereo signal, navigating through the pheromones only *)
 (* the repeats allows for different update rates , where 1 is sr *)
 let justThePath pheromones repeats =
-  let open Cisp in
+  nodesStream pheromones ()
+  |> Cisp.hold (Cisp.st repeats)
+  |> Seq.map play_node_stereo |> Cisp.unzip
+
+let node_scalar n =
+  sqrt (get_node_x n ** 2.0) *. (get_node_y n ** 2.0) *. (get_node_z n -. 0.5)
+
+let only_noisy_paths pheromones =
+  let f viable_threshold acc ph =
+    if ph > viable_threshold then acc else if ph > 0.1 then 1 + acc else acc
+  in
+  let get_att (Node node) =
+    node.id
+    |> fun idx ->
+    pheromones.(idx)
+    |> Array.fold_left (f !current_buffer.viable_threshold) 0
+    |> fun bins_with_value ->
+    Cisp.linlin 0.0 49.0 0.0 7.0 (float_of_int bins_with_value)
+    |> Toolkit.clipf 0.0 1.0
+  in
+  nodesStream pheromones ()
+  |> Seq.map (fun node -> get_att node *. node_scalar node)
+(* let open Cisp in
   let random_index () = Toolkit.rvi 0 num_nodes in
   let c = st () in
   let u () (model, t) =
@@ -945,7 +997,7 @@ let justThePath pheromones repeats =
     in
     let next_pher = pick_weighted weighted in
     let new_time = t + 1 in
-    let ix = if t > 10000 then random_index () else model in
+    let ix = if t > 100000 then random_index () else model in
     (* TODO think about the 10000 as a parameter *)
     match next_pher with
     | Some i -> (i, ix)
@@ -955,7 +1007,7 @@ let justThePath pheromones repeats =
     nodes.(inp) |> fun (Node node) -> (node.x -. 0.5, node.y -. 0.5)
   in
   let init = (random_index (), 0) in
-  Cisp.recursive c init u eval |> Cisp.hold (st repeats) |> Seq.unzip
+  Cisp.recursive c init u eval |> Cisp.hold (st repeats) |> Seq.unzip *)
 
 (* this turns the segments into points that we can render in a csound score *)
 type point = {x: float; y: float; z: float; t: float}
@@ -1003,7 +1055,7 @@ let node_to_point_seq (scale : float) (speed : float) (nodes : node Seq.t) :
     in
     make_segments target_values segment_lengths *)
 
-let nodesStream pheromones () =
+(* let nodesStream pheromones () =
   let open Cisp in
   let random_index () = Toolkit.rvi 0 num_nodes in
   let c = st () in
@@ -1014,15 +1066,17 @@ let nodesStream pheromones () =
     in
     let next_pher = pick_weighted weighted in
     let new_time = t + 1 in
-    let ix = if t > 10000 then random_index () else model in
+    let ix, nt =
+      if new_time > 100000 then (random_index (), 0) else (model, 0)
+    in
     (* TODO think about the 10000 as a parameter *)
     match next_pher with
-    | Some i -> (i, ix)
-    | None -> (random_index (), 0)
+    | Some i -> (i, nt)
+    | None -> (random_index (), nt)
   in
   let eval (inp, _) = nodes.(inp) in
   let init = (random_index (), 0) in
-  Cisp.recursive c init u eval
+  Cisp.recursive c init u eval *)
 
 (* this should take node Seq.t, which are 2d coordinates. Now I want you to provide me with a "difference" stream that is the vectors between those points. 
   I would like you to return those vectors as (delta x, delta y) stream, so a stream of float tuples *)
@@ -1083,9 +1137,9 @@ let sumOctaves () =
     ; justThePath () |> hold (st 16)
     ; justThePath () |> hold (st 32)] *)
 
-let stereosig holder pheromones =
+let stereosig holdn pheromones =
   let gainStereo (s1, s2) = (att 1.0 s1, att 1.0 s2) in
-  justThePath pheromones holder |> gainStereo
+  justThePath pheromones holdn |> gainStereo
 
 let bunch s pheromones () =
   let open Cisp in
@@ -1129,7 +1183,7 @@ let nodes_history recordsArray phers =
     else ()
   in
   let nodeWriter = Seq.map2 writeOneNode count nds in
-  pulse (st 44) nodeWriter (st ())
+  pulse (st 10) nodeWriter (st ())
 
 (*start duration envelope index transpose x y*)
 let pitch_of_z z = (z *. 24.0) -. 12.0 |> Cisp.mtor
@@ -1213,9 +1267,9 @@ let csoundWithEffect nodes =
     Toolkit.generate_timestamp_filename ~prefix:"output" ~suffix:".wav" ()
   in
   print_endline output_file_name ;
-  Sys.command ("csound -j8 csound/play_samples.csd -o " ^ output_file_name)
-  |> Printf.printf "Finished Csound, result = %d" ;
-  print_endline "🔈 csound is finished"
+  (* Sys.command ("csound -j8 csound/play_samples.csd -o " ^ output_file_name) *)
+  0 |> Printf.printf "skipped running csound, result = %d"
+(* print_endline "🔈 csound is finished" *)
 
 let num_channels = 49
 
@@ -1559,20 +1613,20 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
 
 let push_nodes_slower = Cisp.pulse live_speed (push_nodes ()) (Cisp.st ())
 
-let jackMain array1 array2 otherEffect () =
+let jackMain array othereffect () =
+  let array1 = array in
+  let array2 = duplicateArrArr array in
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
       [ slower_compute array1
       ; slower_compute array2
       ; push_nodes_slower
-      ; otherEffect ]
+      ; othereffect ]
   in
-  Jack.playSeqs 0 Process.sample_rate
-    ( [ ssp_signal ~interp:true get_node_x (nodesStream array1 ())
-      ; ssp_signal ~interp:true get_node_y (nodesStream array2 ())
-      ; ssp_signal ~interp:true get_node_x (nodesStream array2 ())
-        |> Cisp.hold (Cisp.st 2) ]
-    @ [applyEffects (Cisp.st 0.0)] )
+  let channels =
+    [applyEffects (only_noisy_paths array1); only_noisy_paths array2]
+  in
+  Jack.playSeqs 0 Process.sample_rate channels
 
 let monitor_sample_count label n_interval sq =
   let open Cisp in
@@ -1585,26 +1639,50 @@ let monitor_sample_count label n_interval sq =
     count sq
 
 let non_realtime_jackMain title motherArray =
-  let voice phers =
+  (* let voice phers =
     let clone = duplicateArrArr phers in
-    let withEffect =
+    let withEffect =        
       nodesStream clone () |> Cisp.effectSync (slower_compute clone)
     in
-    ssp_signal ~interp:true get_node_x withEffect
+    only_noisy_paths clone
   in
   let channels =
-    Cisp.rangei 0 31 |> Seq.map (fun _ -> voice motherArray) |> List.of_seq
+    Cisp.rangei 0 31
+    |> Seq.map (fun i -> voice motherArray)
+    |> List.of_seq
+  in *)
+  (* let array1 = duplicateArrArr motherArray in
+   let array2 = duplicateArrArr motherArray in
+    let applyEffects master =
+    List.fold_left Cisp.syncEffect master
+      [ slower_compute array1
+      ; slower_compute array2
+      ; push_nodes_slower
+      (* ; othereffect *)
+       ]
   in
-  let with_push =
+  let channels =
+    [applyEffects (only_noisy_paths array1); only_noisy_paths array2]
+  in *)
+  let one_voice ps =
+    let clone = duplicateArrArr ps in
+    Cisp.effectSync (only_compute ps) (only_noisy_paths ps)
+  in
+  let channels =
+    Cisp.rangei 0 31 |> Seq.map (fun i -> one_voice motherArray) |> List.of_seq
+  in
+  let counted =
     match channels with
     | [] -> []
-    | hd :: tail -> 
-      let counted = 
-        monitor_sample_count "channel 1, index: " (!Process.sample_rate |> int_of_float) hd
-      in
-      Cisp.effectSync push_nodes_slower counted :: tail
+    | hd :: tail ->
+        let counted =
+          monitor_sample_count "channel 1, index: "
+            (!Process.sample_rate |> int_of_float)
+            hd
+        in
+        Cisp.effectSync push_nodes_slower counted :: tail
   in
-  record_list_of_channels title record_duration with_push
+  record_list_of_channels title record_duration counted
 
 let floatToMidi flt = flt *. 128.0 |> floor |> int_of_float
 
@@ -1684,7 +1762,7 @@ The score we might built
 *)
 
 let () =
-  let record_array = Array.init 262_144 (fun _ -> None) in
+  let record_array = Array.init 2_097_152 (fun _ -> None) in
   let handle_end () =
     print_string "lets close this and write to file" ;
     let _ = Thread.create finalWrite record_array in
@@ -1693,14 +1771,13 @@ let () =
   match program_mode with
   | Realtime ->
       let phers = mkPheromonesArr in
-      let array1, array2 = (duplicateArrArr phers, duplicateArrArr phers) in
       (* recording materials *)
-      let otherEffect = nodes_history record_array array1 in
-      let _ = Thread.create (jackMain array1 array2 otherEffect) () in
+      let otherEffect = nodes_history record_array phers in
+      let _ = Thread.create (dream_thread phers nodes) () in
+      let _ = Thread.create (jackMain phers otherEffect) () in
       (*
      let array1 = duplicateArrArr pheromones in *)
       let _ = Thread.create (osc_thread_function handle_end) () in
-      let _ = Thread.create (dream_thread array1 nodes) () in
       (* let _ = Thread.create midiOut array1 in *)
       (* let _ =
       print_int

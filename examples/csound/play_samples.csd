@@ -27,11 +27,11 @@ instr 1
   iOffset = p4
   iTranspose = p5
   iChannel = p6
-  iDur = p3
-  iAttack = p7
-  iDecay = p8
-  iSustain = p9
-  iRelease = p10
+  iDur = p7
+  iAttack = p8
+  iDecay = p9
+  iSustain = p10
+  iRelease = p11
   
   ; Create ADSR envelope
   kEnv madsr iAttack, iDecay, iSustain, iRelease
@@ -69,11 +69,11 @@ instr 2
   iOffset = p4
   iTranspose = p5
   iPan = p6 * (nchnls - 1)  ; Normalize to channel count
-  iDur = p3
-  iAttack = p7
-  iDecay = p8
-  iSustain = p9
-  iRelease = p10
+  iDur = p7
+  iAttack = p8
+  iDecay = p9
+  iSustain = p10
+  iRelease = p11
   
   ; Create ADSR envelope
   kEnv madsr iAttack, iDecay, iSustain, iRelease

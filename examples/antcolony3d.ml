@@ -3,6 +3,8 @@ open Ants
 
 let () = Process.sample_rate := 48000.0
 
+let record_duration = 120.0
+
 let alpha = 1.0 (*  prefer paths with lots of pheromone *)
 
 let beta = 1.0 (* prefer paths that are shorter *)
@@ -11,17 +13,19 @@ let num_nodes = 49
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
-let evaporation = 0.43
+let evaporation = 0.5
 
-let exploration_bias = 0.0001
+let exploration_bias = 0.00000001
 
 let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 15
+let max_tour = 4
 
-let brownian = 0.0
+let brownian = 0.01
+
+let speed_of_comp = 1500
 
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
@@ -171,7 +175,8 @@ type controllers =
   ; num_ants: int
   ; exploration_bias: float
   ; max_tour: int
-  ; brownian: float }
+  ; brownian: float
+  ; speed_of_comp: int }
 
 let controllers_to_string ctr =
   Printf.sprintf
@@ -183,9 +188,10 @@ let controllers_to_string ctr =
     \  num_ants: %d\n\
     \  max_tour: %d\n\
     \  brownian: %.2f\n\
+    \  speed_of_comp: %d\n\
      }"
     ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants ctr.max_tour
-    ctr.brownian
+    ctr.brownian ctr.speed_of_comp
 
 type indexed_point = IndexedPoint of {idx: int; x: float; y: float; z: float}
 
@@ -198,6 +204,7 @@ type ctrlMsg =
   | NumAnts of int
   | MaxTour of int
   | Brownian of float
+  | SpeedOfComp of int
 
 type oscMessage =
   | CtrlUpdate of ctrlMsg
@@ -215,6 +222,7 @@ let update_ctrl msg ctrl =
   | Exploration exp -> {ctrl with exploration_bias= exp}
   | MaxTour mt -> {ctrl with max_tour= mt}
   | Brownian brown -> {ctrl with brownian= brown}
+  | SpeedOfComp sp -> {ctrl with speed_of_comp= sp}
 
 let initial =
   { alpha
@@ -224,7 +232,8 @@ let initial =
   ; num_ants
   ; exploration_bias
   ; max_tour
-  ; brownian }
+  ; brownian
+  ; speed_of_comp }
 
 let set_alpha a ctrl = {ctrl with alpha= a}
 
@@ -354,6 +363,9 @@ let parse_osc_message path data =
   | "/brownian" ->
       data |> handle_float_arg |> withDefault (fun b -> CtrlUpdate (Brownian b))
   | "/write_history" -> WriteHistory
+  | "/speed_of_comp" ->
+      data |> handle_int_arg
+      |> withDefault (fun s -> CtrlUpdate (SpeedOfComp s))
   | _ -> Noop
 
 let handle_osc_message_parse finish_history_callback path data =
@@ -1102,7 +1114,7 @@ let push_nodes () =
   countTill (num_nodes - 1)
   |> fmap (fun idx ->
          let new_node = move_node_by_promille nodes.(idx) in
-         ignore (update_matrix_2 idx new_node nodes distance_array) ;
+        ignore (update_matrix_2 idx new_node nodes distance_array) ;
          () )
   |> hold (st 100)
 
@@ -1135,7 +1147,6 @@ let rolandifier nds =
 
 let csoundGrain = 128.0 /. 44100.0
 
-
 let createCsound2 filename nodes =
   let open Csound in
   let open Cisp in
@@ -1154,7 +1165,6 @@ let createCsound2 filename nodes =
   in
   map2 from_node nodes count |> List.of_seq |> Csound.mkScore
   |> render_cscore_to_file filename
-
 
 type dist_node = DistNode of {d: float; node: node}
 
@@ -1177,10 +1187,8 @@ let createCsound3 filename nodes =
   let dnodes = distanced_nodes nodes in
   let open Csound in
   let open Cisp in
-  let tsteps = dnodes |> fmap (fun n -> (get_delta n) *. 0.01) in
-  let starts = 
-    walk 0.0 tsteps
-  in
+  let tsteps = dnodes |> fmap (fun n -> get_delta n *. 0.001) in
+  let starts = walk 0.0 tsteps in
   let from_node start node number =
     let dur = 128.0 /. 44100.0 in
     let offset = 44100 * get_node_id node |> intPar in
@@ -1188,18 +1196,19 @@ let createCsound3 filename nodes =
     let channel = node |> get_node_id |> intPar in
     let dur2 = dur |> floatPar in
     let attack = 0.00001 |> floatPar in
-    let decay = dur *. Toolkit.rvfi 0.5 3.0 |> floatPar in
+    let decay = dur *. Toolkit.rvfi 0.5 4.0 |> floatPar in
     let sustain = 0.0 |> floatPar in
     let release = 0.0 |> floatPar in
     fromArgs 1 start dur offset trans channel dur2 attack decay sustain release
   in
-  map3 from_node starts nodes count |> List.of_seq |> Csound.mkScore
+  map3 from_node starts nodes count
+  |> List.of_seq |> Csound.mkScore
   |> render_cscore_to_file filename
 
 let csoundWithEffect nodes =
   let n = 120.0 /. csoundGrain |> int_of_float in
   let _ = Cisp.debugi "amount" n in
-  nodes |> Seq.take n |> createCsound2 "antscore2.sco" ;
+  nodes |> Seq.take n |> createCsound3 "antscore2.sco" ;
   let output_file_name =
     Toolkit.generate_timestamp_filename ~prefix:"output" ~suffix:".wav" ()
   in
@@ -1249,14 +1258,18 @@ let makeSum arrarr () =
          process_audio_stream arr |> hold (st (idx + 1)) )
   |> Array.to_list
 
-let slower_compute n arr =
+let rec live_speed () =
+  Seq.Cons (!current_buffer.speed_of_comp, live_speed)
+  
+
+let slower_compute arr =
   let open Cisp in
-  pulse (st n) (only_compute arr) (st ())
+  pulse live_speed (only_compute arr) (st ())
 
 let one_voice inputArr =
   let clone = duplicateArrArr inputArr in
   let sigL, sigR = stereosig 1 clone in
-  [Cisp.syncEffect sigL (slower_compute 10 clone); sigR]
+  [Cisp.syncEffect sigL (slower_compute clone); sigR]
 
 (* Create an infinite sequence from a mutable array that's updated elsewhere *)
 
@@ -1519,13 +1532,59 @@ let nonrealtime record_length arrarr =
     (!Process.sample_rate |> floor |> int_of_float)
     "/Users/casperschipper/Music/ants/file2_Smaller_tour.wav" Sndfile.WAV_32
 
+let record_list_of_channels prefix duration_in_secs lst =
+  let nsamps = !Process.sample_rate *. duration_in_secs |> floor |> int_of_float in
+  let arrays = seqs_to_arrays_in_sync lst nsamps in
+  Sndfile.write_multichannel_array arrays
+    (!Process.sample_rate |> floor |> int_of_float)
+    ("/Users/casperschipper/Music/ants/" ^ Toolkit.generate_timestamp_filename ~prefix:prefix ~suffix:".wav" ()) Sndfile.WAV_32
+
+let ssp_signal ?(interp = true) node_to_amp nodes =
+  let dnodes = nodes |> distanced_nodes in
+  let open Cisp in
+  let amps = nodes |> fmap (fun x -> (node_to_amp x *. 2.0) -. 1.0) in
+  if interp then
+    let ts =
+      dnodes |> fmap (fun x -> get_delta x |> linlin 0.0 1.4 0.00001 0.001)
+    in
+    render_waveform_minimal (zip amps ts)
+  else
+    let samps =
+      dnodes
+      |> fmap (fun x -> get_delta x |> linlin 0.0 1.4 1.0 16.0 |> int_of_float)
+    in
+    hold samps amps
+
+let push_nodes_slower =
+  Cisp.pulse live_speed (push_nodes ()) (Cisp.st ())
+
+
 let jackMain array1 array2 otherEffect () =
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
-      [slower_compute 10 array1; push_nodes (); otherEffect]
+      [slower_compute array1; slower_compute array2; push_nodes_slower; otherEffect]
   in
   Jack.playSeqs 0 Process.sample_rate
-    (bunch 1 array1 () @ [applyEffects (Cisp.st 0.0)])
+    ( [ ssp_signal ~interp:true get_node_x (nodesStream array1 ())
+      ; ssp_signal ~interp:true get_node_y (nodesStream array2 ())
+      ; ssp_signal ~interp:true get_node_x (nodesStream array2 ()) |> Cisp.hold (Cisp.st 2) ]
+    @ [applyEffects (Cisp.st 0.0)] )
+
+let non_realtime_jackMain title motherArray =
+  let voice phers =
+    let clone = duplicateArrArr phers in
+    let withEffect = nodesStream clone () |> Cisp.effectSync (slower_compute clone) in
+    ssp_signal ~interp:true get_node_x withEffect 
+  in
+  let channels =   Cisp.rangei 0 31 |> Seq.map (fun _ -> voice motherArray) |> List.of_seq in
+  let with_push =
+    match channels with
+    | [] -> []
+    | hd::tail -> (Cisp.effectSync (push_nodes_slower ) hd) :: tail
+  in
+  record_list_of_channels title record_duration with_push
+
+ 
 
 let floatToMidi flt = flt *. 128.0 |> floor |> int_of_float
 
@@ -1596,7 +1655,7 @@ let createCsound filename nodes =
 
 type mode = Realtime | NonRealtime | FromNodes
 
-let program_mode = Realtime
+let program_mode = NonRealtime
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
 
@@ -1636,7 +1695,8 @@ let () =
         Unix.sleep 1
       done
   | NonRealtime ->
-      let pheromones = mkPheromonesArr in
+      (* let pheromones = mkPheromonesArr in
       non_realtime2 120 pheromones
-        "/Users/casperschipper/Music/ants/slower_convolve.wav"
+        "/Users/casperschipper/Music/ants/slower_convolve.wav" *)
+    non_realtime_jackMain "sing_ants_" (mkPheromonesArr)
   | FromNodes -> ()

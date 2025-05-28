@@ -75,7 +75,12 @@ let rdRef rf () = Cons (!rf, ofRef rf)
 let wrRef rf valueSq = map (fun x -> rf := x) valueSq
 
 (* write and also return the currently recorded value *)
-let rcRef rf valueSq = map (fun x -> rf := x; x) valueSq
+let rcRef rf valueSq =
+  map
+    (fun x ->
+      rf := x ;
+      x )
+    valueSq
 
 let singleton a = [a]
 
@@ -123,7 +128,6 @@ let rec effectsSync lst sq =
   | [] -> sq
   | eff :: rest -> effectSync eff (effectsSync rest sq)
 
-
 let effect = effectSync
 
 (* this is a global ref used to keep time, for lines and time based sync
@@ -131,8 +135,6 @@ let effect = effectSync
    see inTime
 *)
 let currentSampleCounter = ref 0
-
-
 
 let updateCurrentSample () = currentSampleCounter := !currentSampleCounter + 1
 
@@ -612,7 +614,7 @@ let joinB lst bridge =
 
 let unzip sq = (map fst sq, map snd sq)
 
-let pairToList (x,y) = [x;y]
+let pairToList (x, y) = [x; y]
 
 let unzip3 sq =
   let first (x, _, _) = x in
@@ -751,7 +753,7 @@ let stereo_pan_fold (seq_list : float Seq.t list) : float Seq.t * float Seq.t =
         (float_of_int i /. float_of_int (num_tracks - 1) *. 2.0) -. 1.0 )
   in
   let process_track (left_acc, right_acc) (track, pan) =
-    let (left_seq,right_seq) = stereo_pan  pan track in
+    let left_seq, right_seq = stereo_pan pan track in
     let left_mixed = Seq.map2 ( +. ) left_acc left_seq in
     let right_mixed = Seq.map2 ( +. ) right_acc right_seq in
     (left_mixed, right_mixed)
@@ -761,8 +763,7 @@ let stereo_pan_fold (seq_list : float Seq.t list) : float Seq.t * float Seq.t =
   List.fold_left process_track (zero_seq, zero_seq)
     (List.combine seq_list pan_positions)
 
-let spray_stereo n thing =
-  mkLotsLst n thing |> stereo_pan_fold
+let spray_stereo n thing = mkLotsLst n thing |> stereo_pan_fold
 
 let mixList lst () = List.fold_left ( +~ ) lst
 
@@ -843,12 +844,11 @@ let rec simpleRecursive init update evaluate () =
   let nextState = update init in
   Cons (evaluate init, simpleRecursive nextState update evaluate)
 
-let always x = 
-  fun _ -> x
+let always x = fun _ -> x
 
 (* useful for executing in a pattern effect things *)
 let funStream trigSq f =
-  trigSq |> Seq.map (fun trig -> if trig then f () else ()) 
+  trigSq |> Seq.map (fun trig -> if trig then f () else ())
 
 (* useful for situations where you need to throttle something, like a debug on an audio stream *)
 let with_throttled_execution n f =
@@ -1518,18 +1518,16 @@ let pulse n sq filler =
   let p = interval n in
   weavePattern p sq filler
 
-
 (* given a function and a sq of arguments for this function, when the triggerfunction is true, evaluate the f with an input *)
 (* this allows you to slowly go through a sequence of things, with timing being
 synced to  a very fast trigger *)
-let functionTrigger f inputs ctrl = 
-  let update trg state = 
-    if trg then 
-      match state () with 
-      | Seq.Cons(x,xs) -> f x; xs 
+let functionTrigger f inputs ctrl =
+  let update trg state =
+    if trg then
+      match state () with
+      | Seq.Cons (x, xs) -> f x ; xs
       | Seq.Nil -> state
-    else 
-      state
+    else state
   in
   let eval _ = () in
   recursive ctrl inputs update eval
@@ -1601,8 +1599,6 @@ let syncOverClock (clock : bool Seq.t) (source : 'a Seq.t) =
   in
   let eval (_, value) = value in
   recursive1 ctrl init update eval
-
- 
 
 type 'a mutateArrayState = {arr: 'a Array.t; out: 'a}
 
@@ -2237,3 +2233,35 @@ let schmidt_trigger (low_threshold : float) (high_threshold : float)
   trigger false input_seq
 
 let rec funk f () = Seq.Cons (f (), funk f)
+
+
+let rec render_waveform_minimal ?(sample_rate = 44100.0) (input : (float * float) Seq.t) : float Seq.t =
+  let step = 1.0 /. sample_rate in
+  
+  let rec process t_out t_in val_in input_rest () =
+    match input_rest () with
+    | Seq.Nil ->
+        (* No more input, constant output *)
+        Seq.Cons (val_in, process (t_out +. step) t_in val_in input_rest)
+        
+    | Seq.Cons ((val_next, dt), rest) ->
+        let t_next = t_in +. dt in
+        
+        if t_out < t_next then
+          (* Current output time is within this segment *)
+          let alpha = if dt > 0.0 then (t_out -. t_in) /. dt else 0.0 in
+          let val_out = val_in +. alpha *. (val_next -. val_in) in
+          Seq.Cons (val_out, process (t_out +. step) t_in val_in input_rest)
+        else
+          (* Skip to next input segment *)
+          process t_out t_next val_next rest ()
+  in
+  
+  match input () with
+  | Seq.Nil -> Seq.empty
+  | Seq.Cons ((first_val, first_dt), rest) ->
+      if first_dt <= 0.0 then
+        (* Skip zero-duration first segment *)
+        render_waveform_minimal ~sample_rate rest
+      else
+        process 0.0 0.0 first_val (fun () -> Seq.Cons ((first_val, first_dt), rest))

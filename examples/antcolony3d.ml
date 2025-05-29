@@ -1241,7 +1241,7 @@ let createCsound3 filename nodes =
   let dnodes = distanced_nodes nodes in
   let open Csound in
   let open Cisp in
-  let tsteps = dnodes |> fmap (fun n -> get_delta n *. 0.001) in
+  let tsteps = dnodes |> fmap (fun n -> get_delta n |> linlin 0.0001 1.414 90.0 130.0 |> mtof |> fun x -> 1.0 /. x ) in
   let starts = walk 0.0 tsteps in
   let from_node start node number =
     let dur = 128.0 /. 44100.0 in
@@ -1250,7 +1250,7 @@ let createCsound3 filename nodes =
     let channel = node |> get_node_id |> intPar in
     let dur2 = dur |> floatPar in
     let attack = 0.00001 |> floatPar in
-    let decay = dur *. Toolkit.rvfi 0.5 4.0 |> floatPar in
+    let decay = dur |> floatPar in
     let sustain = 0.0 |> floatPar in
     let release = 0.0 |> floatPar in
     fromArgs 1 start dur offset trans channel dur2 attack decay sustain release
@@ -1751,9 +1751,9 @@ let createCsound filename nodes =
   in
   render_cscore_to_file filename score
 
-type mode = Realtime | NonRealtime | FromNodes
+type mode = Realtime | NonRealtime | FromNodes 
 
-let program_mode = Realtime
+let program_mode = FromNodes
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
 
@@ -1796,4 +1796,5 @@ let () =
       non_realtime2 120 pheromones
         "/Users/casperschipper/Music/ants/slower_convolve.wav" *)
       non_realtime_jackMain "sing_ants_" mkPheromonesArr
-  | FromNodes -> ()
+  | FromNodes -> 
+    Ants.read_node_seq_from_file "nodes.json" |> createCsound3 "score_from_nodes.sco"

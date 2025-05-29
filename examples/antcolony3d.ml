@@ -1241,12 +1241,12 @@ let createCsound3 filename nodes =
   let dnodes = distanced_nodes nodes in
   let open Csound in
   let open Cisp in
-  let tsteps = dnodes |> fmap (fun n -> get_delta n |> linlin 0.0001 1.414 90.0 130.0 |> mtof |> fun x -> 1.0 /. x ) in
+  let tsteps = dnodes |> fmap (fun n -> get_delta n |> linlin 0.0001 1.414 35.0 130.0 |> mtof |> fun x -> 1.0 /. x ) in
   let starts = walk 0.0 tsteps in
   let from_node start node number =
-    let dur = 128.0 /. 44100.0 in
+    let dur = 512.0 /. 44100.0 in
     let offset = 44100 * get_node_id node |> intPar in
-    let trans = node |> get_node_z |> linlin 0.0 1.0 (-12.0) 12.0 |> floatPar in
+    let trans = node |> get_node_z |> linlin 0.0 1.0 (0.0) 24.0 |> floatPar in
     let channel = node |> get_node_id |> intPar in
     let dur2 = dur |> floatPar in
     let attack = 0.00001 |> floatPar in
@@ -1262,7 +1262,7 @@ let createCsound3 filename nodes =
 let csoundWithEffect nodes =
   let n = 120.0 /. csoundGrain |> int_of_float in
   let _ = Cisp.debugi "amount" n in
-  nodes |> Seq.take n |> createCsound3 "antscore2.sco" ;
+  nodes |> Seq.take n |> createCsound3 "antscore3.sco" ;
   let output_file_name =
     Toolkit.generate_timestamp_filename ~prefix:"output" ~suffix:".wav" ()
   in
@@ -1797,4 +1797,4 @@ let () =
         "/Users/casperschipper/Music/ants/slower_convolve.wav" *)
       non_realtime_jackMain "sing_ants_" mkPheromonesArr
   | FromNodes -> 
-    Ants.read_node_seq_from_file "nodes.json" |> createCsound3 "score_from_nodes.sco"
+    Ants.read_node_seq_from_file "nodes.json" |> createCsound3 "score_from_nodes_2.sco"

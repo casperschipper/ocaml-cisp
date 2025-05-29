@@ -21,7 +21,7 @@ let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 3
+let max_tour = 8
 
 let brownian = 0.0002
 
@@ -1227,7 +1227,7 @@ let createCsound2 filename nodes =
   let from_node node number =
     let transpose = node |> get_node_z |> linlin 0.0 1.0 (-12.0) 12.0 |> Cisp.mtor in
     let start = 0.001 *. (number |> float_of_int) in
-    let dur = (128.0 /. 44100.0) *. transpose in
+    let dur = (128.0 /. 44100.0) *. (1.0 /. transpose) in
     let offset = 44100 * get_node_id node |> intPar in
     let trans = transpose |> floatPar in
     let channel = node |> get_node_id |> intPar in

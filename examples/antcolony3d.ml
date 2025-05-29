@@ -1225,7 +1225,7 @@ let createCsound2 filename nodes =
   let open Csound in
   let open Cisp in
   let from_node node number =
-    let transpose = node |> get_node_z |> linlin 0.0 1.0 (-12.0) 12.0 |> Cisp.mtor in
+    let transpose = node |> get_node_z |> linlin 0.0 1.0 (-64.0) 64.0 |> Cisp.mtor in
     let start = 0.001 *. (number |> float_of_int) in
     let dur = (128.0 /. 44100.0) *. (1.0 /. transpose) in
     let offset = 44100 * get_node_id node |> intPar in
@@ -1267,13 +1267,23 @@ let createCsound3 filename nodes =
     dnodes
     |> fmap (fun n ->
            get_delta n |> invert_delta
-           |> linlin 0.0 1.414 50.0 130.0
+           |> linlin 0.0 1.414 10.0 100.0
            |> mtof
            |> fun x -> 1.0 /. x )
   in
   let starts = walk 0.0 tsteps in
   let from_node start node number =
-    let dur = 4096.0 /. 44100.0 in
+    let transpose = node |> get_node_z |> linlin 0.0 1.0 (-64.0) 64.0 |> Cisp.mtor in
+    let dur = (128.0 /. 44100.0) *. (1.0 /. transpose) in
+    let offset = 44100 * get_node_id node |> intPar in
+    let trans = transpose |> floatPar in
+    let channel = node |> get_node_id |> intPar in
+    let dur2 = dur |> floatPar in
+    let attack = 0.00001 |> floatPar in
+    let decay = dur |> floatPar in
+    let sustain = 0.0 |> floatPar in
+    let release = 0.0 |> floatPar in
+    (* let dur = 4096.0 /. 44100.0 in
     let offset = 44100 * get_node_id node |> intPar in
     let trans = node |> get_node_z |> linlin 0.0 1.0 0.0 24.0 |> floatPar in
     let channel = node |> get_node_id |> intPar in
@@ -1281,7 +1291,7 @@ let createCsound3 filename nodes =
     let attack = 0.00001 |> floatPar in
     let decay = dur |> floatPar in
     let sustain = 0.0 |> floatPar in
-    let release = 0.0 |> floatPar in
+    let release = 0.0 |> floatPar in *)
     fromArgs 1 start dur offset trans channel dur2 attack decay sustain release
   in
   map3 from_node starts nodes count
@@ -1827,4 +1837,4 @@ let () =
       non_realtime_jackMain "sing_ants_" mkPheromonesArr
   | FromNodes ->
       Ants.read_node_seq_from_file "nodes.json"
-      |> createCsound2 "antscore3.sco"
+      |> createCsound3 "antscore3.sco"

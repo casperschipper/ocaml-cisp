@@ -21,7 +21,7 @@ let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 9
+let max_tour = 3
 
 let brownian = 0.0002
 
@@ -960,12 +960,32 @@ let nodesStream pheromones () =
   let init = random_index () in
   Cisp.recursive c init u eval
 
+let nodesStreamNoisy pheromones () =
+  let open Cisp in
+  let random_index () = Toolkit.rvi 0 num_nodes in
+  let c = st () in
+  let u () (model, i) =
+    if i > 441000 then (random_index (), 0)
+    else
+      let phers = Array.get pheromones model in
+      let weighted =
+        Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
+      in
+      let next_pher = pick_weighted weighted in
+      match next_pher with
+      | Some next_id -> (next_id, i + 1)
+      | None -> (random_index (), 0)
+  in
+  let eval (inp, _) = nodes.(inp) in
+  let init = (random_index (), 0) in
+  Cisp.recursive c init u eval
+
 let play_node_stereo (Node node) = (node.x -. 0.5, node.y -. 0.5)
 
 (* this creates a stereo signal, navigating through the pheromones only *)
 (* the repeats allows for different update rates , where 1 is sr *)
 let justThePath pheromones repeats =
-  nodesStream pheromones ()
+  nodesStreamNoisy pheromones ()
   |> Cisp.hold (Cisp.st repeats)
   |> Seq.map play_node_stereo |> Cisp.unzip
 
@@ -1183,7 +1203,7 @@ let nodes_history recordsArray phers =
     else ()
   in
   let nodeWriter = Seq.map2 writeOneNode count nds in
-  pulse (st 10) nodeWriter (st ())
+  pulse (st 100) nodeWriter (st ())
 
 (*start duration envelope index transpose x y*)
 let pitch_of_z z = (z *. 24.0) -. 12.0 |> Cisp.mtor
@@ -1237,18 +1257,24 @@ let rec distanced_nodes nodes () =
     | Nil -> Nil )
   | Nil -> Nil
 
-
 let createCsound3 filename nodes =
   let dnodes = distanced_nodes nodes in
   let invert_delta x = 1.414 -. x in
   let open Csound in
   let open Cisp in
-  let tsteps = dnodes |> fmap (fun n -> get_delta n |> invert_delta |> linlin 0.0 1.414 50.0 130.0 |> mtof |> fun x -> 1.0 /. x ) in
+  let tsteps =
+    dnodes
+    |> fmap (fun n ->
+           get_delta n |> invert_delta
+           |> linlin 0.0 1.414 50.0 130.0
+           |> mtof
+           |> fun x -> 1.0 /. x )
+  in
   let starts = walk 0.0 tsteps in
   let from_node start node number =
     let dur = 4096.0 /. 44100.0 in
     let offset = 44100 * get_node_id node |> intPar in
-    let trans = node |> get_node_z |> linlin 0.0 1.0 (0.0) 24.0 |> floatPar in
+    let trans = node |> get_node_z |> linlin 0.0 1.0 0.0 24.0 |> floatPar in
     let channel = node |> get_node_id |> intPar in
     let dur2 = dur |> floatPar in
     let attack = 0.00001 |> floatPar in
@@ -1264,7 +1290,7 @@ let createCsound3 filename nodes =
 let csoundWithEffect nodes =
   let n = 120.0 /. csoundGrain |> int_of_float in
   let _ = Cisp.debugi "amount" n in
-  nodes |> Seq.take n |> createCsound3 "antscore3.sco" ;
+  nodes |> Seq.take n |> createCsound2 "antscore3.sco" ;
   let output_file_name =
     Toolkit.generate_timestamp_filename ~prefix:"output" ~suffix:".wav" ()
   in
@@ -1625,9 +1651,8 @@ let jackMain array othereffect () =
       ; push_nodes_slower
       ; othereffect ]
   in
-  let channels =
-    [applyEffects (only_noisy_paths array1); only_noisy_paths array2]
-  in
+  let ptl (x,y) = [x;y] in
+  let channels = (justThePath array1 1 |> ptl) @ [applyEffects (Cisp.st 0.0)] in
   Jack.playSeqs 0 Process.sample_rate channels
 
 let monitor_sample_count label n_interval sq =
@@ -1753,9 +1778,9 @@ let createCsound filename nodes =
   in
   render_cscore_to_file filename score
 
-type mode = Realtime | NonRealtime | FromNodes 
+type mode = Realtime | NonRealtime | FromNodes
 
-let program_mode = FromNodes
+let program_mode = Realtime
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
 
@@ -1764,7 +1789,7 @@ The score we might built
 *)
 
 let () =
-  let record_array = Array.init 2_097_152 (fun _ -> None) in
+  let record_array = Array.init 131_072 (fun _ -> None) in
   let handle_end () =
     print_string "lets close this and write to file" ;
     let _ = Thread.create finalWrite record_array in
@@ -1775,8 +1800,9 @@ let () =
       let phers = mkPheromonesArr in
       (* recording materials *)
       let otherEffect = nodes_history record_array phers in
+      let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in
       let _ = Thread.create (dream_thread phers nodes) () in
-      let _ = Thread.create (jackMain phers otherEffect) () in
+      let _ = Thread.create (jackMain phers countedEffect) () in
       (*
      let array1 = duplicateArrArr pheromones in *)
       let _ = Thread.create (osc_thread_function handle_end) () in
@@ -1798,5 +1824,6 @@ let () =
       non_realtime2 120 pheromones
         "/Users/casperschipper/Music/ants/slower_convolve.wav" *)
       non_realtime_jackMain "sing_ants_" mkPheromonesArr
-  | FromNodes -> 
-    Ants.read_node_seq_from_file "nodes.json" |> createCsound3 "score_from_nodes_2.sco"
+  | FromNodes ->
+      Ants.read_node_seq_from_file "nodes.json"
+      |> createCsound2 "score_from_nodes_2.sco"

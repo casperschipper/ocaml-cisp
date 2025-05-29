@@ -170,4 +170,4 @@ let generate_timestamp_filename ?(prefix="tmp_") ?(suffix="") () =
   filename
 
 let quote str =   
-  "\"" ^ str ^ "\""
+  "\"" ^ str ^ "\"" 

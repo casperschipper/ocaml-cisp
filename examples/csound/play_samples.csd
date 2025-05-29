@@ -6,7 +6,7 @@
 </CsOptions>
 <CsInstruments>
 sr = 48000
-ksmps = 16
+ksmps = 4
 nchnls = 64
 0dbfs = 1
 
@@ -107,12 +107,12 @@ instr 2
   outch 41, aOut[40], 42, aOut[41], 43, aOut[42], 44, aOut[43], 45, aOut[44], 46, aOut[45], 47, aOut[46], 48, aOut[47]
   outch 49, aOut[48], 50, aOut[49], 51, aOut[50], 52, aOut[51], 53, aOut[52], 54, aOut[53], 55, aOut[54], 56, aOut[55]
   outch 57, aOut[56], 58, aOut[57], 59, aOut[58], 60, aOut[59], 61, aOut[60], 62, aOut[61], 63, aOut[62], 64, aOut[63]
+
+  ; p1 inst ; p2 start ; p3 dur ; p4 = offset (in samples) ; p5 = transpose ratio (1 = original pitch) ; p6 = output channel (0–63) ; p7 = duration in seconds ; p8–p11 = ADSR (a, d, s, r)
+
 endin
 </CsInstruments>
-
 <CsScore>
-; p1 inst ; p2 start ; p3 dur ; p4 = offset (in samples) ; p5 = transpose ratio (1 = original pitch) ; p6 = output channel (0–63) ; p7 = duration in seconds ; p8–p11 = ADSR (a, d, s, r)
-#include "../antscore2.sco"
-
+#includestr "../antscore3.sco"
 </CsScore>
 </CsoundSynthesizer>

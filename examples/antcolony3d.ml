@@ -1237,14 +1237,16 @@ let rec distanced_nodes nodes () =
     | Nil -> Nil )
   | Nil -> Nil
 
+
 let createCsound3 filename nodes =
   let dnodes = distanced_nodes nodes in
+  let invert_delta x = 1.414 -. x in
   let open Csound in
   let open Cisp in
-  let tsteps = dnodes |> fmap (fun n -> get_delta n |> linlin 0.0001 1.414 35.0 130.0 |> mtof |> fun x -> 1.0 /. x ) in
+  let tsteps = dnodes |> fmap (fun n -> get_delta n |> invert_delta |> linlin 0.0 1.414 50.0 130.0 |> mtof |> fun x -> 1.0 /. x ) in
   let starts = walk 0.0 tsteps in
   let from_node start node number =
-    let dur = 512.0 /. 44100.0 in
+    let dur = 4096.0 /. 44100.0 in
     let offset = 44100 * get_node_id node |> intPar in
     let trans = node |> get_node_z |> linlin 0.0 1.0 (0.0) 24.0 |> floatPar in
     let channel = node |> get_node_id |> intPar in

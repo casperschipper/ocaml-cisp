@@ -21,13 +21,13 @@ let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 8
+let max_tour = 7
 
 let brownian = 0.0002
 
 let viable_threshold = 2.67
 
-let speed_of_comp = 20
+let speed_of_comp = 1
 
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
@@ -1791,7 +1791,7 @@ let createCsound filename nodes =
 
 type mode = Realtime | NonRealtime | FromNodes
 
-let program_mode = FromNodes
+let program_mode = Realtime
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
 
@@ -1800,7 +1800,7 @@ The score we might built
 *)
 
 let () =
-  let record_array = Array.init 131_072 (fun _ -> None) in
+  let record_array = Array.init 524_288 (fun _ -> None) in
   let handle_end () =
     print_string "lets close this and write to file" ;
     let _ = Thread.create finalWrite record_array in

@@ -1299,9 +1299,7 @@ let createCsound3 filename nodes =
   |> render_cscore_to_file filename
 
 let csoundWithEffect nodes =
-  let n = 120.0 /. csoundGrain |> int_of_float in
-  let _ = Cisp.debugi "amount" n in
-  nodes |> Seq.take n |> createCsound2 "antscore3.sco" ;
+  nodes |> createCsound3 "antscore3.sco" ;
   let output_file_name =
     Toolkit.generate_timestamp_filename ~prefix:"output" ~suffix:".wav" ()
   in
@@ -1791,7 +1789,7 @@ let createCsound filename nodes =
 
 type mode = Realtime | NonRealtime | FromNodes
 
-let program_mode = Realtime
+let program_mode = FromNodes
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
 

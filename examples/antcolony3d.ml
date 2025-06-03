@@ -15,13 +15,13 @@ let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
 let evaporation = 0.45
 
-let exploration_bias = 0.0002
+let exploration_bias = 0.00001
 
 let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 7
+let max_tour = 49
 
 let brownian = 0.0002
 
@@ -1203,7 +1203,7 @@ let nodes_history recordsArray phers =
     else ()
   in
   let nodeWriter = Seq.map2 writeOneNode count nds in
-  pulse (st 100) nodeWriter (st ())
+  pulse (st 10) nodeWriter (st ())
 
 (*start duration envelope index transpose x y*)
 let pitch_of_z z = (z *. 24.0) -. 12.0 |> Cisp.mtor
@@ -1225,9 +1225,11 @@ let createCsound2 filename nodes =
   let open Csound in
   let open Cisp in
   let from_node node number =
-    let transpose = node |> get_node_z |> linlin 0.0 1.0 (-64.0) 64.0 |> Cisp.mtor in
+    let transpose =
+      node |> get_node_z |> linlin 0.0 1.0 (-64.0) 64.0 |> Cisp.mtor
+    in
     let start = 0.001 *. (number |> float_of_int) in
-    let dur = (128.0 /. 44100.0) *. (1.0 /. transpose) in
+    let dur = 128.0 /. 44100.0 *. (1.0 /. transpose) in
     let offset = 44100 * get_node_id node |> intPar in
     let trans = transpose |> floatPar in
     let channel = node |> get_node_id |> intPar in
@@ -1267,14 +1269,16 @@ let createCsound3 filename nodes =
     dnodes
     |> fmap (fun n ->
            get_delta n |> invert_delta
-           |> linlin 0.0 1.414 10.0 100.0
+           |> linlin 0.0 1.414 22.0 100.0
            |> mtof
            |> fun x -> 1.0 /. x )
   in
   let starts = walk 0.0 tsteps in
   let from_node start node number =
-    let transpose = node |> get_node_z |> linlin 0.0 1.0 (-64.0) 64.0 |> Cisp.mtor in
-    let dur = (128.0 /. 44100.0) *. (1.0 /. transpose) in
+    let transpose =
+      node |> get_node_z |> linlin 0.0 1.0 (-14.0) 14.0 |> Cisp.mtor
+    in
+    let dur = 128.0 /. 44100.0 *. (1.0 /. transpose) in
     let offset = 44100 * get_node_id node |> intPar in
     let trans = transpose |> floatPar in
     let channel = node |> get_node_id |> intPar in
@@ -1660,8 +1664,9 @@ let jackMain array othereffect () =
       ; push_nodes_slower
       ; othereffect ]
   in
-  let ptl (x,y) = [x;y] in
-  let channels = (justThePath array1 1 |> ptl) @ [applyEffects (Cisp.st 0.0)] in
+  let ptl (x, y) = [x; y] in
+  let nodes = nodesStream array1 () in
+  let channels = [(ssp_signal ~interp:true get_node_x nodes)] @ [applyEffects (Cisp.st 0.0)] in
   Jack.playSeqs 0 Process.sample_rate channels
 
 let monitor_sample_count label n_interval sq =
@@ -1789,7 +1794,7 @@ let createCsound filename nodes =
 
 type mode = Realtime | NonRealtime | FromNodes
 
-let program_mode = FromNodes
+let program_mode = Realtime
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
 
@@ -1834,5 +1839,4 @@ let () =
         "/Users/casperschipper/Music/ants/slower_convolve.wav" *)
       non_realtime_jackMain "sing_ants_" mkPheromonesArr
   | FromNodes ->
-      Ants.read_node_seq_from_file "nodes.json"
-      |> createCsound3 "antscore3.sco"
+      Ants.read_node_seq_from_file "nodes.json" |> createCsound3 "antscore3.sco"

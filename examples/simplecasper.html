@@ -31,8 +31,17 @@
     ctrlState.setAttribute("id", "controllers");
     document.body.appendChild(ctrlState);
 
+    // Function to convert z-depth to gray shade
+    function zToGrayShade(z) {
+      // Normalize z value (assuming z is between -1 and 1, adjust as needed)
+      // Higher z values = lighter gray, lower z values = darker gray
+      const normalized = (z + 1) / 2; // Convert from [-1,1] to [0,1]
+      const grayValue = Math.floor(normalized * 255); // Convert to 0-255 range
+      return `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+    }
+
     function createNode(node, index) {
-      const [x, y] = node;
+      const [x, y, z] = node;
 
       const group = document.createElementNS(svgNamespace, "g");
       group.setAttribute("id", `node-${index}`);
@@ -41,7 +50,8 @@
 
       const circle = document.createElementNS(svgNamespace, "circle");
       circle.setAttribute("r", "10");
-      circle.setAttribute("fill", "gray");
+      circle.setAttribute("fill", zToGrayShade(z));
+      circle.setAttribute("data-z", z); // Store z value for updates
       group.appendChild(circle);
 
       const text = document.createElementNS(svgNamespace, "text");
@@ -65,11 +75,14 @@
         const rect = svg.getBoundingClientRect();
         const x = (e.clientX - rect.left) / window_width;
         const y = (e.clientY - rect.top) / window_height;
-        const z = 0.0;
-
+        
+        // Get current z value from the circle element
+        const group = document.getElementById(`node-${node_id}`);
+        const circleElement = group.querySelector('circle');
+        const z = parseFloat(circleElement.getAttribute('data-z')) || 0.0;
 
         // Update node position
-        updateNode({ node_id, x, y });
+        updateNode({ node_id, x, y, z });
 
         frame_num = frame_num + 1;
 
@@ -96,10 +109,20 @@
 
 
     function updateNode(node) {
-      const { node_id, x, y } = node;
+      const { node_id, x, y, z } = node;
       const group = document.getElementById(`node-${node_id}`);
       if (group) {
         group.setAttribute("transform", `translate(${x * window_width}, ${y * window_height})`);
+        
+        // Update circle color based on z value if z is provided
+        if (z !== undefined) {
+          const circleElement = group.querySelector('circle');
+          if (circleElement) {
+            circleElement.setAttribute("fill", zToGrayShade(z));
+            circleElement.setAttribute("data-z", z);
+          }
+        }
+        
         updateConnectedEdges(x, y, node_id);
       } else {
         console.log('cannot find group' + node_id);

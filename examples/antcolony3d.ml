@@ -1654,7 +1654,39 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
 
 let push_nodes_slower = Cisp.pulse live_speed (push_nodes ()) (Cisp.st ())
 
-let jackMain array othereffect () =
+let octave_from_scalar x =
+  x |> Cisp.linlin 0.0 1.0 0.0 10.0 |> floor |> int_of_float
+
+let interval_from_scalar x = 
+  x |> Cisp.linlin 0.0 1.0 0.0 11.0 |> floor |> int_of_float
+
+let get_frequency node = 
+  let x = get_node_x node in
+  let y = get_node_y node in
+  let octave = octave_from_scalar x in
+  let interval = interval_from_scalar y in
+  let midi = octave * 12 + interval in
+  Cisp.mtof (float_of_int midi)
+
+let frequency_from_nodes nodesStream =
+  let open Cisp in
+  let freqs = nodesStream |> fmap (fun node -> get_frequency node) in
+  freqs
+
+let freq_to_sinewave (samplerate : float) (freq_seq : float Seq.t) : float Seq.t =
+  let dt = 1.0 /. samplerate in
+  let rec next phase seq () =
+    match seq () with
+    | Seq.Nil -> Seq.Nil
+    | Seq.Cons (f, rest) ->
+        let new_phase = phase +. (2.0 *. Float.pi *. f *. dt) in
+        let value = sin new_phase in
+        Seq.Cons (value, next new_phase rest)
+  in
+  next 0.0 freq_seq
+
+
+let jackMain array () =
   let array1 = array in
   let array2 = duplicateArrArr array in
   let applyEffects master =
@@ -1662,11 +1694,12 @@ let jackMain array othereffect () =
       [ slower_compute array1
       ; slower_compute array2
       ; push_nodes_slower
-      ; othereffect ]
+       ]
   in
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
-  let channels = [(ssp_signal ~interp:true get_node_x nodes)] @ [applyEffects (Cisp.st 0.0)] in
+  let freq_sig = frequency_from_nodes nodes in
+  let channels = [freq_to_sinewave !Process.sample_rate freq_sig  ] @ [applyEffects (Cisp.st 0.0)] in
   Jack.playSeqs 0 Process.sample_rate channels
 
 let monitor_sample_count label n_interval sq =
@@ -1813,10 +1846,10 @@ let () =
   | Realtime ->
       let phers = mkPheromonesArr in
       (* recording materials *)
-      let otherEffect = nodes_history record_array phers in
-      let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in
+      (* let otherEffect = nodes_history record_array phers in *)
+      (* let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in *)
       let _ = Thread.create (dream_thread phers nodes) () in
-      let _ = Thread.create (jackMain phers countedEffect) () in
+      let _ = Thread.create (jackMain phers) () in
       (*
      let array1 = duplicateArrArr pheromones in *)
       let _ = Thread.create (osc_thread_function handle_end) () in

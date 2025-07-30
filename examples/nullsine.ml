@@ -22,17 +22,17 @@ if input mixes dry sounds with echo, use more speakers.
 
 
 *)
-(* let noisysine =
+let noisysine () =
   let open Cisp in
   let env = tline_start 0.0 (seq [ 1.0; 15.0 ; 1.0 ;1000.0 ]) (seq [ 1.0; 1.0; 0.0; 0.0 ]) in
   sawtooth
     (st 349.2 *.~ (slowNoise (st 1.0) |> Seq.map (linlin (-1.0) 1.0 0.999 1.001)))
-  |> ( *.- ) 0.1 |> ( *.~ ) env *)
+  |> ( *.- ) 0.1 |> ( *.~ ) env
 
-let readFile () = 
+(* let readFile () = 
     let snd = Sndfile.read "/Users/casperschipper/Music/Null/tablepath2nrt.wav" in
     (* let snd_n_channels = Sndfile.n_channels snd in *)
-    Sndfile.to_seq snd 1 |> Cisp.take (48000 * 90) |> List.of_seq |> Cisp.seq 
+    Sndfile.to_seq snd 1 |> Cisp.take (48000 * 90) |> List.of_seq |> Cisp.seq  *)
 
 let mkBoermanFading3 () =
   let open Cisp in
@@ -44,7 +44,7 @@ let mkBoermanFading3 () =
   in
   let readpos = tline dura tabIndex |> Seq.map (clip 0.0 (sec memsize)) in
   let buffer = Array.make (seci memsize) 0.0 in
-  let input = Process.inputSeq 0 +.~ (readFile ()) in
+  let input = Process.inputSeq 0 +.~ (noisysine ()) in
   let writerIdx = countTill <| cap buffer in
   let writer = write buffer writerIdx input in
   let myReader = indexCub buffer readpos in

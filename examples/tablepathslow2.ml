@@ -10,7 +10,7 @@ let steps =
   let one_array () = 
     Array.init max (fun idx -> let next = ((idx + 1) mod max) in Infseq.repeat next)
   in
-  Array.make channels (one_array ())
+  (one_array ())
  
 
 let get_table arr idx =

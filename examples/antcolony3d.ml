@@ -1655,7 +1655,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
 let push_nodes_slower = Cisp.pulse live_speed (push_nodes ()) (Cisp.st ())
 
 let octave_from_scalar x =
-  x |> Cisp.linlin 0.0 1.0 0.0 10.0 |> floor |> int_of_float
+  x |> Cisp.linlin 0.0 1.0 4.0 12.0 |> floor |> int_of_float
 
 let interval_from_scalar x = 
   x |> Cisp.linlin 0.0 1.0 0.0 11.0 |> floor |> int_of_float
@@ -1686,7 +1686,7 @@ let freq_to_sinewave (samplerate : float) (freq_seq : float Seq.t) : float Seq.t
   next 0.0 freq_seq
 
 
-let jackMain array () =
+let jackMain effects array  () =
   let array1 = array in
   let array2 = duplicateArrArr array in
   let applyEffects master =
@@ -1694,11 +1694,12 @@ let jackMain array () =
       [ slower_compute array1
       ; slower_compute array2
       ; push_nodes_slower
+      ; effects
        ]
   in
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
-  let freq_sig = frequency_from_nodes nodes in
+  let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.01) in
   let channels = [freq_to_sinewave !Process.sample_rate freq_sig  ] @ [applyEffects (Cisp.st 0.0)] in
   Jack.playSeqs 0 Process.sample_rate channels
 
@@ -1849,7 +1850,7 @@ let () =
       (* let otherEffect = nodes_history record_array phers in *)
       (* let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in *)
       let _ = Thread.create (dream_thread phers nodes) () in
-      let _ = Thread.create (jackMain phers) () in
+      let _ = Thread.create (jackMain Cisp.masterClock phers) () in
       (*
      let array1 = duplicateArrArr pheromones in *)
       let _ = Thread.create (osc_thread_function handle_end) () in

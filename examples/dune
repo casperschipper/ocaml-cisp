@@ -208,6 +208,7 @@
   (pps lwt_ppx)))
 
 
+
 (executable
  (name fmfb)
  (link_flags
@@ -561,9 +562,22 @@
  (modules ivo)
  (libraries lo oscParser midi cisp jackMidi))
 
+(executable
+ (name supercollider_test)
+ (flags
+  (:standard -w -26-27-32-34-37-69))
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules supercollider_test)
+ (libraries unix bytes ocplib-endian)
+)
+
 ;(executable
 ; (name osc_to_audio_example_using_threads)
 ;(link_flags (-cclib -ljack -cclib -lsndfile))
 ;(ocamlopt_flags -O3)
 ;(modules osc_to_audio_example_using_threads)
 ;(libraries threads lo infseq midi cisp bigarray ctypes jack jackMidi))
+
+

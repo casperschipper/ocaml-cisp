@@ -1699,7 +1699,7 @@ let jackMain effects array  () =
   in
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
-  let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.01) in
+  let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in
   let channels = [freq_to_sinewave !Process.sample_rate freq_sig  ] @ [applyEffects (Cisp.st 0.0)] in
   Jack.playSeqs 0 Process.sample_rate channels
 

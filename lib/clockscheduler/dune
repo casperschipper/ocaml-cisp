@@ -1,0 +1,7 @@
+(library
+ (libraries unix cisp infseq)
+ (name            clockscheduler)
+ (ocamlopt_flags -O3)	
+)
+
+ 

@@ -570,7 +570,7 @@
   (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules supercollider_test)
- (libraries unix bytes ocplib-endian)
+ (libraries supercollider clockscheduler jack cisp unix)
 )
 
 ;(executable

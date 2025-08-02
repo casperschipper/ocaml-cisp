@@ -1,0 +1,7 @@
+(library
+ (libraries unix bytes ocplib-endian)
+ (name            supercollider)
+ (ocamlopt_flags -O3)	
+)
+
+ 

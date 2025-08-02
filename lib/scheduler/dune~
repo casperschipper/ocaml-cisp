@@ -1,4 +1,0 @@
-(library
- (name scheduler)
- (libraries sorted)
-)

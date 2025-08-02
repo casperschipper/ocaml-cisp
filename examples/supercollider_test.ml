@@ -11,12 +11,18 @@ let send_osc sender time evt =
   let bytes = from_event_to_bundle time evt in
   Supercollider.send_message sender bytes
 
+let sample_from_seconds sec = 
+  !Process.sample_rate *. sec |> floor |> int_of_float
+
+let seconds_from_samples samples = 
+  float_of_int samples /. !Process.sample_rate 
+
 let streamed_sched =
-  let scheduler_interval = 0.5 in
-  let samples = !Process.sample_rate *. scheduler_interval |> floor |> int_of_float in
+  let scheduler_samps = 256 in
+  let scheduler_sec = seconds_from_samples scheduler_samps in
   let event_sq = Infseq.repeat (0.01, test_event) in
   let sched =
-    Clockscheduler.create ~interval:0.5 ~overlap:1.25 event_sq 10000
+    Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 event_sq 10000
   in
   let sender = Supercollider.init_sender ~ip:"127.0.0.1" ~port:57110 in
   let create_event time event = send_osc sender time event in
@@ -24,7 +30,7 @@ let streamed_sched =
     Cisp.simpleRecursive sched (Clockscheduler.update create_event) (fun x ->
         ignore x )
   in
-  Cisp.hold (Cisp.st samples) sched_sq
+  Cisp.hold (Cisp.st scheduler_samps) sched_sq
 
 let _ =
   Jack.playSeqs 0 Process.sample_rate

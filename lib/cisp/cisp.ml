@@ -20,6 +20,12 @@ let compare a b = if a > b then 1 else if a < b then -1 else 0
 
 let samplerate = ref !Process.sample_rate
 
+let sample_from_seconds sec = 
+  !Process.sample_rate *. sec |> floor |> int_of_float
+
+let seconds_from_samples samples = 
+  float_of_int samples /. !Process.sample_rate 
+
 let id x = x
 
 let thunk x () = x

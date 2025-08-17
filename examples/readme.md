@@ -8,6 +8,9 @@
   ants/drummingants
   ants/filter_regular
 * ants/freq_example
+	Simple freq example
+
+	ants/supersine
   ants/midiOut
   ants/nonoptimal
   ants/nrt

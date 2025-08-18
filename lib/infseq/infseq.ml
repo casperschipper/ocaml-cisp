@@ -2,6 +2,8 @@
 type 'a inf_node = InfCons of 'a * 'a t
 and +'a t = unit -> 'a inf_node
 
+
+
 let rec countFrom n () = InfCons (n, countFrom (n + 1))
 
 let rec map f isq () =
@@ -244,3 +246,5 @@ let tline_start clock startX timeToNext sq =
   unfold (fun state -> (evaluate state, update state)) initial
 
 (* question: how to deal with in between values ? *)
+let of_seq sq = 
+  cycleSq sq

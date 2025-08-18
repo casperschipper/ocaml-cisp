@@ -1657,15 +1657,15 @@ let push_nodes_slower = Cisp.pulse live_speed (push_nodes ()) (Cisp.st ())
 let octave_from_scalar x =
   x |> Cisp.linlin 0.0 1.0 4.0 12.0 |> floor |> int_of_float
 
-let interval_from_scalar x = 
+let interval_from_scalar x =
   x |> Cisp.linlin 0.0 1.0 0.0 11.0 |> floor |> int_of_float
 
-let get_frequency node = 
+let get_frequency node =
   let x = get_node_x node in
   let y = get_node_y node in
   let octave = octave_from_scalar x in
   let interval = interval_from_scalar y in
-  let midi = octave * 12 + interval in
+  let midi = (octave * 12) + interval in
   Cisp.mtof (float_of_int midi)
 
 let frequency_from_nodes nodesStream =
@@ -1673,7 +1673,8 @@ let frequency_from_nodes nodesStream =
   let freqs = nodesStream |> fmap (fun node -> get_frequency node) in
   freqs
 
-let freq_to_sinewave (samplerate : float) (freq_seq : float Seq.t) : float Seq.t =
+let freq_to_sinewave (samplerate : float) (freq_seq : float Seq.t) : float Seq.t
+    =
   let dt = 1.0 /. samplerate in
   let rec next phase seq () =
     match seq () with
@@ -1685,22 +1686,20 @@ let freq_to_sinewave (samplerate : float) (freq_seq : float Seq.t) : float Seq.t
   in
   next 0.0 freq_seq
 
-
-let jackMain effects array  () =
+let jackMain effects array () =
   let array1 = array in
   let array2 = duplicateArrArr array in
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
-      [ slower_compute array1
-      ; slower_compute array2
-      ; push_nodes_slower
-      ; effects
-       ]
+      [slower_compute array1; slower_compute array2; push_nodes_slower; effects]
   in
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
   let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in
-  let channels = [freq_to_sinewave !Process.sample_rate freq_sig  ] @ [applyEffects (Cisp.st 0.0)] in
+  let channels =
+    [freq_to_sinewave !Process.sample_rate freq_sig]
+    @ [applyEffects (Cisp.st 0.0)]
+  in
   Jack.playSeqs 0 Process.sample_rate channels
 
 let monitor_sample_count label n_interval sq =
@@ -1826,9 +1825,42 @@ let createCsound filename nodes =
   in
   render_cscore_to_file filename score
 
-type mode = Realtime | NonRealtime | FromNodes
+type event = {frequency: float; duration: float}
 
-let program_mode = Realtime
+let test_event f =
+  {frequency= f; duration= 0.1}
+
+let from_event_to_bundle start_time {frequency; duration} =
+  Supercollider.simple_tone ~time:start_time ~freq:frequency ~dur:duration
+
+let send_osc sender time evt =
+  let bytes = from_event_to_bundle time evt in
+  Supercollider.send_message sender bytes
+
+let streamed_sched nodes_stream =
+  let scheduler_samps = 2048 in
+  let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
+  let event_of_node node = 
+    let f = node |> get_frequency in
+    (0.01, test_event f )
+  in
+  let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
+  let sched =
+    Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 ~seq:event_sq
+      ~latency:0.2 ~max_events_per_buffer:10000
+  in
+  let sender = Supercollider.init_sender ~ip:"127.0.0.1" ~port:57110 in
+  let create_event time event = send_osc sender time event in
+  let sched_sq = 
+    Cisp.simpleRecursive sched (Clockscheduler.update create_event) ignore
+  in
+  Cisp.hold (Cisp.st scheduler_samps) sched_sq
+
+type realmode = RealtimeRecord | RealtimeBundles
+
+type mode = Realtime of realmode | NonRealtime | FromNodes
+
+let program_mode = Realtime RealtimeBundles
 (*
 Can we generate a supercollider score in parallel to an audio output (where we use the audio output for tuning to a n interesting dynamic.
 
@@ -1836,37 +1868,43 @@ We need a function that reacts to a ctrl+c  to stop the program and write the sc
 The score we might built
 *)
 
-let () =
-  let record_array = Array.init 524_288 (fun _ -> None) in
-  let handle_end () =
-    print_string "lets close this and write to file" ;
-    let _ = Thread.create finalWrite record_array in
-    ()
-  in
-  match program_mode with
-  | Realtime ->
+let record_array = Array.init 524_288 (fun _ -> None)
+
+let handle_end () =
+  print_string "lets close this and write to file" ;
+  let _ = Thread.create finalWrite record_array in
+  ()
+
+let realtime rmode =
       let phers = mkPheromonesArr in
       (* recording materials *)
       (* let otherEffect = nodes_history record_array phers in *)
       (* let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in *)
       let _ = Thread.create (dream_thread phers nodes) () in
-      let _ = Thread.create (jackMain Cisp.masterClock phers) () in
+      let node_stream = nodesStream phers () in
+      let _ = Thread.create (jackMain (Cisp.effectSync (streamed_sched node_stream)  Cisp.masterClock) phers) () in
       (*
-     let array1 = duplicateArrArr pheromones in *)
+        let array1 = duplicateArrArr pheromones in *)
       let _ = Thread.create (osc_thread_function handle_end) () in
       (* let _ = Thread.create midiOut array1 in *)
       (* let _ =
-      print_int
-        (Sys.command
-           "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1" ) ;
-      print_int
-        (Sys.command
-           "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in" ) ;
-      ignore (Sys.command "jack_lsp -c -A | grep ocaml")
-    in*)
+          print_int
+            (Sys.command
+              "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1" ) ;
+          print_int
+            (Sys.command
+              "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in" ) ;
+          ignore (Sys.command "jack_lsp -c -A | grep ocaml")
+        in*)
+
       while true do
         Unix.sleep 1
       done
+    
+
+let () =
+  match program_mode with
+  | Realtime rmode -> realtime rmode
   | NonRealtime ->
       (* let pheromones = mkPheromonesArr in
       non_realtime2 120 pheromones
@@ -1874,4 +1912,3 @@ let () =
       non_realtime_jackMain "sing_ants_" mkPheromonesArr
   | FromNodes ->
       Ants.read_node_seq_from_file "nodes.json" |> createCsound3 "antscore3.sco"
-    

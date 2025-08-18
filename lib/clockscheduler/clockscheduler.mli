@@ -20,3 +20,7 @@ val create :
   -> seq:(float * 'a) Infseq.t
   -> max_events_per_buffer:int
   -> 'a clockscheduler
+
+val cisp_schedular :
+  float -> (float * 'a) Infseq.t -> 'a clockscheduler
+

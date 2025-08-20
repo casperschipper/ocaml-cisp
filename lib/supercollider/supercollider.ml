@@ -130,9 +130,9 @@ let to_args (NewSynth {synth_name; synth_id; add_action; target; params}) =
     I target (* Target group *) ]
   @ params_to_bytes params
 
-let simple_tone ~time:start_t ~freq:freq ~dur:dur =
+let simple_tone ~time:start_t ~freq:freq ~dur:dur ~pos:pos =
   let args =
-    simple_synth_with_pars [("freq", F freq); ("dur", F dur)] |> to_args
+    simple_synth_with_pars [("freq", F freq); ("dur", F dur); ("pos", F pos)] |> to_args
   in
   let message = encode_osc_message ~address:"/s_new" ~args in
   encode_osc_bundle ~time:start_t ~messages:[message]

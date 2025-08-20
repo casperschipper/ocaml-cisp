@@ -18,11 +18,11 @@ let generate_random_points_3d ~seed ~count ~max_x ~max_y ~max_z f =
       f idx x y z )
 
 let generate_grid n f =
-  let step = 1.0 /. float_of_int (n - 1) in
+  let step = 0.99 /. float_of_int (n - 1) in
   Array.init (n * n) (fun i ->
       let horisteps = i mod n in
       let verticalsteps = i / n in
       let x = float_of_int horisteps *. step in
       let y = float_of_int verticalsteps *. step in
-      f i x y )
+      f i x y 0.0 )
 

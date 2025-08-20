@@ -13,9 +13,9 @@ let num_nodes = 49
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
-let evaporation = 0.45
+let evaporation = 0.4
 
-let exploration_bias = 0.00001
+let exploration_bias = 0.0
 
 let deposit = 1.0
 
@@ -23,9 +23,9 @@ let num_ants = 10
 
 let max_tour = 49
 
-let brownian = 0.0002
+let brownian = 0.0
 
-let viable_threshold = 2.67
+let viable_threshold = 0.0
 
 let speed_of_comp = 1
 
@@ -55,12 +55,13 @@ let mkNode id x y z = Node {id; x; y; z; sync= Pristine}
 (* |> Array.mapi (fun idx (x, y) -> mkNode idx x y) *)
 (* [|(0.25, 0.25); (0.75, 0.25); (0.75, 0.75); (0.25, 0.75)|] *)
 
-let nodes =
-  let seed = 124 (*121*) |> Cisp.debugi "my random seed" in
-  (* let seed = Random.int 12000 |> Cisp.debugi "myseed" in *)
-  (* generate_grid n_side *)
+let grid_nodes () = Spacegen.generate_grid n_side mkNode
+
+let nodes = grid_nodes ()
+  (* let seed = 124 (*121*) |> Cisp.debugi "my random seed" in
+  let seed = Random.int 12000 |> Cisp.debugi "myseed" in
   Spacegen.generate_random_points_3d ~seed ~count:num_nodes ~max_x:1.0
-    ~max_y:1.0 ~max_z:1.0 mkNode
+    ~max_y:1.0 ~max_z:1.0 mkNode *)
 
 let distance (Node p1) (Node p2) =
   if p1.id = p2.id then 0.0
@@ -1636,6 +1637,8 @@ let record_list_of_channels prefix duration_in_secs lst =
     ^ Toolkit.generate_timestamp_filename ~prefix ~suffix:".wav" () )
     Sndfile.WAV_32
 
+(* let distance_position_signal nodes =  *)
+
 let ssp_signal ?(interp = true) node_to_amp nodes =
   let dnodes = nodes |> distanced_nodes in
   let open Cisp in
@@ -1696,10 +1699,7 @@ let jackMain effects array () =
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
   let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in
-  let channels =
-    [freq_to_sinewave !Process.sample_rate freq_sig]
-    @ [applyEffects (Cisp.st 0.0)]
-  in
+  let channels = [applyEffects (Cisp.st 0.0)] in
   Jack.playSeqs 0 Process.sample_rate channels
 
 let monitor_sample_count label n_interval sq =
@@ -1825,13 +1825,12 @@ let createCsound filename nodes =
   in
   render_cscore_to_file filename score
 
-type event = {frequency: float; duration: float}
+type event = {frequency: float; duration: float; pos: float}
 
-let test_event f =
-  {frequency= f; duration= 0.1}
+let test_event f p = {frequency= f; duration= 0.2; pos= p}
 
-let from_event_to_bundle start_time {frequency; duration} =
-  Supercollider.simple_tone ~time:start_time ~freq:frequency ~dur:duration
+let from_event_to_bundle start_time {frequency; duration; pos} =
+  Supercollider.simple_tone ~time:start_time ~freq:frequency ~dur:duration ~pos
 
 let send_osc sender time evt =
   let bytes = from_event_to_bundle time evt in
@@ -1840,18 +1839,19 @@ let send_osc sender time evt =
 let streamed_sched nodes_stream =
   let scheduler_samps = 2048 in
   let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
-  let event_of_node node = 
+  let event_of_node node =
     let f = node |> get_frequency in
-    (0.01, test_event f )
+    let p = node |> get_node_x in
+    (0.01, test_event f p)
   in
   let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
   let sched =
     Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 ~seq:event_sq
-      ~latency:0.2 ~max_events_per_buffer:10000
+      ~latency:0.1 ~max_events_per_buffer:10000
   in
   let sender = Supercollider.init_sender ~ip:"127.0.0.1" ~port:57110 in
   let create_event time event = send_osc sender time event in
-  let sched_sq = 
+  let sched_sq =
     Cisp.simpleRecursive sched (Clockscheduler.update create_event) ignore
   in
   Cisp.hold (Cisp.st scheduler_samps) sched_sq
@@ -1876,18 +1876,24 @@ let handle_end () =
   ()
 
 let realtime rmode =
-      let phers = mkPheromonesArr in
-      (* recording materials *)
-      (* let otherEffect = nodes_history record_array phers in *)
-      (* let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in *)
-      let _ = Thread.create (dream_thread phers nodes) () in
-      let node_stream = nodesStream phers () in
-      let _ = Thread.create (jackMain (Cisp.effectSync (streamed_sched node_stream)  Cisp.masterClock) phers) () in
-      (*
+  let phers = mkPheromonesArr in
+  (* recording materials *)
+  (* let otherEffect = nodes_history record_array phers in *)
+  (* let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in *)
+  let _ = Thread.create (dream_thread phers nodes) () in
+  let node_stream = nodesStream phers () in
+  let _ =
+    Thread.create
+      (jackMain
+         (Cisp.effectSync (streamed_sched node_stream) Cisp.masterClock)
+         phers )
+      ()
+  in
+  (*
         let array1 = duplicateArrArr pheromones in *)
-      let _ = Thread.create (osc_thread_function handle_end) () in
-      (* let _ = Thread.create midiOut array1 in *)
-      (* let _ =
+  let _ = Thread.create (osc_thread_function handle_end) () in
+  (* let _ = Thread.create midiOut array1 in *)
+  (* let _ =
           print_int
             (Sys.command
               "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1" ) ;
@@ -1896,11 +1902,9 @@ let realtime rmode =
               "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in" ) ;
           ignore (Sys.command "jack_lsp -c -A | grep ocaml")
         in*)
-
-      while true do
-        Unix.sleep 1
-      done
-    
+  while true do
+    Unix.sleep 1
+  done
 
 let () =
   match program_mode with

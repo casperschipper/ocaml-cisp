@@ -1,15 +1,21 @@
 (
 SynthDef(\simple, {
 	| freq, dur |
-	var sig, out, panned, pos;
-	sig = SinOsc.ar(freq,0.0,0.004);
-	out = sig * EnvGen.ar( Env.perc(0.0001,dur), doneAction:2);
-	pos = Rand.new(-1.0,1.0);
-	panned = Pan2.ar(out,pos);
-	OffsetOut.ar( 0, panned);
+	var env, out;
+	env = EnvGen.ar( Env.perc(0.0001,dur), doneAction:2);
+	out = SinOsc.ar(freq,0.0,0.001 * env);
+	OffsetOut.ar(0,Pan2.ar(out,pos:0.0));
 }).add;
 )
 
-a = Synth(\simple, [\freq,440,\dur,2]);
+a = Synth(\simple, [\freq,220.0,\dur,2]);
 
 s.boot;
+
+s = Server.local;
+
+s.quit;
+
+WFS.startup;
+
+s.quit;

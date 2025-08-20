@@ -1,8 +1,9 @@
 (* This is a module for controlling a Supercollider synth from ocaml It uses
     actual timestamps to provide more accurate timing. At this moment, I only
     support simple synths, where you provide all the parameters at the start of
-    the event, instead of updateing parameters after the synth has been sent. 
-    We do not manage synth id's (as we don't need to contact the synth after) but just use something generic. 
+    the event, instead of updating parameters after the synth has been sent. 
+    It does not manage synth id's (as we don't need to contact the synth after).
+    So resourse management (nr of synths playing simultaneously is up to you).
 
 *)
 
@@ -63,7 +64,7 @@ val to_args : newSynth -> osc_arg list
 
 (* this is an exmaple synth, probably a simple sinewave with an envelope with a freq and duration *)
 val simple_tone :
-  time:float -> freq:float -> dur:float -> bytes
+  time:float -> freq:float -> dur:float -> pos:float -> bytes
 
 val send_multiple_synths :
   float ->

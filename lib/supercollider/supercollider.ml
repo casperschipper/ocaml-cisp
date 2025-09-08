@@ -130,7 +130,24 @@ let to_args (NewSynth {synth_name; synth_id; add_action; target; params}) =
     I target (* Target group *) ]
   @ params_to_bytes params
 
+
+
+
 let simple_tone ~time:start_t ~freq:freq ~dur:dur ~pos:pos =
+  (*
+Simple synth to be used in supercollider:
+
+(
+SynthDef(\simple, {
+	| freq, dur, pos = 0.5|
+	var env, out, panned;
+	env = EnvGen.ar( Env.perc(0.0001,dur * 1), doneAction:2);
+	out = SinOsc.ar(freq,mul:0.1) * env;
+	panned = Pan2.ar( (out).tanh , pos);
+	OffsetOut.ar(0,panned);
+}).add;
+)
+*)
   let args =
     simple_synth_with_pars [("freq", F freq); ("dur", F dur); ("pos", F pos)] |> to_args
   in

@@ -1,302 +1,543 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>3D Graph</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
-    #floatBox {
-      width: 80px;
-      height: 30px;
-      font-size: 18px;
-      text-align: right;
-      padding: 5px;
-      border: 1px solid #999;
-      border-radius: 4px;
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: white;
-    }
-    #controllers {
-      position: absolute;
-      top: 50px;
-      left: 10px;
-      color: white;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 8px;
-    }
-  </style>
-</head>
-<body>
-  <input type="number" id="floatBox" step="0.01" value="0.0" />
-  <pre id="controllers">controller state</pre>
-  <script type="module">
-    import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.module.js';
-    import { OrbitControls } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/examples/jsm/controls/OrbitControls.js';
-    // Three.js setup
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 5);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-
-    const nodeMeshes = {};
-    const edgeLines = {};
-
-    let num_nodes = 0;
-    const line_weight = 0.02;
-
-    function createNode([x, y, z], index) {
-      const geometry = new THREE.SphereGeometry(0.05, 16, 16);
-      const material = new THREE.MeshBasicMaterial({ color: 0x888888 });
-      const sphere = new THREE.Mesh(geometry, material);
-      sphere.position.set(x, y, z);
-      scene.add(sphere);
-      nodeMeshes[index] = sphere;
-    }
-
-    function createEdge({ start, target, weight }, index) {
-      const startNode = nodeMeshes[start];
-      const targetNode = nodeMeshes[target];
-      
-      if (!startNode || !targetNode) {
-        console.error(`Missing node references for edge ${index}: start=${start}, target=${target}`);
-        return;
+<html>
+  <body>
+    <style>
+      #floatBox {
+        width: 80px;
+        height: 30px;
+        font-size: 18px;
+        text-align: right;
+        padding: 5px;
+        border: 1px solid #999;
+        border-radius: 4px;
       }
-      
-      const points = [
-        startNode.position,
-        targetNode.position
-      ];
-
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const material = new THREE.LineBasicMaterial({ color: 0x000000 });
-      // Three.js no longer supports linewidth for most renderers
-      // Setting a reasonable thickness that will work
-      const line = new THREE.Line(geometry, material);
-      scene.add(line);
-      edgeLines[index] = { line, start, target };
-    }
-
-    function updateNode({ node_id, x, y, z = 0 }) {
-      const mesh = nodeMeshes[node_id];
-      if (mesh) {
-        mesh.position.set(x, y, z);
-      } else {
-        console.warn(`Tried to update non-existent node: ${node_id}`);
+      .app {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       }
-    }
+      .panel {
+        width: 360px;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 8px;
+      }
+      .slider-row {
+        display: grid;
+        grid-template-columns: 24px 1fr 52px;
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .slider-row input[type="range"] {
+        width: 100%;
+      }
+      .small {
+        font-size: 12px;
+        color: #666;
+      }
+      .btn {
+        display: inline-block;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #f9f9f9;
+      }
+      .btn:active { transform: translateY(1px); }
+    </style>
 
-    function updateEdge(edge, index) {
-      const lineInfo = edgeLines[index];
-      if (!lineInfo) {
-        console.warn(`Tried to update non-existent edge: ${index}`);
-        return;
+    <script>
+      // --- SVG & globals ------------------------------------------------------
+      const svgNamespace = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgNamespace, "svg");
+      const window_width = 800;
+      const window_height = 800;
+      const line_weight = 1;
+
+      svg.setAttribute("width", `${window_width}px`);
+      svg.setAttribute("height", `${window_height}px`);
+      svg.setAttribute("style", "border: 1px solid black;");
+
+      // Layout wrapper: SVG + control panel side by side
+      const app = document.createElement('div');
+      app.className = 'app';
+      document.body.appendChild(app);
+      app.appendChild(svg);
+
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      app.appendChild(panel);
+
+      const ctrlState = document.createElement('pre');
+      ctrlState.innerText = "controller state";
+      ctrlState.setAttribute("id", "controllers");
+      app.appendChild(ctrlState);
+
+      // --- Math helpers (3D rotations) ---------------------------------------
+      const deg2rad = (d) => d * Math.PI / 180;
+
+      function matMul(A, B) {
+        // 3x3 * 3x3
+        const C = Array(9);
+        for (let r = 0; r < 3; r++) {
+          for (let c = 0; c < 3; c++) {
+            C[r*3+c] = A[r*3+0]*B[0*3+c] + A[r*3+1]*B[1*3+c] + A[r*3+2]*B[2*3+c];
+          }
+        }
+        return C;
+      }
+      function matVec(M, v) {
+        return [
+          M[0]*v[0] + M[1]*v[1] + M[2]*v[2],
+          M[3]*v[0] + M[4]*v[1] + M[5]*v[2],
+          M[6]*v[0] + M[7]*v[1] + M[8]*v[2],
+        ];
+      }
+      function matTranspose(M) {
+        return [ M[0], M[3], M[6], M[1], M[4], M[7], M[2], M[5], M[8] ];
       }
 
-      const startNode = nodeMeshes[edge.start];
-      const targetNode = nodeMeshes[edge.target];
-      
-      if (!startNode || !targetNode) {
-        console.warn(`Missing node references: start=${edge.start}, target=${edge.target}`);
-        return;
+      function rotationMatrix(rxDeg, ryDeg, rzDeg) {
+        const rx = deg2rad(rxDeg), ry = deg2rad(ryDeg), rz = deg2rad(rzDeg);
+        const cx = Math.cos(rx), sx = Math.sin(rx);
+        const cy = Math.cos(ry), sy = Math.sin(ry);
+        const cz = Math.cos(rz), sz = Math.sin(rz);
+
+        const Rx = [ 1,0,0,  0,cx,-sx,  0,sx,cx ];
+        const Ry = [ cy,0,sy,  0,1,0,  -sy,0,cy ];
+        const Rz = [ cz,-sz,0,  sz,cz,0,  0,0,1 ];
+
+        // R = Rz * Ry * Rx  (column-vector convention)
+        return matMul(Rz, matMul(Ry, Rx));
       }
 
-      const startPos = startNode.position;
-      const targetPos = targetNode.position;
+      // Map world <-> centered [-1,1] for consistent rotation scale
+      function toCentered(world) {
+        // world: x,y in [0,1], z in [-1,1] (assumed). If z is [0,1], it still works.
+        return [ (world.x - 0.5) * 2, (world.y - 0.5) * 2, world.z ];
+      }
+      function fromCentered(centered) {
+        return { x: centered[0] / 2 + 0.5, y: centered[1] / 2 + 0.5, z: centered[2] };
+      }
+      function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-      const positions = new Float32Array([
-        startPos.x, startPos.y, startPos.z,
-        targetPos.x, targetPos.y, targetPos.z
-      ]);
+      // --- Scene state --------------------------------------------------------
+      let num_nodes = 0;
+      let nodesWorld = [];        // [{x,y,z}] world coords per node_id
+      let screenCache = [];       // [{sx,sy,vz}] cached per node (after projection)
+      let allEdgesList = [];      // [{start, target, idx}]
+      let R = rotationMatrix(0,0,0);
+      let R_inv = matTranspose(R);
 
-      lineInfo.line.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      lineInfo.line.geometry.computeBoundingSphere();
-    }
+      // Rotation controls + RAF throttle
+      let rotX = 0, rotY = 0, rotZ = 0;
+      let pendingRender = false;
 
-    function updateText(txt) {
-      const el = document.getElementById('controllers');
-      if (el) el.innerText = txt;
-    }
+      function updateRotation() {
+        R = rotationMatrix(rotX, rotY, rotZ);
+        R_inv = matTranspose(R); // inverse of rotation matrix == transpose
+        requestRender();
+      }
+      function requestRender() {
+        if (pendingRender) return;
+        pendingRender = true;
+        window.requestAnimationFrame(() => {
+          pendingRender = false;
+          renderAll();
+        });
+      }
 
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    }
+      // --- UI: rotation sliders ----------------------------------------------
+      function addSlider(label, initial, onInput) {
+        const row = document.createElement('div');
+        row.className = 'slider-row';
 
-    animate();
+        const lab = document.createElement('div');
+        lab.textContent = label;
+        row.appendChild(lab);
 
-    // WebSocket setup
-    let socket;
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
-    const reconnectDelay = 2000; // 2 seconds
+        const range = document.createElement('input');
+        range.type = 'range';
+        range.min = '-180';
+        range.max = '180';
+        range.step = '1';
+        range.value = String(initial);
+        row.appendChild(range);
 
-    function connectWebSocket() {
-      socket = new WebSocket("ws://" + window.location.host + "/websocket");
+        const val = document.createElement('div');
+        val.style.textAlign = 'right';
+        val.textContent = `${initial}°`;
+        row.appendChild(val);
+
+        range.addEventListener('input', () => {
+          const v = parseFloat(range.value) || 0;
+          val.textContent = `${v}°`;
+          onInput(v);
+        });
+
+        panel.appendChild(row);
+      }
+
+      const title = document.createElement('div');
+      title.innerHTML = "<strong>Rotation</strong> <span class='small'>(orthographic)</span>";
+      title.style.marginBottom = '8px';
+      panel.appendChild(title);
+
+      addSlider('X', 0, (v) => { rotX = v; updateRotation(); });
+      addSlider('Y', 0, (v) => { rotY = v; updateRotation(); });
+      addSlider('Z', 0, (v) => { rotZ = v; updateRotation(); });
+
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'btn';
+      resetBtn.textContent = 'Reset';
+      resetBtn.style.marginTop = '8px';
+      resetBtn.addEventListener('click', () => {
+        rotX = rotY = rotZ = 0;
+        // Reset slider DOMs (simple: rebuild panel sliders)
+        panel.innerHTML = '';
+        panel.appendChild(title);
+        addSlider('X', 0, (v) => { rotX = v; updateRotation(); });
+        addSlider('Y', 0, (v) => { rotY = v; updateRotation(); });
+        addSlider('Z', 0, (v) => { rotZ = v; updateRotation(); });
+        const again = resetBtn.cloneNode(true);
+        again.addEventListener('click', resetBtn.onclick);
+        panel.appendChild(again);
+        updateRotation();
+      });
+      panel.appendChild(resetBtn);
+
+      // --- Visual helpers -----------------------------------------------------
+      function zToGrayShade(z) {
+        // expects z roughly in [-1, 1]; clamp to be safe
+        const zz = clamp(z, -1, 1);
+        const normalized = (zz + 1) / 2; // [0,1]
+        const grayValue = Math.floor(normalized * 255);
+        return `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+      }
+
+      // Project one node (world -> screen)
+      function projectNode(nodeId) {
+        const w = nodesWorld[nodeId];
+        // World -> centered [-1,1]
+        const vC = toCentered(w);
+        // Rotate to view space
+        const v = matVec(R, vC);
+        // Orthographic projection -> normalized screen [0,1]
+        const sx = v[0] / 2 + 0.5;
+        const sy = v[1] / 2 + 0.5;
+        const vz = v[2]; // depth for shading
+        return { sx, sy, vz };
+      }
+
+      function applyNodeStyle(nodeId, screen) {
+        const group = document.getElementById(`node-${nodeId}`);
+        if (!group) return;
+
+        group.setAttribute("transform",
+          `translate(${screen.sx * window_width}, ${screen.sy * window_height})`);
+
+        const circle = group.querySelector('circle');
+        if (circle) {
+          circle.setAttribute("fill", zToGrayShade(screen.vz));
+        }
+      }
+
+      // Efficient full render (on rotation / batched updates)
+      function renderAll() {
+        if (num_nodes === 0) return;
+
+        // 1) compute all screen positions
+        for (let i = 0; i < num_nodes; i++) {
+          screenCache[i] = projectNode(i);
+        }
+
+        // 2) position nodes
+        for (let i = 0; i < num_nodes; i++) {
+          applyNodeStyle(i, screenCache[i]);
+        }
+
+        // 3) position edges (use provided indexing)
+        // Assuming edges are provided as a flat list that matches IDs edge-0..edge-(E-1).
+        // If edges form a full n*n matrix, this is still efficient enough.
+        for (let e = 0; e < allEdgesList.length; e++) {
+          const { start, target, idx } = allEdgesList[e];
+          const line = document.getElementById(`edge-${idx}`);
+          if (!line) continue;
+          const s = screenCache[start];
+          const t = screenCache[target];
+          line.setAttribute("x1", s.sx * window_width);
+          line.setAttribute("y1", s.sy * window_height);
+          line.setAttribute("x2", t.sx * window_width);
+          line.setAttribute("y2", t.sy * window_height);
+        }
+      }
+
+      // --- Node + edge creation ----------------------------------------------
+      function createNode(node, index) {
+        const [x, y, z] = node;
+
+        // Keep world coordinates
+        nodesWorld[index] = { x, y, z };
+
+        const group = document.createElementNS(svgNamespace, "g");
+        group.setAttribute("id", `node-${index}`);
+        svg.appendChild(group);
+
+        const circle = document.createElementNS(svgNamespace, "circle");
+        circle.setAttribute("r", "10");
+        circle.setAttribute("fill", zToGrayShade(z)); // initial
+        group.appendChild(circle);
+
+        const text = document.createElementNS(svgNamespace, "text");
+        text.setAttribute("fill", "black");
+        text.setAttribute("font-size", "24");
+        text.setAttribute("dy", "0.35em");  // vertically center
+        text.setAttribute("x", "15");       // offset to the right
+        text.textContent = String(index);
+        group.appendChild(text);
+
+        enableDrag(group, index);
+      }
+
+      function createEdge(edge, index) {
+        const { start, target, weight } = edge;
+
+        const line = document.createElementNS(svgNamespace, "line");
+        line.setAttribute("x1", 0);
+        line.setAttribute("y1", 0);
+        line.setAttribute("x2", 0);
+        line.setAttribute("y2", 0);
+        line.setAttribute("stroke", "black");
+        line.setAttribute("stroke-width", weight * line_weight);
+        line.setAttribute("id", `edge-${index}`);
+        svg.appendChild(line);
+      }
+
+      // --- Dragging in current view plane ------------------------------------
+      function enableDrag(targetEl, node_id) {
+        let isDragging = false;
+        let frame_num = 0;
+        let fixedViewZ = 0; // keep the node's current depth while dragging
+
+        const onMouseMove = (e) => {
+          if (!isDragging) return;
+          const rect = svg.getBoundingClientRect();
+          const xNorm = (e.clientX - rect.left) / window_width;   // [0,1]
+          const yNorm = (e.clientY - rect.top) / window_height;   // [0,1]
+
+          // Mouse in view-space (centered, [-1,1])
+          const vx = (xNorm - 0.5) * 2;
+          const vy = (yNorm - 0.5) * 2;
+
+          // Inverse-rotate back to WORLD centered space, keeping depth fixed
+          const worldCentered = matVec(R_inv, [vx, vy, fixedViewZ]);
+          const world = fromCentered(worldCentered);
+
+          // Clamp world to reasonable ranges
+          const x = clamp(world.x, 0, 1);
+          const y = clamp(world.y, 0, 1);
+          const z = clamp(world.z, -1, 1);
+
+          // Update world state
+          nodesWorld[node_id] = { x, y, z };
+
+          // Fast local redraw for this node (and its edges) to keep dragging smooth
+          const screen = projectNode(node_id);
+          applyNodeStyle(node_id, screen);
+          updateConnectedEdges(screen.sx, screen.sy, node_id); // uses normalized positions
+
+          frame_num += 1;
+          if (socket.readyState === WebSocket.OPEN && frame_num % 32 === 0) {
+            socket.send(JSON.stringify({ drag: { node_id, x, y, z } }));
+          }
+        };
+
+        const onMouseUp = () => {
+          if (!isDragging) return;
+          isDragging = false;
+          window.removeEventListener("mousemove", onMouseMove);
+          window.removeEventListener("mouseup", onMouseUp);
+        };
+
+        targetEl.addEventListener("mousedown", (e) => {
+          isDragging = true;
+
+          // Compute current view-Z for this node so we can constrain dragging to the view-plane
+          const w = nodesWorld[node_id];
+          const vc = toCentered(w);
+          const v = matVec(R, vc);
+          fixedViewZ = v[2];
+
+          window.addEventListener("mousemove", onMouseMove);
+          window.addEventListener("mouseup", onMouseUp);
+        });
+      }
+
+      // --- Edge updates (kept for compatibility with existing indexing) ------
+      function updateEdge(edge, index) {
+        const line = document.getElementById(`edge-${index}`);
+        if (line) {
+          const { weight } = edge;
+          line.setAttribute("stroke-width", weight * line_weight);
+        } else {
+          // silently ignore
+        }
+      }
+
+      function updateEdgePositionStart(startX, startY, idx) {
+        const edgeId = `edge-${idx}`;
+        const line = document.getElementById(edgeId);
+        if (line) {
+          line.setAttribute("x1", startX * window_width);
+          line.setAttribute("y1", startY * window_height);
+        }
+      }
+      function updateEdgePositionTarget(targetX, targetY, idx) {
+        const edgeId = `edge-${idx}`;
+        const line = document.getElementById(edgeId);
+        if (line) {
+          line.setAttribute("x2", targetX * window_width);
+          line.setAttribute("y2", targetY * window_height);
+        }
+      }
+      function updateConnectedEdges(x, y, index) {
+        // For dense adjacency (num_nodes^2 edges).
+        // If your graph is sparse, the full-batch renderAll() (used for rotations) handles it anyway.
+        for (let i = 0; i < num_nodes; i++) {
+          const startIndex = (index * num_nodes) + i;
+          const targetIndex = (i * num_nodes) + index;
+          updateEdgePositionStart(x, y, startIndex);
+          updateEdgePositionTarget(x, y, targetIndex);
+        }
+      }
+
+      function updateText(txt) {
+        const element = document.getElementById("controllers");
+        if (element) element.innerText = txt;
+      }
+
+      // --- WebSocket + lifecycle --------------------------------------------
+      var socket = new WebSocket("ws://" + window.location.host + "/websocket");
 
       socket.onopen = function () {
-        console.log("WebSocket connected");
-        reconnectAttempts = 0;
         socket.send('init');
       };
 
-      socket.onmessage = function (e) {
-        try {
-          let object = JSON.parse(e.data);
-          if (!object) {
-            console.log('Empty JSON object received');
-            return;
-          }
+      function init(state) {
+        nodesWorld = [];
+        screenCache = [];
+        allEdgesList = [];
 
-          if (object.init) {
-            init(object.init);
-          } else if (object.update) {
-            update(object.update);
-          } else {
-            console.log('Unknown message format', object);
-          }
-        } catch (error) {
-          console.error('Error processing message:', error);
-        }
-      };
-
-      socket.onclose = function(event) {
-        console.log("WebSocket disconnected", event);
-        if (reconnectAttempts < maxReconnectAttempts) {
-          reconnectAttempts++;
-          console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`);
-          setTimeout(connectWebSocket, reconnectDelay);
-        } else {
-          console.error("Max reconnect attempts reached. Please refresh the page.");
-          updateText("Connection lost. Please refresh the page.");
-        }
-      };
-
-      socket.onerror = function(error) {
-        console.error("WebSocket error:", error);
-      };
-    }
-
-    connectWebSocket();
-
-    function init(state) {
-      // Clear any existing nodes/edges if reconnecting
-      Object.values(nodeMeshes).forEach(mesh => scene.remove(mesh));
-      Object.values(edgeLines).forEach(edge => scene.remove(edge.line));
-      
-      // Reset collections
-      for (const key in nodeMeshes) delete nodeMeshes[key];
-      for (const key in edgeLines) delete edgeLines[key];
-
-      num_nodes = state.num_nodes || 0;
-
-      if (state.nodes && Array.isArray(state.nodes)) {
-        state.nodes.forEach((node, index) => {
-          if (Array.isArray(node) && node.length >= 2) {
-            const [x, y] = node;
-            const z = node[2] || 0; // Use z if provided, otherwise default to 0
-            createNode([x, y, z], index);
-          }
+        state.nodes.forEach(createNode);
+        state.edges.forEach((edge, idx) => {
+          allEdgesList.push({ start: edge.start, target: edge.target, idx });
+          createEdge(edge, idx);
         });
-      }
 
-      if (state.edges && Array.isArray(state.edges)) {
-        state.edges.forEach((edge, index) => {
-          if (edge && typeof edge === 'object') {
-            createEdge(edge, index);
-          }
-        });
-      }
+        num_nodes = state.num_nodes;
 
-      // Set up the ticker
-      const tickInterval = setInterval(() => {
-        if (socket && socket.readyState === WebSocket.OPEN) {
+        // Kick off the ticker like before
+        setInterval(() => {
           socket.send('tick');
-        } else if (socket && socket.readyState === WebSocket.CLOSED) {
-          clearInterval(tickInterval);
-        }
-      }, 80);
-    }
+        }, 80);
 
-    function update(state) {
-      if (state.updated_nodes && Array.isArray(state.updated_nodes)) {
-        state.updated_nodes.forEach(updateNode);
+        renderAll(); // initial layout with rotation applied (currently zero)
       }
-      
-      if (state.edges && Array.isArray(state.edges)) {
-        state.edges.forEach(updateEdge);
-      }
-      
-      if (state.controllers) {
+
+      function update(state) {
+        // Apply node updates from server (world space), batch render once
+        if (state.updated_nodes && state.updated_nodes.length) {
+          for (const node of state.updated_nodes) {
+            const { node_id, x, y, z } = node;
+            nodesWorld[node_id] = { x, y, z };
+          }
+        }
+
+        if (state.edges && state.edges.length) {
+          state.edges.forEach(updateEdge);
+        }
+
         updateText(state.controllers);
+        requestRender();
       }
-    }
 
-    // Float box input
-    const floatBox = document.getElementById('floatBox');
-    floatBox.addEventListener('change', () => {
-      const value = parseFloat(floatBox.value);
-      if (!isNaN(value) && socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ brownian: { amount: value } }));
-      }
-    });
-
-    // Optional: drag adjust float box
-    (function enableFloatBoxDrag() {
-      let isDragging = false;
-      let startY = 0;
-      let startValue = 0;
-
-      const onMouseMove = (e) => {
-        if (!isDragging) return;
-
-        const deltaY = startY - e.clientY;
-        let sensitivity = e.shiftKey || e.altKey ? 0.001 : 0.0001;
-
-        const newValue = parseFloat((startValue + deltaY * sensitivity).toFixed(4));
-        floatBox.value = newValue;
-        
-        if (socket && socket.readyState === WebSocket.OPEN) {
-          socket.send(JSON.stringify({ brownian: { amount: newValue } }));
+      socket.onmessage = function (e) {
+        let object = JSON.parse(e.data);
+        if (!object) {
+          console.log('json decode fail');
+        } else if (object.init) {
+          init(object.init);
+        } else if (object.update) {
+          update(object.update);
+        } else {
+          console.log('do not understand message ' + object);
         }
       };
 
-      const onMouseUp = () => {
-        if (isDragging) {
-          isDragging = false;
-          document.body.style.cursor = 'default';
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
+      // --- Existing float number box (unchanged) -----------------------------
+      function createFloatNumberBox(socket) {
+        let createElement = function () {
+          const floatBox = document.createElement('input');
+          floatBox.setAttribute('type', 'number');
+          floatBox.setAttribute('id', 'floatBox');
+          floatBox.setAttribute('step', '0.01');
+          floatBox.setAttribute('value', '0.0');
+          floatBox.style.margin = '10px';
+          document.body.appendChild(floatBox);
+          return floatBox;
+        };
+
+        const element = createElement();
+
+        element.addEventListener('change', () => {
+          const value = parseFloat(element.value);
+          if (!isNaN(value)) {
+            socket.send(encoder(value));
+          }
+        });
+
+        let encoder = function (x) {
+          return JSON.stringify({ 'brownian': { 'amount': x } });
         }
+
+        let isDragging = false;
+        let startY = 0;
+        let startValue = 0;
+
+        const onMouseMove = (e) => {
+          if (!isDragging) return;
+
+          const deltaY = startY - e.clientY;
+          let sensitivity = 0.0001;
+          if (e.shiftKey) sensitivity = 0.001;
+          if (e.altKey) sensitivity = 0.001;
+
+          const newValue = parseFloat((startValue + deltaY * sensitivity).toFixed(4));
+          element.value = newValue;
+          socket.send(encoder(newValue));
+        };
+
+        const onMouseUp = () => {
+          if (isDragging) {
+            isDragging = false;
+            document.body.style.cursor = 'default';
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+          }
+        };
+
+        element.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          startY = e.clientY;
+          startValue = parseFloat(element.value) || 0.0;
+          document.body.style.cursor = 'ns-resize';
+          window.addEventListener('mousemove', onMouseMove);
+          window.addEventListener('mouseup', onMouseUp);
+          e.preventDefault();
+        });
       };
-
-      floatBox.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        startY = e.clientY;
-        startValue = parseFloat(floatBox.value) || 0.0;
-        document.body.style.cursor = 'ns-resize';
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-        e.preventDefault();
-      });
-    })();
-
-    // Resize handler
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
-</body>
+      createFloatNumberBox(socket);
+    </script>
+  </body>
 </html>

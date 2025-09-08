@@ -1,11 +1,11 @@
 module S = Lo.Server
 open Ants
 
-let () = Process.sample_rate := 48000.0
+let () = Process.sample_rate := 44100.0
 
 let record_duration = 5.0
 
-let alpha = 1.0 (*  prefer paths with lots of pheromone *)
+let alpha = 0.9 (*  prefer paths with lots of pheromone *)
 
 let beta = 1.0 (* prefer paths that are shorter *)
 
@@ -55,13 +55,16 @@ let mkNode id x y z = Node {id; x; y; z; sync= Pristine}
 (* |> Array.mapi (fun idx (x, y) -> mkNode idx x y) *)
 (* [|(0.25, 0.25); (0.75, 0.25); (0.75, 0.75); (0.25, 0.75)|] *)
 
-let grid_nodes () = Spacegen.generate_grid n_side mkNode
-
-let nodes = grid_nodes ()
-  (* let seed = 124 (*121*) |> Cisp.debugi "my random seed" in
+let random_nodes () = 
+  let seed = 124 (*121*) |> Cisp.debugi "my random seed" in
   let seed = Random.int 12000 |> Cisp.debugi "myseed" in
   Spacegen.generate_random_points_3d ~seed ~count:num_nodes ~max_x:1.0
-    ~max_y:1.0 ~max_z:1.0 mkNode *)
+    ~max_y:1.0 ~max_z:1.0 mkNode 
+
+let grid_nodes () = Spacegen.generate_points3d 49 10 |> Array.mapi (fun idx (x,y,z) -> mkNode idx x y z)
+
+let nodes = grid_nodes ()
+ 
 
 let distance (Node p1) (Node p2) =
   if p1.id = p2.id then 0.0
@@ -1491,7 +1494,7 @@ let json_error error_str =
   let json_value = `Assoc [("error", `String error_str)] in
   Safe.to_string json_value
 
-let home = read_file "simplecasper.html"
+let home = read_file "simplecasper3d.html"
 
 type webCtrl =
   | Drag of {node_id: int; x: float; y: float; z: float}
@@ -1658,7 +1661,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
 let push_nodes_slower = Cisp.pulse live_speed (push_nodes ()) (Cisp.st ())
 
 let octave_from_scalar x =
-  x |> Cisp.linlin 0.0 1.0 4.0 12.0 |> floor |> int_of_float
+  x |> Cisp.linlin 0.0 1.0 0.0 16.0 |> floor |> int_of_float
 
 let interval_from_scalar x =
   x |> Cisp.linlin 0.0 1.0 0.0 11.0 |> floor |> int_of_float
@@ -1689,6 +1692,38 @@ let freq_to_sinewave (samplerate : float) (freq_seq : float Seq.t) : float Seq.t
   in
   next 0.0 freq_seq
 
+
+type event = {frequency: float; duration: float; pos: float}
+
+let test_event f p = {frequency= f; duration= 0.1; pos= p}
+
+let from_event_to_bundle start_time {frequency; duration; pos} =
+  Supercollider.simple_tone ~time:start_time ~freq:frequency ~dur:duration ~pos
+
+let send_osc sender time evt =
+  let bytes = from_event_to_bundle time evt in
+  Supercollider.send_message sender bytes
+
+let supercollider_sched nodes_stream =
+  let scheduler_samps = 2048 in
+  let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
+  let event_of_node node =
+    let f = node |> get_frequency in
+    let p = node |> get_node_x in
+    (0.001, test_event f p)
+  in
+  let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
+  let sched =
+    Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 ~seq:event_sq
+      ~latency:0.3 ~max_events_per_buffer:10000
+  in
+  let sender = Supercollider.init_sender ~ip:"127.0.0.1" ~port:57110 in
+  let create_event time event = send_osc sender time event in
+  let sched_sq =
+    Cisp.simpleRecursive sched (Clockscheduler.update create_event) ignore
+  in
+  Cisp.hold (Cisp.st scheduler_samps) sched_sq
+
 let jackMain effects array () =
   let array1 = array in
   let array2 = duplicateArrArr array in
@@ -1698,8 +1733,10 @@ let jackMain effects array () =
   in
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
-  let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in
-  let channels = [applyEffects (Cisp.st 0.0)] in
+  (* let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in *)
+  (* let ssp = ssp_signal ~interp:true get_node_x nodes in *)
+  let silence = Cisp.st(0.0) in
+  let channels = [Cisp.syncEffect (applyEffects silence) (supercollider_sched nodes)] in
   Jack.playSeqs 0 Process.sample_rate channels
 
 let monitor_sample_count label n_interval sq =
@@ -1825,36 +1862,6 @@ let createCsound filename nodes =
   in
   render_cscore_to_file filename score
 
-type event = {frequency: float; duration: float; pos: float}
-
-let test_event f p = {frequency= f; duration= 0.2; pos= p}
-
-let from_event_to_bundle start_time {frequency; duration; pos} =
-  Supercollider.simple_tone ~time:start_time ~freq:frequency ~dur:duration ~pos
-
-let send_osc sender time evt =
-  let bytes = from_event_to_bundle time evt in
-  Supercollider.send_message sender bytes
-
-let streamed_sched nodes_stream =
-  let scheduler_samps = 2048 in
-  let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
-  let event_of_node node =
-    let f = node |> get_frequency in
-    let p = node |> get_node_x in
-    (0.01, test_event f p)
-  in
-  let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
-  let sched =
-    Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 ~seq:event_sq
-      ~latency:0.1 ~max_events_per_buffer:10000
-  in
-  let sender = Supercollider.init_sender ~ip:"127.0.0.1" ~port:57110 in
-  let create_event time event = send_osc sender time event in
-  let sched_sq =
-    Cisp.simpleRecursive sched (Clockscheduler.update create_event) ignore
-  in
-  Cisp.hold (Cisp.st scheduler_samps) sched_sq
 
 type realmode = RealtimeRecord | RealtimeBundles
 
@@ -1885,7 +1892,7 @@ let realtime rmode =
   let _ =
     Thread.create
       (jackMain
-         (Cisp.effectSync (streamed_sched node_stream) Cisp.masterClock)
+         Cisp.masterClock
          phers )
       ()
   in

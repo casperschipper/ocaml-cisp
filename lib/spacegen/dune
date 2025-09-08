@@ -1,3 +1,4 @@
 (library
  (name spacegen)
+ (flags :standard -w -32)
 )

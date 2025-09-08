@@ -1,3 +1,3 @@
 #!/bin/sh
  
-dune exec ./simplecasper.exe
+dune exec ./antcolony3d.exe

@@ -1661,7 +1661,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
 let push_nodes_slower = Cisp.pulse live_speed (push_nodes ()) (Cisp.st ())
 
 let octave_from_scalar x =
-  x |> Cisp.linlin 0.0 1.0 0.0 16.0 |> floor |> int_of_float
+  x |> Cisp.linlin 0.0 1.0 1.0 16.0 |> floor |> int_of_float
 
 let interval_from_scalar x =
   x |> Cisp.linlin 0.0 1.0 0.0 11.0 |> floor |> int_of_float
@@ -1710,7 +1710,7 @@ let supercollider_sched nodes_stream =
   let event_of_node node =
     let f = node |> get_frequency in
     let p = node |> get_node_x in
-    (0.001, test_event f p)
+    (0.01, test_event f p)
   in
   let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
   let sched =

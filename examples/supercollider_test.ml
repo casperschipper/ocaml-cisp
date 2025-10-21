@@ -6,7 +6,7 @@ let test_event () =
   {frequency= f; duration= l /. f}
 
 let from_event_to_bundle start_time {frequency; duration} =
-  Supercollider.simple_tone ~time:start_time ~freq:frequency ~dur:duration
+  Supercollider.simple_tone ~time:start_time ~freq:frequency ~dur:duration ~pos:0.0
 
 let send_osc sender time evt =
   let bytes = from_event_to_bundle time evt in

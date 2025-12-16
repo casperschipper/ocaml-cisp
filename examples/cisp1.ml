@@ -1,111 +1,129 @@
-open Midi
-open Cisp
+(* Generate a finite sequence of length n from a function f : int -> float *)
+let seq_of_fun n f =
+  let rec aux i () =
+    if i >= n then Seq.Nil
+    else Seq.Cons (f i, aux (i+1))
+  in aux 0
 
-type chord = Chord of int list
+(* Basic waveforms *)
+let sine f sr n =
+  seq_of_fun n (fun i ->
+    let t = float i /. float sr in
+    sin (2. *. Float.pi *. f *. t)
+  )
 
-let mkChord lst = Chord lst
+let saw f sr n =
+  seq_of_fun n (fun i ->
+    let t = float i /. float sr in
+    2. *. ((f *. t) -. floor (0.5 +. f *. t))
+  )
 
-let getChord (Chord l) = l
+let square f sr n =
+  seq_of_fun n (fun i ->
+    let t = float i /. float sr in
+    if sin (2. *. Float.pi *. f *. t) >= 0. then 1. else -1.
+  )
 
-let mutate f_one lst =
-  let l = List.length lst in
-  let idx = Random.int l in
-  let new_value = f_one (List.nth lst idx) in
-  Toolkit.update_nth lst idx new_value
+let triangle f sr n =
+  seq_of_fun n (fun i ->
+    let t = float i /. float sr in
+    2. *. abs_float (2. *. ((f *. t) -. floor (0.5 +. f *. t))) -. 1.
+  )
 
-type direction = 
-  | Up 
-  | Down
-  | AnyDir
+(* FM and PM waves *)
+let fm f fm_index fm_rate sr n =
+  seq_of_fun n (fun i ->
+    let t = float i /. float sr in
+    sin ((2. *. Float.pi *. f *. t) +.
+         fm_index *. sin (2. *. Float.pi *. fm_rate *. t))
+  )
 
-let simple_walk direction x = 
-  let choice = Toolkit.choice (7) [4] in
-  match direction with 
-  | Up -> choice + x
-  | Down -> choice - x
-  | AnyDir -> Toolkit.choice (-1) [1] * choice + x 
+let pm f pm_index pm_rate sr n =
+  seq_of_fun n (fun i ->
+    let t = float i /. float sr in
+    sin (2. *. Float.pi *. f *. t +.
+         pm_index *. sin (2. *. Float.pi *. pm_rate *. t))
+  )
 
-let direction_of_x low high x = 
-  if x < low then
-    Up 
-  else if x > high then 
-    Down 
-else 
-  AnyDir
+(* Additive mixtures *)
+let additive freqs amps sr n =
+  seq_of_fun n (fun i ->
+    let t = float i /. float sr in
+    List.fold_left2
+      (fun acc f a -> acc +. a *. sin (2. *. Float.pi *. f *. t))
+      0. freqs amps
+  )
 
-let rec transpose_in_range low high x =
-  if low > high then
-    failwith
-      ( "transpose in range, but low is higher than high" ^ string_of_int low
-      ^ string_of_int high )
-  else if high - low < 12 then
-    failwith
-      ("too small range to transpose" ^ string_of_int low ^ string_of_int high)
-  else if x < low then transpose_in_range low high (x + 12)
-  else if x > high then transpose_in_range low high (x - 12)
-  else x
+(* Filtered noise via simple 1-pole lowpass *)
+let filtered_noise cutoff sr n =
+  let a = exp (-. 2. *. Float.pi *. cutoff /. float sr) in
+  let rec aux i prev () =
+    if i >= n then Seq.Nil
+    else
+      (* random noise *)
+      let x = (Random.float 2. -. 1.) in
+      let y = a *. prev +. (1. -. a) *. x in
+      Seq.Cons (y, aux (i+1) y)
+  in aux 0 0.0
 
-let no_doubles lst =
-  let n = List.length lst in
-  let m = List.length (List.sort_uniq compare lst) in
-  n = m
+(* Chaotic logistic oscillator *)
+let logistic r x0 sr n =
+  let rec aux i x () =
+    if i >= n then Seq.Nil
+    else
+      let x' = r *. x *. (1. -. x) in
+      Seq.Cons (2. *. x' -. 1., aux (i+1) x')
+  in aux 0 x0
 
-let try_until_no_doubles lst f =
-  let rec aux result = if no_doubles result then result else aux result in
-  aux (f lst)
+(* Main generator: produce 128 diverse waveshapes *)
+let generate_waveforms ~sample_rate ~length =
+  let base_freqs = List.init 16 (fun _ -> 10. +. float (Toolkit.rvi 0 1 * 12)) in
+  let pick lst idx = List.nth lst (idx mod List.length lst) in
 
-let combi chord =
-  chord |> mutate (fun p -> p |> simple_walk (direction_of_x 30 90 p) )
+  Array.init 32 (fun i ->
+    match i mod 8 with
+    | 0 -> sine (pick base_freqs i) sample_rate length
+    | 1 -> saw (pick base_freqs i) sample_rate length
+    | 2 -> square (pick base_freqs i) sample_rate length
+    | 3 -> triangle (pick base_freqs i) sample_rate length
 
-let (stream_of_chords : midiBundle Seq.t) =
-  let update old_chord =
-    let new_chord = try_until_no_doubles old_chord combi |> List.sort compare in
-    (new_chord, new_chord)
-  in
-  Infseq.unfold update [60; 67;72;79]
-  |> Infseq.map List.to_seq |> Infseq.toSeq
-  |> Seq.map (Seq.map (fun p -> mkNoteClip 1 p 100 8000))
-  |> Seq.map chord
+    | 4 ->
+        fm (pick base_freqs i) (0.5 +. float (i mod 5)) 3. sample_rate length
 
-let vis inp =
-  let stream =
-    mkNoteClip <$> st 1
-    <*> Seq.map2 ( + ) (Cisp.seq [0; 4; 7]) (st 60)
-    <*> seq [100; 80; 40; 80]
-    <*> seq [1000; 200; 20]
-  in
-  Midi.trigger stream inp |> serialize |> Seq.map toRaw
+    | 5 ->
+        pm (pick base_freqs i) (0.8 +. float (i mod 7)) 2.5 sample_rate length
 
-let cacheSeq str n =
-  str |> Seq.take n |> List.of_seq |> Cisp.seq
+    | 6 ->
+        let f = pick base_freqs i in
+        let freqs = [f; 2.*.f; 3.*.f] in
+        let amps  = [0.7; 0.3; 0.15] in
+        additive freqs amps sample_rate length
+
+    | 7 ->
+        (* chaotic or filtered noise depending on index *)
+        if i mod 16 < 8 then
+          filtered_noise (100. +. float (i * 10)) sample_rate length
+        else
+          logistic (3.6 +. 0.01 *. float i) 0.1 sample_rate length
+
+    | _ -> Seq.repeat 0.0 |> Seq.take 128
+  )
 
 
-let f2 inp =
-  let seqqq =
-    cacheSeq stream_of_chords 1
-  in
-  inp |> Seq.map isNoteOn
-  |> Midi.triggerBundle seqqq
-  |> serializeBundles |> Seq.map toRaw
+
+let sawdust () =
+  let open Cisp in
+  let waveformarray = generate_waveforms ~sample_rate:(int_of_float !Process.sample_rate) ~length:32 in
+  let indexer = rv (st 0) (st (Array.length waveformarray)) in
+  let holder = indexer |> hold (lift rv 100 1000) in
+  let seqer = holder |> fmap (fun idx -> Some waveformarray.(idx)) |> Seq.filter_map id in
+  seqer |> concat |> fmap (fun x -> Toolkit.clipf (-1.0) (1.0) x) |> hold (st 1)
+
+
 
 
 let () =
-  let midiThread () =
-    Midi.playMidi f2 Process.sample_rate ;
-    while true do
-      Unix.sleep 60
-    done
-  in
-  let _ = Thread.create midiThread () in
-  let _ =
-    Unix.sleep 4;
-    print_int
-      (Sys.command
-         "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1" ) ;
-    print_int
-      (Sys.command "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in") ;
-    ignore (Sys.command "jack_lsp -c -A | grep ocaml")
-  in
-  while true do
-    Unix.sleep 30
-  done
+  let open Cisp in
+  Jack.playSeqs 0 Process.sample_rate [effectSync Cisp.masterClock (sawdust ()); sawdust () ] ;
+  Unix.sleep 1 ;
+  ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0")

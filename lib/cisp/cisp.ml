@@ -2271,3 +2271,6 @@ let rec render_waveform_minimal ?(sample_rate = 44100.0) (input : (float * float
         render_waveform_minimal ~sample_rate rest
       else
         process 0.0 0.0 first_val (fun () -> Seq.Cons ((first_val, first_dt), rest))
+
+let duplicate sq = 
+  sq |> fmap (fun x -> (x,x)) |> unzip |> (fun (x,y) -> [x;y])

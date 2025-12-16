@@ -1705,12 +1705,12 @@ let send_osc sender time evt =
   Supercollider.send_message sender bytes
 
 let supercollider_sched nodes_stream =
-  let scheduler_samps = 2048 in
+  let scheduler_samps = 4048 in
   let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
   let event_of_node node =
     let f = node |> get_frequency in
     let p = node |> get_node_z in
-    (0.01, test_event f p)
+    (0.0002, test_event f p)
   in
   let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
   let sched =

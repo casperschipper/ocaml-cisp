@@ -37,6 +37,17 @@ let shortest = ref 0.0
 let update_position x y z_opt (Node old) =
   Node {id= old.id; x; y; z= Option.value ~default:0.0 z_opt; sync= Modified}
 
+(** Represents a directed edge between two nodes in the ant colony graph.
+
+    The edge stores both the distance between nodes and its inverse for efficient
+    probability calculations in the ant colony optimization algorithm.
+
+    Fields:
+    - [start]: The starting node of the edge
+    - [target]: The destination node of the edge
+    - [dist]: The Euclidean distance between start and target nodes
+    - [inv]: The inverse of the distance (1.0 / dist), used as a heuristic value;
+             for zero-distance edges, this is set to 100.0 to avoid division by zero *)
 type edge = Edge of {start: node; target: node; dist: float; inv: float}
 
 type coordinate = Coordinate of {x: float; y: float; z: float}
@@ -50,11 +61,11 @@ let paths : node list list ref = ref []
 
 let mkNode id x y z = Node {id; x; y; z; sync= Pristine}
 
-(* Function to generate an array of random points *)
 
 (* |> Array.mapi (fun idx (x, y) -> mkNode idx x y) *)
 (* [|(0.25, 0.25); (0.75, 0.25); (0.75, 0.75); (0.25, 0.75)|] *)
 
+(** Function to generate an array of random points *)
 let random_nodes () = 
   let seed = 124 (*121*) |> Cisp.debugi "my random seed" in
   let seed = Random.int 12000 |> Cisp.debugi "myseed" in
@@ -119,36 +130,17 @@ let pretty_print_matrix arr =
   Array.iter pretty_print_row arr ;
   print_endline "-*-"
 
-(*
-let update_matrix point_index new_point points (Distance dist) =
-  if point_index > 0 && point_index < Array.length points then (
-    points.(point_index) <- new_point ;
-    let old_line = dist.(point_index) in
-    dist.(point_index) <-
-      Array.init num_nodes (fun idx ->
-          mkEdge new_point points.(idx) (distance new_point points.(idx)) ) ;
-    Array.iteri
-      (fun idx line ->
-        line.(point_index) <-
-          mkEdge nodes.(idx) nodes.(point_index)
-            (distance points.(idx) points.(point_index)) )
-      dist
-    (* ; pretty_print_matrix dist *) )
-  else ()
-    *)
-
 let update_matrix_2 point_index new_point points (Distance dist) =
   if point_index >= 0 && point_index < Array.length points then (
     points.(point_index) <- new_point ;
     for i = 0 to num_nodes - 1 do
-      let start1, start2 = (point_index, i) in
-      let target1, target2 = (i, point_index) in
-      dist.(start1).(start2) <-
-        mkEdge points.(start1) points.(start2)
-          (distance points.(start1) points.(start2)) ;
-      dist.(target1).(target2) <-
-        mkEdge points.(target1) points.(target2)
-          (distance points.(target1) points.(target2))
+      if i <> point_index then (
+        let dist_val = distance new_point points.(i) in
+        let edge_forward = mkEdge new_point points.(i) dist_val in
+        let edge_backward = mkEdge points.(i) new_point dist_val in
+        dist.(point_index).(i) <- edge_forward ;
+        dist.(i).(point_index) <- edge_backward
+      )
     done ;
     Distance dist (* ; pretty_print_matrix dist *) )
   else Distance dist
@@ -160,12 +152,6 @@ let update_matrix_2 point_index new_point points (Distance dist) =
 2     2,1
 
 *)
-
-(* let debug_distance_array arr =
-   arr |> Array.iter (fun line ->
-     line |> Array.iter (fun (Edge e) -> print_float e.dist )
-     ; print_newline ()
-   ) *)
 
 let distance_array = generate_distance_matrix nodes
 
@@ -1648,7 +1634,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
   let amps = nodes |> fmap (fun x -> (node_to_amp x *. 2.0) -. 1.0) in
   if interp then
     let ts =
-      dnodes |> fmap (fun x -> get_delta x |> linlin 0.0 1.4 0.000001 0.0006)
+      dnodes |> fmap (fun x -> get_delta x |> linlin 0.0 1.4 0.00001 0.002)
     in
     render_waveform_minimal (zip amps ts)
   else
@@ -1710,7 +1696,7 @@ let supercollider_sched nodes_stream =
   let event_of_node node =
     let f = node |> get_frequency in
     let p = node |> get_node_z in
-    (0.0002, test_event f p)
+    (0.0006, test_event f p)
   in
   let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
   let sched =
@@ -1734,9 +1720,9 @@ let jackMain effects array () =
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
   (* let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in *)
-  (* let ssp = ssp_signal ~interp:true get_node_x nodes in *)
+  let ssp = ssp_signal ~interp:true get_node_x nodes in
   let silence = Cisp.st(0.0) in
-  let channels = [Cisp.syncEffect (applyEffects silence) (supercollider_sched nodes)] in
+  let channels = [ applyEffects ssp; ssp ] in
   Jack.playSeqs 0 Process.sample_rate channels
 
 let monitor_sample_count label n_interval sq =

@@ -1634,7 +1634,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
   let amps = nodes |> fmap (fun x -> (node_to_amp x *. 2.0) -. 1.0) in
   if interp then
     let ts =
-      dnodes |> fmap (fun x -> get_delta x |> linlin 0.0 1.4 0.00001 0.002)
+      dnodes |> fmap (fun x -> get_delta x |> linpow 0.0 1.4 0.00001 0.002 1.06)
     in
     render_waveform_minimal (zip amps ts)
   else

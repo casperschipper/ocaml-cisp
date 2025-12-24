@@ -727,6 +727,42 @@ let linlin inA inB outA outB input =
   let d = maximum outA outB in
   ((input -. a) /. (b -. a) *. (d -. c)) +. c
 
+let linexp inA inB outA outB x =
+  let a = minimum inA inB in
+  let b = maximum inA inB in
+  let c = minimum outA outB in
+  let d = maximum outA outB in
+  if x <= a then
+    a
+  else 
+    if (x >= b) then
+      b
+    else
+      (d /. c) ** (log(x /. a)) /. (log(b /. a)) *. c
+
+let linpow a b c d p x =
+  let in_low = minimum a b in
+  let in_high = maximum a b in
+  let out_low = minimum c d in
+  let out_high = maximum c d in
+
+  (* Normalize input to 0-1 range *)
+  let normalized = (x -. in_low) /. (in_high -. in_low) in
+
+  (* Apply power curve *)
+  let curved =
+    if p = 1.0 then
+      normalized
+    else
+      (exp (normalized *. log p) -. 1.0) /. (p -. 1.0)
+  in
+
+  (* Scale to output range *)
+  if out_high -. out_low >= 0.0 then
+    out_low +. (out_high -. out_low) *. curved
+  else
+    out_low +. (out_high -. out_low) *. curved 
+
 let rec uzi n f () = if n < 1 then Seq.Nil else Seq.Cons (f (), uzi (n - 1) f)
 
 let mapLinlin inA inB outA outB input =

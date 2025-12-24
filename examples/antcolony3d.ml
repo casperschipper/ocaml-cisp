@@ -319,6 +319,9 @@ let update_points opt_ipoint =
       else ()
   | None -> ()
 
+let reset_points arg_number =
+  
+
 let handle_osc_message path data =
   let update ~update opt =
     opt |> Option.iter (fun x -> update_and_swap ~update x)

@@ -70,9 +70,9 @@ let random_nodes () =
   let seed = 124 (*121*) |> Cisp.debugi "my random seed" in
   let seed = Random.int 12000 |> Cisp.debugi "myseed" in
   Spacegen.generate_random_points_3d ~seed ~count:num_nodes ~max_x:1.0
-    ~max_y:1.0 ~max_z:1.0 mkNode 
+    ~max_y:1.0 ~max_z:0.0 ~f:mkNode 
 
-let grid_nodes () = Spacegen.generate_points3d 49 10 |> Array.mapi (fun idx (x,y,z) -> mkNode idx x y z)
+let grid_nodes () = Spacegen.generate_random_points_3d ~seed:124 ~count:49 ~max_x:1.0 ~max_y:1.0 ~max_z:0.0 ~f:mkNode
 
 let nodes = grid_nodes ()
  
@@ -200,6 +200,7 @@ type ctrlMsg =
   | Brownian of float
   | SpeedOfComp of int
   | ViableThreshold of float
+  | ResetPoints of int
 
 type oscMessage =
   | CtrlUpdate of ctrlMsg
@@ -219,6 +220,7 @@ let update_ctrl msg ctrl =
   | Brownian brown -> {ctrl with brownian= brown}
   | SpeedOfComp sp -> {ctrl with speed_of_comp= sp}
   | ViableThreshold v -> {ctrl with viable_threshold= v}
+  | ResetPoints x -> ctrl
 
 let initial =
   { alpha
@@ -330,6 +332,7 @@ let handle_osc_message path data =
       data |> handle_int_arg
       |> Option.iter (fun f -> update_and_swap ~update:set_ants f)
   | "/point" -> data |> handle_int_float_float |> update_points
+  | "/resetpoints" -> data |> handle_int_arg |> reset_points
   | "/exploration_bias" ->
       data |> handle_float_arg |> update ~update:set_exploration_bias
   | "/max_tour" -> data |> handle_int_arg |> update ~update:set_max_tour

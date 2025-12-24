@@ -7,7 +7,7 @@ let generate_random_points ~seed ~count ~max_x ~max_y f =
       let y = Random.float max_y in
       f idx x y )
 
-let generate_random_points_3d ~seed ~count ~max_x ~max_y ~max_z f =
+let generate_random_points_3d ~seed ~count ~max_x ~max_y ~max_z ~f =
   (* Set the seed for the random number generator *)
   Random.init seed ;
   (* Create an array of random points *)

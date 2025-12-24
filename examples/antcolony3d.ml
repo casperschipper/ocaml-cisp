@@ -32,8 +32,6 @@ let speed_of_comp = 1
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
 
-let shortest = ref 0.0
-
 let update_position x y z_opt (Node old) =
   Node {id= old.id; x; y; z= Option.value ~default:0.0 z_opt; sync= Modified}
 
@@ -57,8 +55,6 @@ type drawable_edge =
 
 type simple_edge = SimpleEdge of {start: int; target: int; weight: float}
 
-let paths : node list list ref = ref []
-
 let mkNode id x y z = Node {id; x; y; z; sync= Pristine}
 
 
@@ -73,9 +69,6 @@ let random_nodes () =
     ~max_y:1.0 ~max_z:0.0 ~f:mkNode 
 
 let grid_nodes () = Spacegen.generate_random_points_3d ~seed:124 ~count:49 ~max_x:1.0 ~max_y:1.0 ~max_z:0.0 ~f:mkNode
-
-let nodes = grid_nodes ()
- 
 
 let distance (Node p1) (Node p2) =
   if p1.id = p2.id then 0.0
@@ -115,6 +108,52 @@ let get_distance i j (Distance dists) =
 
 let get_line i dists = Array.init num_nodes (fun j -> get_distance i j dists)
 
+(* Colony state encapsulation - all mutable colony data *)
+type colony_state = {
+  nodes: node array;
+  distance_matrix: distance1d ref;
+  pheromones: float array array;
+  mutable shortest_path: float;
+  mutable best_paths: node list list;
+}
+
+(* Thread-safe wrapper around colony_state *)
+type protected_colony = {
+  state: colony_state;
+  mutex: Mutex.t;
+}
+
+(* Constructor functions *)
+let create_colony initial_nodes =
+  let nodes = Array.copy initial_nodes in
+  let distance_matrix = ref (generate_distance_matrix nodes) in
+  let pheromones = Array.make_matrix num_nodes num_nodes 0.0 in
+  {
+    nodes;
+    distance_matrix;
+    pheromones;
+    shortest_path = 1000000.0;
+    best_paths = [];
+  }
+
+let create_protected_colony initial_nodes =
+  {
+    state = create_colony initial_nodes;
+    mutex = Mutex.create ();
+  }
+
+(* Thread-safe access helpers *)
+let with_colony_lock colony f =
+  Mutex.lock colony.mutex;
+  let result = f colony.state in
+  Mutex.unlock colony.mutex;
+  result
+
+let with_colony_lock_unit colony f =
+  Mutex.lock colony.mutex;
+  f colony.state;
+  Mutex.unlock colony.mutex
+
 let pretty_print_row row =
   (* Convert each float in the row to a string with specified formatting *)
   let row_string =
@@ -130,20 +169,20 @@ let pretty_print_matrix arr =
   Array.iter pretty_print_row arr ;
   print_endline "-*-"
 
-let update_matrix_2 point_index new_point points (Distance dist) =
-  if point_index >= 0 && point_index < Array.length points then (
-    points.(point_index) <- new_point ;
+let update_matrix_2 (colony : colony_state) point_index new_point =
+  if point_index >= 0 && point_index < Array.length colony.nodes then (
+    colony.nodes.(point_index) <- new_point ;
+    let (Distance dist) = !(colony.distance_matrix) in
     for i = 0 to num_nodes - 1 do
       if i <> point_index then (
-        let dist_val = distance new_point points.(i) in
-        let edge_forward = mkEdge new_point points.(i) dist_val in
-        let edge_backward = mkEdge points.(i) new_point dist_val in
+        let dist_val = distance new_point colony.nodes.(i) in
+        let edge_forward = mkEdge new_point colony.nodes.(i) dist_val in
+        let edge_backward = mkEdge colony.nodes.(i) new_point dist_val in
         dist.(point_index).(i) <- edge_forward ;
         dist.(i).(point_index) <- edge_backward
       )
-    done ;
-    Distance dist (* ; pretty_print_matrix dist *) )
-  else Distance dist
+    done
+  )
 
 (*
   0    1   2
@@ -152,10 +191,6 @@ let update_matrix_2 point_index new_point points (Distance dist) =
 2     2,1
 
 *)
-
-let distance_array = generate_distance_matrix nodes
-
-let mkPheromonesArr = Array.make_matrix num_nodes num_nodes 0.0
 
 let duplicateArrArr arrarr = Array.map Array.copy arrarr
 
@@ -311,18 +346,19 @@ let update_and_swap ~update value =
      let new_dist = distance new_point nodes.(idx) in
      Toolkit.update_at_index old_distances idx (fun _ -> new_dist)) *)
 
-let update_points opt_ipoint =
+let update_points colony opt_ipoint =
   match opt_ipoint with
   | Some (IndexedPoint {idx; x; y; z}) ->
       if idx < num_nodes && idx >= 0 then
-        ignore (update_matrix_2 idx (mkNode idx x y z) nodes distance_array)
+        with_colony_lock_unit colony (fun state ->
+          update_matrix_2 state idx (mkNode idx x y z))
       else ()
   | None -> ()
 
 let reset_points arg_number =
   
 
-let handle_osc_message path data =
+let handle_osc_message colony path data =
   let update ~update opt =
     opt |> Option.iter (fun x -> update_and_swap ~update x)
   in
@@ -334,8 +370,8 @@ let handle_osc_message path data =
   | "/num_ants" ->
       data |> handle_int_arg
       |> Option.iter (fun f -> update_and_swap ~update:set_ants f)
-  | "/point" -> data |> handle_int_float_float |> update_points
-  | "/resetpoints" -> data |> handle_int_arg |> reset_points
+  | "/point" -> data |> handle_int_float_float |> update_points colony
+  | "/resetpoints" -> () (* TODO: implement reset_points with colony *)
   | "/exploration_bias" ->
       data |> handle_float_arg |> update ~update:set_exploration_bias
   | "/max_tour" -> data |> handle_int_arg |> update ~update:set_max_tour
@@ -374,17 +410,17 @@ let parse_osc_message path data =
       |> withDefault (fun v -> CtrlUpdate (ViableThreshold v))
   | _ -> Noop
 
-let handle_osc_message_parse finish_history_callback path data =
+let handle_osc_message_parse colony finish_history_callback path data =
   let msg = parse_osc_message path data in
   match msg with
-  | MovePoint p -> update_points (Some p)
+  | MovePoint p -> update_points colony (Some p)
   | WriteHistory -> finish_history_callback ()
   | CtrlUpdate ctrl -> update_and_swap ~update:update_ctrl ctrl
   | Noop -> ()
 
-let osc_thread_function write_history_callback () =
+let osc_thread_function colony write_history_callback () =
   let server =
-    S.create 57666 (handle_osc_message_parse write_history_callback)
+    S.create 57666 (handle_osc_message_parse colony write_history_callback)
   in
   while true do
     S.recv server ;

@@ -68,7 +68,7 @@ let random_nodes () =
   Spacegen.generate_random_points_3d ~seed ~count:num_nodes ~max_x:1.0
     ~max_y:1.0 ~max_z:0.0 ~f:mkNode 
 
-let grid_nodes () = Spacegen.generate_random_points_3d ~seed:124 ~count:49 ~max_x:1.0 ~max_y:1.0 ~max_z:0.0 ~f:mkNode
+let grid_nodes () = Spacegen.generate_random_points_3d ~seed:124 ~count:49 ~max_x:1.0 ~max_y:1.0 ~max_z:1.0 ~f:mkNode
 
 let distance (Node p1) (Node p2) =
   if p1.id = p2.id then 0.0
@@ -121,6 +121,7 @@ type colony_state = {
 type protected_colony = {
   state: colony_state;
   mutex: Mutex.t;
+  mutable working_state: colony_state option; (* Added for read access by visualization *)
 }
 
 (* Constructor functions *)
@@ -140,6 +141,7 @@ let create_protected_colony initial_nodes =
   {
     state = create_colony initial_nodes;
     mutex = Mutex.create ();
+    working_state = None;
   }
 
 (* Thread-safe access helpers *)
@@ -356,7 +358,7 @@ let update_points colony opt_ipoint =
   | None -> ()
 
 let reset_points arg_number =
-  
+  () (* TODO: implement reset_points functionality *)
 
 let handle_osc_message colony path data =
   let update ~update opt =
@@ -741,41 +743,26 @@ let add_missing_link edges =
   | None -> []
   | Some x -> x :: edges
 
-let start_new pheromones complete_nodes (State state) =
+let start_new (colony : colony_state) complete_nodes (State state) =
   let _ =
     match state.visited_edges with
     | [] -> print_string "first time no deposit"
     | vstd ->
-        deposit_pher pheromones vstd
+        deposit_pher colony.pheromones vstd
           (!current_buffer.deposit /. state.total_dist)
   in
-  (* reset, all targets become available again *)
-  (* let _ =
-       print_endline "these are the nodes on reset ";
-       print_nodes "state visited (reset): " state.visited;
-       print_newline ()
-     in *)
   let first_pick =
-    (* choose a random starting point *)
-    (* let _ =
-         if Array.length reset_targets == 0 then print_endline "OH NO!"
-         else print_endline "ok"
-       in *)
-    (* nodes
-       |> Toolkit.flip get_array_value 0
-       |> Option.value ~default:default_node *)
-    nodes |> Toolkit.choice_arr_opt |> Option.value ~default:default_node
+    colony.nodes |> Toolkit.choice_arr_opt |> Option.value ~default:default_node
   in
   let updated_ant =
     if state.current_ant >= !current_buffer.num_ants then
-      let _ = ignore (evaporate pheromones) in
+      let _ = ignore (evaporate colony.pheromones) in
       0
     else
-      (* let _ = logint "current ant : " state.current_ant in *)
       state.current_ant + 1
   in
   let best_dist = min state.best_dist state.total_dist in
-  let () = shortest := best_dist in
+  let () = colony.shortest_path <- best_dist in
   let () =
     if state.total_dist < state.best_dist then (
       print_string "print path" ;
@@ -786,9 +773,9 @@ let start_new pheromones complete_nodes (State state) =
       print_string "smallest is now: " ;
       print_float state.total_dist ;
       print_newline () ;
-      paths := state.visited :: Toolkit.lst_take 10 !paths ;
+      colony.best_paths <- state.visited :: Toolkit.lst_take 10 colony.best_paths ;
       print_string "size of paths" ;
-      print_int (List.length !paths) ;
+      print_int (List.length colony.best_paths) ;
       print_newline () )
     else ()
   in
@@ -817,47 +804,26 @@ let debug_phers pheromones () =
 let throttled_pher_func pheromones =
   Cisp.with_throttled_execution 44100 (debug_phers pheromones)
 
-let pick_next_point pheromones original_nodes dist_matrix (State state) =
+let pick_next_point (colony : colony_state) original_nodes (State state) =
   if state.n_visited >= !current_buffer.max_tour then
-    start_new pheromones original_nodes (State state)
+    start_new colony original_nodes (State state)
   else
     match state.targets with
-    | [] -> start_new pheromones original_nodes (State state)
+    | [] -> start_new colony original_nodes (State state)
     | _ :: _ ->
-        (* let _ =
-            print_string "current = ";
-            print_int (get_node_id state.current);
-            print_endline ""
-          in *)
-        (* let size = Array.length dist_matrix in *)
-        (* current should be within bounds *)
-        let edges = get_line (get_node_id state.current) dist_matrix in
-        (* let _ = Array.iter print_edge edges in *)
-        (* remove current point from targets *)
+        let edges = get_line (get_node_id state.current) !(colony.distance_matrix) in
         let new_targets = remove_node state.current state.targets in
-        (* let new_targets = state.targets in *)
-        (* let () = print_nodes "new targets: " new_targets in *)
-        (* get the target node ids *)
         let ids = new_targets |> List.map get_node_id in
         let filtered_edges =
-          (* only get the edges that are of targets *)
           edges |> Array.to_list
           |> List.filter (fun (Edge e) -> List.mem (get_node_id e.target) ids)
-          (* |> debug_edges "filtered edges targets" *)
           |> Array.of_list
         in
         if Array.length filtered_edges < 1 then
-          start_new pheromones original_nodes (State state)
+          start_new colony original_nodes (State state)
         else
-          let picked_edge = select_next_edge_new pheromones filtered_edges in
-          (* let _ = throttled_pher_func () in *)
-          (* let _ = debug_edges "filtered edges" (filtered_edges |> Array.to_list) in *)
+          let picked_edge = select_next_edge_new colony.pheromones filtered_edges in
           let new_target = picked_edge |> get_target in
-          (* let () =
-              print_endline "\n visited ";
-              print_nodes "old visited state" state.visited;
-              print_endline "\n"
-            in *)
           State
             { current_ant= state.current_ant
             ; current= new_target
@@ -917,12 +883,12 @@ module SuperAnts = struct
     send_synth ~synth_name:"antCrackle" ~freq ~range ~imp ~q ~releaseDur ~pan ()
 end
 
-let signal pheromones () =
-  let nodes_list = nodes |> Array.to_list in
+let signal (colony : colony_state) () =
+  let nodes_list = colony.nodes |> Array.to_list in
   let init =
     State
       { current_ant= 0
-      ; current= Array.get nodes 0
+      ; current= Array.get colony.nodes 0
       ; targets= nodes_list
       ; visited= []
       ; total_dist= 0.0
@@ -930,7 +896,7 @@ let signal pheromones () =
       ; best_dist= 1000000.0
       ; n_visited= 0 }
   in
-  let update = pick_next_point pheromones nodes_list distance_array in
+  let update = pick_next_point colony nodes_list in
   let eval (State state) = get_node_id state.current in
   Cisp.simpleRecursive init update eval
 
@@ -942,9 +908,9 @@ let line_table =
 
 let lookup input = input |> Seq.map (fun idx -> Array.get line_table idx)
 
-let output pheromones = signal pheromones () |> lookup
+let output (colony : colony_state) = signal colony () |> lookup
 
-let only_compute pheromones = signal pheromones () |> Seq.map (fun _ -> ())
+let only_compute (colony : colony_state) = signal colony () |> Seq.map (fun _ -> ())
 
 (* let () =
    pretty_print_matrix distance_array;
@@ -955,11 +921,11 @@ let only_compute pheromones = signal pheromones () |> Seq.map (fun _ -> ())
           print_string " "); *)
    flush stdout *)
 
-let otherSignal pheromones () =
+let otherSignal (colony : colony_state) () =
   let open Cisp in
   let c = st () in
   let u () model =
-    let phers = Array.get pheromones model in
+    let phers = Array.get colony.pheromones model in
     let weighted =
       Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
     in
@@ -974,12 +940,12 @@ let otherSignal pheromones () =
   in
   Cisp.recursive c 0 u eval |> hold (st 30) |> sinosc2
 
-let nodesStream pheromones () =
+let nodesStream (colony : colony_state) () =
   let open Cisp in
   let random_index () = Toolkit.rvi 0 num_nodes in
   let c = st () in
   let u () model =
-    let phers = Array.get pheromones model in
+    let phers = Array.get colony.pheromones model in
     let weighted =
       Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
     in
@@ -988,18 +954,18 @@ let nodesStream pheromones () =
     | Some i -> i
     | None -> random_index ()
   in
-  let eval inp = nodes.(inp) in
+  let eval inp = colony.nodes.(inp) in
   let init = random_index () in
   Cisp.recursive c init u eval
 
-let nodesStreamNoisy pheromones () =
+let nodesStreamNoisy (colony : colony_state) () =
   let open Cisp in
   let random_index () = Toolkit.rvi 0 num_nodes in
   let c = st () in
   let u () (model, i) =
     if i > 441000 then (random_index (), 0)
     else
-      let phers = Array.get pheromones model in
+      let phers = Array.get colony.pheromones model in
       let weighted =
         Array.mapi (fun idx item -> {w= item; item= idx}) phers |> Array.to_list
       in
@@ -1008,7 +974,7 @@ let nodesStreamNoisy pheromones () =
       | Some next_id -> (next_id, i + 1)
       | None -> (random_index (), 0)
   in
-  let eval (inp, _) = nodes.(inp) in
+  let eval (inp, _) = colony.nodes.(inp) in
   let init = (random_index (), 0) in
   Cisp.recursive c init u eval
 
@@ -1016,28 +982,28 @@ let play_node_stereo (Node node) = (node.x -. 0.5, node.y -. 0.5)
 
 (* this creates a stereo signal, navigating through the pheromones only *)
 (* the repeats allows for different update rates , where 1 is sr *)
-let justThePath pheromones repeats =
-  nodesStreamNoisy pheromones ()
+let justThePath (colony : colony_state) repeats =
+  nodesStreamNoisy colony ()
   |> Cisp.hold (Cisp.st repeats)
   |> Seq.map play_node_stereo |> Cisp.unzip
 
 let node_scalar n =
   sqrt (get_node_x n ** 2.0) *. (get_node_y n ** 2.0) *. (get_node_z n -. 0.5)
 
-let only_noisy_paths pheromones =
+let only_noisy_paths (colony : colony_state) =
   let f viable_threshold acc ph =
     if ph > viable_threshold then acc else if ph > 0.1 then 1 + acc else acc
   in
   let get_att (Node node) =
     node.id
     |> fun idx ->
-    pheromones.(idx)
+    colony.pheromones.(idx)
     |> Array.fold_left (f !current_buffer.viable_threshold) 0
     |> fun bins_with_value ->
     Cisp.linlin 0.0 49.0 0.0 7.0 (float_of_int bins_with_value)
     |> Toolkit.clipf 0.0 1.0
   in
-  nodesStream pheromones ()
+  nodesStream colony ()
   |> Seq.map (fun node -> get_att node *. node_scalar node)
 (* let open Cisp in
   let random_index () = Toolkit.rvi 0 num_nodes in
@@ -1148,14 +1114,19 @@ let playNodesAsAnts nodes_sq =
   let open Cisp in
   functionTrigger play nodes_sq (interval (st 441))
 
-let pathsSignal () =
+let pathsSignal (colony : colony_state) () =
   let lst_head lst =
     match lst with
     | x :: _ -> Some x
     | [] -> None
   in
   let open Cisp in
-  let path_sq = ofRef paths in
+  (* Create a sequence from the mutable best_paths list *)
+  let path_sq = Seq.unfold (fun () ->
+    match colony.best_paths with
+    | [] -> None
+    | paths -> Some (paths, ())
+  ) () in
   let scale x = (x /. float_of_int num_nodes *. 72.0) +. 64. |> mtof in
   let of_node_list lst =
     lst |> lst_head
@@ -1170,9 +1141,9 @@ let pathsSignal () =
   in
   path_sq |> Seq.map of_node_list |> concat
 
-let paths pheromones () =
+let paths (colony : colony_state) () =
   let open Cisp in
-  let signal = output pheromones |> Seq.map (fun x -> x *. 40.0) in
+  let signal = output colony |> Seq.map (fun x -> x *. 40.0) in
   let scale x = (x /. float_of_int num_nodes *. 72.0) +. 64. |> mtof in
   signal |> hold (st 30) |> fmap scale |> sinosc2
 
@@ -1189,15 +1160,15 @@ let sumOctaves () =
     ; justThePath () |> hold (st 16)
     ; justThePath () |> hold (st 32)] *)
 
-let stereosig holdn pheromones =
+let stereosig holdn (colony : colony_state) =
   let gainStereo (s1, s2) = (att 1.0 s1, att 1.0 s2) in
-  justThePath pheromones holdn |> gainStereo
+  justThePath colony holdn |> gainStereo
 
-let bunch s pheromones () =
+let bunch s (colony : colony_state) () =
   let open Cisp in
   let sumPairs (sq1L, sq1R) (sq2L, sq2R) = (sq1L +.~ sq2L, sq1R +.~ sq2R) in
   let stereos =
-    [s * 2; s * 3] |> List.to_seq |> fmap (fun n -> stereosig n pheromones)
+    [s * 2; s * 3] |> List.to_seq |> fmap (fun n -> stereosig n colony)
   in
   let result = Seq.fold_left sumPairs (st 0.0, st 0.0) stereos |> pairToList in
   result
@@ -1215,12 +1186,12 @@ let move_node_by_promille (Node {id; x; y; z; _}) =
   in
   Node {id; x= new_x; y= new_y; z= new_z; sync= Modified}
 
-let push_nodes () =
+let push_nodes (colony : colony_state) () =
   let open Cisp in
   countTill (num_nodes - 1)
   |> fmap (fun idx ->
-         let new_node = move_node_by_promille nodes.(idx) in
-         ignore (update_matrix_2 idx new_node nodes distance_array) ;
+         let new_node = move_node_by_promille colony.nodes.(idx) in
+         ignore (update_matrix_2 colony idx new_node) ;
          () )
   |> hold (st 100)
 
@@ -1387,12 +1358,18 @@ let makeSum arrarr () =
 
 let rec live_speed () = Seq.Cons (!current_buffer.speed_of_comp, live_speed)
 
-let slower_compute arr =
+let slower_compute (colony : colony_state) =
   let open Cisp in
-  pulse live_speed (only_compute arr) (st ())
+  pulse live_speed (only_compute colony) (st ())
 
-let one_voice inputArr =
-  let clone = duplicateArrArr inputArr in
+let one_voice (colony : colony_state) =
+  let clone = create_colony (Array.copy colony.nodes) in
+  (* Clone the pheromones too *)
+  for i = 0 to num_nodes - 1 do
+    for j = 0 to num_nodes - 1 do
+      clone.pheromones.(i).(j) <- colony.pheromones.(i).(j)
+    done
+  done;
   let sigL, sigR = stereosig 1 clone in
   [Cisp.syncEffect sigL (slower_compute clone); sigR]
 
@@ -1487,8 +1464,8 @@ let encode_nodes_edges phers nodes =
   try Ok (Safe.to_string yojson_value) with
   | Json_error msg -> Error ("Yojson encoding error: " ^ msg)
 
-let modify_nodes nds =
-  (* this will return only the modified nodes, and considet them synced *)
+let modify_nodes nds_arr nds =
+  (* this will return only the modified nodes, and consider them synced *)
   let number i x = (i, x) in
   nds |> Array.to_list |> List.mapi number
   |> List.filter_map (fun (idx, Node n) ->
@@ -1497,13 +1474,13 @@ let modify_nodes nds =
          | Synced -> None
          | _ ->
              let new_node = Node {n with sync= Synced} in
-             nodes.(idx) <- new_node ;
+             nds_arr.(idx) <- new_node ;
              Some new_node )
 
 let encode_nodes_edges_update phers nodes =
   let open Yojson in
   let edges = simpleEdgesFrom phers in
-  let updates = modify_nodes nodes in
+  let updates = modify_nodes nodes nodes in
   let value =
     `Assoc
       [ ( "update"
@@ -1547,7 +1524,7 @@ let handle_websocket_json_update str =
       Ok (Brownian amount)
   | _ -> Error "Unexpected JSON format"
 
-let dream_thread phers nodes () =
+let dream_thread colony () =
   Dream.run ~port:8080 @@ Dream.logger
   @@ Dream.router
        [ Dream.get "/" (fun _ -> Dream.html home)
@@ -1556,22 +1533,37 @@ let dream_thread phers nodes () =
                  let rec process_messages () =
                    match%lwt Dream.receive websocket with
                    | Some "tick" ->
-                       let result = encode_nodes_edges_update phers nodes in
+                       (* Read from working_state if available, otherwise fall back to master state *)
+                       let result = Mutex.lock colony.mutex;
+                         let state_to_read = match colony.working_state with
+                           | Some ws -> ws
+                           | None -> colony.state
+                         in
+                         let result = encode_nodes_edges_update state_to_read.pheromones state_to_read.nodes in
+                         Mutex.unlock colony.mutex;
+                         result
+                       in
                        let%lwt () =
-                         (* let _ = print_endline ("yes: " ^ result) in *)
                          Dream.send ~text_or_binary:`Text websocket result
                        in
-                       process_messages () (* Continue looping *)
+                       process_messages ()
                    | Some "init" ->
-                       let value =
-                         `Assoc
+                       let value = Mutex.lock colony.mutex;
+                         let state_to_read = match colony.working_state with
+                           | Some ws -> ws
+                           | None -> colony.state
+                         in
+                         let value = `Assoc
                            [ ( "init"
                              , `Assoc
-                                 [ ("nodes", encode_nodes nodes)
+                                 [ ("nodes", encode_nodes state_to_read.nodes)
                                  ; ( "edges"
-                                   , encode_simple_edges (simpleEdgesFrom phers)
+                                   , encode_simple_edges (simpleEdgesFrom state_to_read.pheromones)
                                    )
                                  ; ("num_nodes", `Int num_nodes) ] ) ]
+                         in
+                         Mutex.unlock colony.mutex;
+                         value
                        in
                        let str = Yojson.Safe.to_string value in
                        let%lwt () =
@@ -1580,13 +1572,9 @@ let dream_thread phers nodes () =
                        process_messages ()
                    | Some str -> (
                      match handle_websocket_json_update str with
-                     (* --- Updated handler usage --- *)
                      | Ok (Drag {node_id; x; y; z}) ->
-                         let old = nodes.(node_id) in
-                         (* let (Node {z= old_z; _}) = old in *)
-                         ignore
-                           (update_matrix_2 node_id (mkNode node_id x y z) nodes
-                              distance_array ) ;
+                         with_colony_lock_unit colony (fun state ->
+                           update_matrix_2 state node_id (mkNode node_id x y z));
                          process_messages ()
                      | Ok (Brownian amount) ->
                          ignore (update_and_swap ~update:set_brownian amount) ;
@@ -1599,7 +1587,7 @@ let dream_thread phers nodes () =
                          process_messages () )
                    | None -> Dream.close_websocket websocket
                  in
-                 process_messages () (* Start processing messages *) ) ) ]
+                 process_messages () ) ) ]
 
 (* oscSender.ml *)
 
@@ -1686,7 +1674,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
     in
     hold samps amps
 
-let push_nodes_slower = Cisp.pulse live_speed (push_nodes ()) (Cisp.st ())
+let push_nodes_slower (colony : colony_state) = Cisp.pulse live_speed (push_nodes colony ()) (Cisp.st ())
 
 let octave_from_scalar x =
   x |> Cisp.linlin 0.0 1.0 1.0 16.0 |> floor |> int_of_float
@@ -1752,18 +1740,86 @@ let supercollider_sched nodes_stream =
   in
   Cisp.hold (Cisp.st scheduler_samps) sched_sq
 
-let jackMain effects array () =
-  let array1 = array in
-  let array2 = duplicateArrArr array in
+let jackMain colony effects () =
+  (* Create a local working copy that gets synced incrementally *)
+  let working_colony = ref (with_colony_lock colony (fun state ->
+    create_colony (Array.copy state.nodes)
+  )) in
+
+  (* Expose working_colony to the protected_colony for visualization *)
+  Mutex.lock colony.mutex;
+  colony.working_state <- Some !working_colony;
+  Mutex.unlock colony.mutex;
+
+  (* Incremental sync: copy one node and its distance row per sample *)
+  (* This spreads the O(n²) work across many samples instead of doing it all at once *)
+  let sync_counter = ref 0 in
+  let incremental_sync_from_master = Cisp.(
+    st () |> Seq.map (fun () ->
+      let idx = !sync_counter mod num_nodes in
+
+      (* Quick lock: copy just ONE node and update its distances *)
+      Mutex.lock colony.mutex;
+      (* Copy one node *)
+      (!working_colony).nodes.(idx) <- colony.state.nodes.(idx);
+
+      (* Update distance matrix row for this node (O(n) instead of O(n²)) *)
+      let (Distance dist) = !(colony.state.distance_matrix) in
+      let (Distance working_dist) = !((!working_colony).distance_matrix) in
+      for j = 0 to num_nodes - 1 do
+        working_dist.(idx).(j) <- dist.(idx).(j);
+        working_dist.(j).(idx) <- dist.(j).(idx)
+      done;
+
+      (* Copy one row of pheromones *)
+      for j = 0 to num_nodes - 1 do
+        (!working_colony).pheromones.(idx).(j) <- colony.state.pheromones.(idx).(j)
+      done;
+
+      Mutex.unlock colony.mutex;
+
+      sync_counter := !sync_counter + 1;
+      ()
+    )
+  ) in
+
+  (* Incremental sync back to master: one row of pheromones + one node per sample *)
+  let sync_counter_back = ref 0 in
+  let incremental_sync_to_master = Cisp.(
+    st () |> Seq.map (fun () ->
+      let idx = !sync_counter_back mod num_nodes in
+
+      Mutex.lock colony.mutex;
+
+      (* Copy one node back (including sync status for visualization) *)
+      colony.state.nodes.(idx) <- (!working_colony).nodes.(idx);
+
+      (* Copy one row of pheromones back *)
+      for j = 0 to num_nodes - 1 do
+        colony.state.pheromones.(idx).(j) <- (!working_colony).pheromones.(idx).(j)
+      done;
+
+      (* Update metadata occasionally (every full cycle) *)
+      if idx = 0 then (
+        colony.state.best_paths <- (!working_colony).best_paths;
+        colony.state.shortest_path <- (!working_colony).shortest_path;
+        (* Update the working_state reference for visualization *)
+        colony.working_state <- Some !working_colony
+      );
+
+      Mutex.unlock colony.mutex;
+
+      sync_counter_back := !sync_counter_back + 1;
+      ()
+    )
+  ) in
+
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
-      [slower_compute array1; slower_compute array2; push_nodes_slower; effects]
+      [slower_compute !working_colony; incremental_sync_from_master; incremental_sync_to_master; effects]
   in
-  let ptl (x, y) = [x; y] in
-  let nodes = nodesStream array1 () in
-  (* let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in *)
+  let nodes = nodesStream !working_colony () in
   let ssp = ssp_signal ~interp:true get_node_x nodes in
-  let silence = Cisp.st(0.0) in
   let channels = [ applyEffects ssp; ssp ] in
   Jack.playSeqs 0 Process.sample_rate channels
 
@@ -1777,38 +1833,19 @@ let monitor_sample_count label n_interval sq =
       else x )
     count sq
 
-let non_realtime_jackMain title motherArray =
-  (* let voice phers =
-    let clone = duplicateArrArr phers in
-    let withEffect =        
-      nodesStream clone () |> Cisp.effectSync (slower_compute clone)
-    in
-    only_noisy_paths clone
+let non_realtime_jackMain title motherColony =
+  let one_voice (colony : colony_state) =
+    let clone = create_colony (Array.copy colony.nodes) in
+    (* Clone pheromones *)
+    for i = 0 to num_nodes - 1 do
+      for j = 0 to num_nodes - 1 do
+        clone.pheromones.(i).(j) <- colony.pheromones.(i).(j)
+      done
+    done;
+    Cisp.effectSync (only_compute colony) (only_noisy_paths colony)
   in
   let channels =
-    Cisp.rangei 0 31
-    |> Seq.map (fun i -> voice motherArray)
-    |> List.of_seq
-  in *)
-  (* let array1 = duplicateArrArr motherArray in
-   let array2 = duplicateArrArr motherArray in
-    let applyEffects master =
-    List.fold_left Cisp.syncEffect master
-      [ slower_compute array1
-      ; slower_compute array2
-      ; push_nodes_slower
-      (* ; othereffect *)
-       ]
-  in
-  let channels =
-    [applyEffects (only_noisy_paths array1); only_noisy_paths array2]
-  in *)
-  let one_voice ps =
-    let clone = duplicateArrArr ps in
-    Cisp.effectSync (only_compute ps) (only_noisy_paths ps)
-  in
-  let channels =
-    Cisp.rangei 0 31 |> Seq.map (fun i -> one_voice motherArray) |> List.of_seq
+    Cisp.rangei 0 31 |> Seq.map (fun i -> one_voice motherColony) |> List.of_seq
   in
   let counted =
     match channels with
@@ -1819,7 +1856,7 @@ let non_realtime_jackMain title motherArray =
             (!Process.sample_rate |> int_of_float)
             hd
         in
-        Cisp.effectSync push_nodes_slower counted :: tail
+        Cisp.effectSync (push_nodes_slower motherColony) counted :: tail
   in
   record_list_of_channels title record_duration counted
 
@@ -1842,11 +1879,11 @@ let unzip3_seq (s : ('a * 'b * 'c) Seq.t) : 'a Seq.t * 'b Seq.t * 'c Seq.t =
   , make_proj (fun (_, b, _) -> b)
   , make_proj (fun (_, _, c) -> c) )
 
-let midiOut phers =
+let midiOut (colony : colony_state) =
   let open Midi in
   let open Cisp in
   let ctrlStr =
-    nodesStream phers ()
+    nodesStream colony ()
     |> Seq.map (fun (Node {id; x; y; z; sync}) ->
            ignore (x, y, z, sync) ;
            (id + 23, floatToMidi x, floatToMidi x) )
@@ -1856,7 +1893,7 @@ let midiOut phers =
   let f inp =
     let stream = mkNoteClip <$> c <*> p <*> v <*> d in
     let midi = Midi.trigger stream inp |> serialize |> Seq.map toRaw in
-    let withEffect = midi |> effectsSync [push_nodes (); only_compute phers] in
+    let withEffect = midi |> effectsSync [push_nodes colony (); only_compute colony] in
     withEffect
   in
   Midi.playMidi f Process.sample_rate
@@ -1911,32 +1948,15 @@ let handle_end () =
   ()
 
 let realtime rmode =
-  let phers = mkPheromonesArr in
-  (* recording materials *)
-  (* let otherEffect = nodes_history record_array phers in *)
-  (* let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in *)
-  let _ = Thread.create (dream_thread phers nodes) () in
-  let node_stream = nodesStream phers () in
-  let _ =
-    Thread.create
-      (jackMain
-         Cisp.masterClock
-         phers )
-      ()
-  in
-  (*
-        let array1 = duplicateArrArr pheromones in *)
-  let _ = Thread.create (osc_thread_function handle_end) () in
-  (* let _ = Thread.create midiOut array1 in *)
-  (* let _ =
-          print_int
-            (Sys.command
-              "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1" ) ;
-          print_int
-            (Sys.command
-              "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in" ) ;
-          ignore (Sys.command "jack_lsp -c -A | grep ocaml")
-        in*)
+  (* Create protected colony state *)
+  let initial_nodes = grid_nodes () in
+  let colony = create_protected_colony initial_nodes in
+
+  (* Start threads with colony reference *)
+  let _ = Thread.create (dream_thread colony) () in
+  let _ = Thread.create (jackMain colony Cisp.masterClock) () in
+  let _ = Thread.create (osc_thread_function colony handle_end) () in
+
   while true do
     Unix.sleep 1
   done
@@ -1945,9 +1965,8 @@ let () =
   match program_mode with
   | Realtime rmode -> realtime rmode
   | NonRealtime ->
-      (* let pheromones = mkPheromonesArr in
-      non_realtime2 120 pheromones
-        "/Users/casperschipper/Music/ants/slower_convolve.wav" *)
-      non_realtime_jackMain "sing_ants_" mkPheromonesArr
+      let initial_nodes = grid_nodes () in
+      let colony = create_colony initial_nodes in
+      non_realtime_jackMain "sing_ants_" colony
   | FromNodes ->
       Ants.read_node_seq_from_file "nodes.json" |> createCsound3 "antscore3.sco"

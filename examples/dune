@@ -207,7 +207,17 @@
  (preprocess
   (pps lwt_ppx)))
 
-
+(executable
+ (name traffic)
+ (flags
+  (:standard -w -26-27-32-34-37-69))
+ (link_flags
+  (-cclib -ljack))
+ (ocamlopt_flags -O3)
+ (modules traffic)
+ (libraries cisp jack unix)
+ (preprocess
+  (pps lwt_ppx)))
 
 (executable
  (name fmfb)

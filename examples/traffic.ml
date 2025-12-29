@@ -74,12 +74,17 @@ let grid_to_list grid =
     bicycles @ acc
   ) grid []
 
-type grid_params = {cell_size: float}
+type grid_params = {cell_size: float; world_size: float}
 
 let cell_index params position =
+  let max_cells = int_of_float (params.world_size /. params.cell_size) in
+  let wrap_cell c max_c =
+    let c' = c mod max_c in
+    if c' < 0 then c' + max_c else c'
+  in
   let x = int_of_float (position.x /. params.cell_size) in
   let y = int_of_float (position.y /. params.cell_size) in
-  (x, y)
+  (wrap_cell x max_cells, wrap_cell y max_cells)
 
 (* Build the grid from a list of bicycles *)
 let build_grid params bicycles =
@@ -94,19 +99,33 @@ let build_grid params bicycles =
       GridMap.add idx cell_bicycles grid )
     GridMap.empty bicycles
 
-(* Get bicycles in neighboring cells (9 cells in 2D) *)
+(* Get bicycles in neighboring cells (9 cells in 2D) with wrapping *)
 let get_nearby_bicycles grid params bicycle =
   let (cx, cy) = cell_index params bicycle.position in
+  let max_cells = int_of_float (params.world_size /. params.cell_size) in
+
+  (* Wrap cell indices to handle toroidal topology *)
+  let wrap_cell c max_c =
+    let c' = c mod max_c in
+    if c' < 0 then c' + max_c else c'
+  in
+
   let cells_to_check = [
     (cx-1, cy-1); (cx, cy-1); (cx+1, cy-1);
     (cx-1, cy);   (cx, cy);   (cx+1, cy);
     (cx-1, cy+1); (cx, cy+1); (cx+1, cy+1);
   ] in
+
+  (* Wrap each cell coordinate before lookup *)
+  let wrapped_cells = List.map (fun (x, y) ->
+    (wrap_cell x max_cells, wrap_cell y max_cells)
+  ) cells_to_check in
+
   List.fold_left (fun acc cell_idx ->
     match GridMap.find_opt cell_idx grid with
     | None -> acc
     | Some bicycles -> bicycles @ acc
-  ) [] cells_to_check
+  ) [] wrapped_cells
 
 type model =
   { grid: grid
@@ -133,14 +152,14 @@ let mkBicycles world_size count =
   List.init count (mkBicycle world_size)
 
 let init () =
-  let pars = {cell_size= 30.0} in
   let world_size = 400.0 in
-  { grid= build_grid pars (mkBicycles world_size 1000)
+  let pars = {cell_size= 30.0; world_size} in
+  { grid= build_grid pars (mkBicycles world_size 50)
   ; grid_params= pars
   ; desired_speed= 40.0
   ; max_speed= 60.0
   ; max_force= 150.0
-  ; separation_radius= 10.0
+  ; separation_radius= 30.0
   ; alignment_radius= 50.0
   ; cohesion_radius= 50.0
   ; dt= 0.01

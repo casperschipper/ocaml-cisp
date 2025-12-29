@@ -215,7 +215,7 @@
   (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules traffic)
- (libraries cisp jack unix)
+ (libraries cisp jack unix sndfile)
  (preprocess
   (pps lwt_ppx)))
 

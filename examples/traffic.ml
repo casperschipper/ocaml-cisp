@@ -7,11 +7,11 @@ let vec2_sub v1 v2 = {x= v1.x -. v2.x; y= v1.y -. v2.y}
 
 let vec2_scale v s = {x= v.x *. s; y= v.y *. s}
 
-let vec2_dot v1 v2 = v1.x *. v2.x +. v1.y *. v2.y
+let vec2_dot v1 v2 = (v1.x *. v2.x) +. (v1.y *. v2.y)
 
-let vec2_magnitude v = sqrt (v.x *. v.x +. v.y *. v.y)
+let vec2_magnitude v = sqrt ((v.x *. v.x) +. (v.y *. v.y))
 
-let vec2_magnitude_sq v = v.x *. v.x +. v.y *. v.y
+let vec2_magnitude_sq v = (v.x *. v.x) +. (v.y *. v.y)
 
 let vec2_normalize v =
   let mag = vec2_magnitude v in
@@ -23,8 +23,7 @@ let vec2_limit v max_mag =
 
 let vec2_zero = {x= 0.0; y= 0.0}
 
-let vec2_distance v1 v2 =
-  vec2_magnitude (vec2_sub v2 v1)
+let vec2_distance v1 v2 = vec2_magnitude (vec2_sub v2 v1)
 
 (* Wrap position to stay within world bounds *)
 let vec2_wrap v world_size =
@@ -38,9 +37,7 @@ let vec2_wrap v world_size =
 let vec2_wrapped_delta v1 v2 world_size =
   let wrap_delta d size =
     let half = size /. 2.0 in
-    if d > half then d -. size
-    else if d < -.half then d +. size
-    else d
+    if d > half then d -. size else if d < -.half then d +. size else d
   in
   let dx = wrap_delta (v2.x -. v1.x) world_size in
   let dy = wrap_delta (v2.y -. v1.y) world_size in
@@ -52,15 +49,19 @@ let rvf a b =
   Random.float (high -. low) +. low
 
 (* 2D Bicycle with position, velocity, and acceleration vectors *)
-type bicycle =
-  { id: int
-  ; position: vec2
-  ; velocity: vec2
-  ; acceleration: vec2 }
+type bicycle = {id: int; position: vec2; velocity: vec2; acceleration: vec2}
+
+let rec_size = 44100 * 240
+
+let number_of_chans = 8
+
+
+let of_vec vec2 = (vec2.x, vec2.y)
 
 (* 2D grid using integer pairs as keys *)
 module GridKey = struct
   type t = int * int
+
   let compare = compare
 end
 
@@ -70,9 +71,7 @@ type grid = bicycle list GridMap.t
 
 (* Convert grid back to a flat list of bicycles *)
 let grid_to_list grid =
-  GridMap.fold (fun _cell_idx bicycles acc ->
-    bicycles @ acc
-  ) grid []
+  GridMap.fold (fun _cell_idx bicycles acc -> bicycles @ acc) grid []
 
 type grid_params = {cell_size: float; world_size: float}
 
@@ -101,31 +100,36 @@ let build_grid params bicycles =
 
 (* Get bicycles in neighboring cells (9 cells in 2D) with wrapping *)
 let get_nearby_bicycles grid params bicycle =
-  let (cx, cy) = cell_index params bicycle.position in
+  let cx, cy = cell_index params bicycle.position in
   let max_cells = int_of_float (params.world_size /. params.cell_size) in
-
   (* Wrap cell indices to handle toroidal topology *)
   let wrap_cell c max_c =
     let c' = c mod max_c in
     if c' < 0 then c' + max_c else c'
   in
-
-  let cells_to_check = [
-    (cx-1, cy-1); (cx, cy-1); (cx+1, cy-1);
-    (cx-1, cy);   (cx, cy);   (cx+1, cy);
-    (cx-1, cy+1); (cx, cy+1); (cx+1, cy+1);
-  ] in
-
+  let cells_to_check =
+    [ (cx - 1, cy - 1)
+    ; (cx, cy - 1)
+    ; (cx + 1, cy - 1)
+    ; (cx - 1, cy)
+    ; (cx, cy)
+    ; (cx + 1, cy)
+    ; (cx - 1, cy + 1)
+    ; (cx, cy + 1)
+    ; (cx + 1, cy + 1) ]
+  in
   (* Wrap each cell coordinate before lookup *)
-  let wrapped_cells = List.map (fun (x, y) ->
-    (wrap_cell x max_cells, wrap_cell y max_cells)
-  ) cells_to_check in
-
-  List.fold_left (fun acc cell_idx ->
-    match GridMap.find_opt cell_idx grid with
-    | None -> acc
-    | Some bicycles -> bicycles @ acc
-  ) [] wrapped_cells
+  let wrapped_cells =
+    List.map
+      (fun (x, y) -> (wrap_cell x max_cells, wrap_cell y max_cells))
+      cells_to_check
+  in
+  List.fold_left
+    (fun acc cell_idx ->
+      match GridMap.find_opt cell_idx grid with
+      | None -> acc
+      | Some bicycles -> bicycles @ acc )
+    [] wrapped_cells
 
 type model =
   { grid: grid
@@ -138,71 +142,84 @@ type model =
   ; cohesion_radius: float
   ; dt: float
   ; world_size: float
-  ; next_id: int }
+  ; next_id: int
+  ; recording: float Array.t Array.t }
 
 let mkBicycle world_size id =
   let angle = Random.float (2.0 *. Float.pi) in
   let speed = 30.0 in
-  {id;
-   position= {x= Random.float world_size; y= Random.float world_size};
-   velocity= {x= cos angle *. speed; y= sin angle *. speed};
-   acceleration= vec2_zero}
+  { id
+  ; position= {x= Random.float world_size; y= Random.float world_size}
+  ; velocity= {x= cos angle *. speed; y= sin angle *. speed}
+  ; acceleration= vec2_zero }
 
-let mkBicycles world_size count =
-  List.init count (mkBicycle world_size)
+let mkBicycles world_size count = List.init count (mkBicycle world_size)
 
 let init () =
   let world_size = 400.0 in
   let pars = {cell_size= 30.0; world_size} in
-  { grid= build_grid pars (mkBicycles world_size 50)
+  { grid= build_grid pars (mkBicycles world_size 1000)
   ; grid_params= pars
   ; desired_speed= 40.0
   ; max_speed= 60.0
   ; max_force= 150.0
-  ; separation_radius= 30.0
-  ; alignment_radius= 50.0
+  ; separation_radius= 10.0
+  ; alignment_radius= 30.0
   ; cohesion_radius= 50.0
   ; dt= 0.01
   ; world_size
-  ; next_id= 31 }
+  ; next_id= 31
+  ; recording= Array.make number_of_chans (Array.make rec_size 0.0)
+  }
 
 (* Steering behaviors for collision avoidance *)
 
 (* Separation: steer to avoid crowding local bicycles *)
 let separation model bicycle nearby =
-  let steering = List.fold_left (fun acc other ->
-    if other.id = bicycle.id then acc
-    else
-      (* Delta points FROM other TO bicycle (away direction) *)
-      let delta = vec2_wrapped_delta other.position bicycle.position model.world_size in
-      let dist = vec2_magnitude delta in
-      if dist > 0.0 && dist < model.separation_radius then
-        (* Steer away from nearby bicycle, stronger when closer *)
-        let diff = vec2_normalize delta in  (* Already pointing away, just normalize *)
-        let weight = (model.separation_radius -. dist) /. model.separation_radius in
-        vec2_add acc (vec2_scale diff weight)
-      else acc
-  ) vec2_zero nearby in
-
+  let steering =
+    List.fold_left
+      (fun acc other ->
+        if other.id = bicycle.id then acc
+        else
+          (* Delta points FROM other TO bicycle (away direction) *)
+          let delta =
+            vec2_wrapped_delta other.position bicycle.position model.world_size
+          in
+          let dist = vec2_magnitude delta in
+          if dist > 0.0 && dist < model.separation_radius then
+            (* Steer away from nearby bicycle, stronger when closer *)
+            let diff = vec2_normalize delta in
+            (* Already pointing away, just normalize *)
+            let weight =
+              (model.separation_radius -. dist) /. model.separation_radius
+            in
+            vec2_add acc (vec2_scale diff weight)
+          else acc )
+      vec2_zero nearby
+  in
   let mag = vec2_magnitude steering in
   if mag > 0.0 then
     (* Scale to max_force *)
     let normalized = vec2_normalize steering in
-    vec2_scale normalized (model.max_force *. 1.5)  (* Separation is important *)
+    vec2_scale normalized (model.max_force *. 1.5) (* Separation is important *)
   else vec2_zero
 
 (* Alignment: steer towards average heading of local bicycles *)
 let alignment model bicycle nearby =
-  let (sum, count) = List.fold_left (fun (sum, count) other ->
-    if other.id = bicycle.id then (sum, count)
-    else
-      let delta = vec2_wrapped_delta bicycle.position other.position model.world_size in
-      let dist = vec2_magnitude delta in
-      if dist < model.alignment_radius then
-        (vec2_add sum other.velocity, count + 1)
-      else (sum, count)
-  ) (vec2_zero, 0) nearby in
-
+  let sum, count =
+    List.fold_left
+      (fun (sum, count) other ->
+        if other.id = bicycle.id then (sum, count)
+        else
+          let delta =
+            vec2_wrapped_delta bicycle.position other.position model.world_size
+          in
+          let dist = vec2_magnitude delta in
+          if dist < model.alignment_radius then
+            (vec2_add sum other.velocity, count + 1)
+          else (sum, count) )
+      (vec2_zero, 0) nearby
+  in
   if count > 0 then
     let avg = vec2_scale sum (1.0 /. float_of_int count) in
     let desired = vec2_scale (vec2_normalize avg) model.desired_speed in
@@ -212,16 +229,20 @@ let alignment model bicycle nearby =
 
 (* Cohesion: steer towards average position of local bicycles *)
 let cohesion model bicycle nearby =
-  let (sum, count) = List.fold_left (fun (sum, count) other ->
-    if other.id = bicycle.id then (sum, count)
-    else
-      let delta = vec2_wrapped_delta bicycle.position other.position model.world_size in
-      let dist = vec2_magnitude delta in
-      if dist < model.cohesion_radius then
-        (vec2_add sum other.position, count + 1)
-      else (sum, count)
-  ) (vec2_zero, 0) nearby in
-
+  let sum, count =
+    List.fold_left
+      (fun (sum, count) other ->
+        if other.id = bicycle.id then (sum, count)
+        else
+          let delta =
+            vec2_wrapped_delta bicycle.position other.position model.world_size
+          in
+          let dist = vec2_magnitude delta in
+          if dist < model.cohesion_radius then
+            (vec2_add sum other.position, count + 1)
+          else (sum, count) )
+      (vec2_zero, 0) nearby
+  in
   if count > 0 then
     let avg = vec2_scale sum (1.0 /. float_of_int count) in
     let delta = vec2_wrapped_delta bicycle.position avg model.world_size in
@@ -236,21 +257,20 @@ let update_bicycle model bicycle nearby =
   let sep = separation model bicycle nearby in
   let align = alignment model bicycle nearby in
   let coh = cohesion model bicycle nearby in
-
   (* Combine forces with weights *)
-  let total_force = vec2_zero
-    |> vec2_add (vec2_scale sep 2.0)    (* Separation is most important *)
+  let total_force =
+    vec2_zero
+    |> vec2_add (vec2_scale sep 2.0) (* Separation is most important *)
     |> vec2_add (vec2_scale align 1.0)
     |> vec2_add (vec2_scale coh 1.0)
   in
-
   (* Apply force to get acceleration *)
   let new_acceleration = total_force in
-
   (* Update velocity *)
-  let new_velocity = vec2_add bicycle.velocity (vec2_scale new_acceleration model.dt) in
+  let new_velocity =
+    vec2_add bicycle.velocity (vec2_scale new_acceleration model.dt)
+  in
   let new_velocity = vec2_limit new_velocity model.max_speed in
-
   (* Maintain minimum speed (always moving) *)
   let new_velocity =
     let speed = vec2_magnitude new_velocity in
@@ -258,22 +278,24 @@ let update_bicycle model bicycle nearby =
       vec2_scale (vec2_normalize new_velocity) (model.desired_speed *. 0.5)
     else new_velocity
   in
-
   (* Update position *)
-  let new_position = vec2_add bicycle.position (vec2_scale new_velocity model.dt) in
+  let new_position =
+    vec2_add bicycle.position (vec2_scale new_velocity model.dt)
+  in
   let new_position = vec2_wrap new_position model.world_size in
-
-  {bicycle with
-   position= new_position;
-   velocity= new_velocity;
-   acceleration= new_acceleration}
+  { bicycle with
+    position= new_position
+  ; velocity= new_velocity
+  ; acceleration= new_acceleration }
 
 (* Web-based Visualization *)
 let html_file = "/tmp/traffic_viz.html"
+
 let data_file = "/tmp/traffic_data.json"
 
 let create_html_file () =
-  let html = {|<!DOCTYPE html>
+  let html =
+    {|<!DOCTYPE html>
 <html>
 <head>
   <title>2D Traffic Simulation</title>
@@ -387,10 +409,10 @@ let create_html_file () =
     drawSimulation();
   </script>
 </body>
-</html>|} in
+</html>|}
+  in
   let oc = open_out html_file in
-  output_string oc html;
-  close_out oc
+  output_string oc html ; close_out oc
 
 let visualize_web model step =
   let bicycles = grid_to_list model.grid in
@@ -398,16 +420,19 @@ let visualize_web model step =
     List.fold_left (fun sum b -> sum +. vec2_magnitude b.velocity) 0.0 bicycles
     /. float_of_int (List.length bicycles)
   in
-
   (* Create JSON data *)
-  let json_bicycles = String.concat ",\n    "
-    (List.map (fun b ->
-      Printf.sprintf {|{"id": %d, "position": {"x": %.2f, "y": %.2f}, "velocity": {"x": %.2f, "y": %.2f}}|}
-        b.id b.position.x b.position.y b.velocity.x b.velocity.y
-    ) bicycles)
+  let json_bicycles =
+    String.concat ",\n    "
+      (List.map
+         (fun b ->
+           Printf.sprintf
+             {|{"id": %d, "position": {"x": %.2f, "y": %.2f}, "velocity": {"x": %.2f, "y": %.2f}}|}
+             b.id b.position.x b.position.y b.velocity.x b.velocity.y )
+         bicycles )
   in
-
-  let json = Printf.sprintf {|{
+  let json =
+    Printf.sprintf
+      {|{
   "step": %d,
   "count": %d,
   "avg_speed": %.2f,
@@ -416,45 +441,56 @@ let visualize_web model step =
   "bicycles": [
     %s
   ]
-}|} step (List.length bicycles) avg_speed model.world_size model.max_speed json_bicycles in
-
+}|}
+      step (List.length bicycles) avg_speed model.world_size model.max_speed
+      json_bicycles
+  in
   (* Write JSON to file *)
   let oc = open_out data_file in
-  output_string oc json;
-  close_out oc
+  output_string oc json ; close_out oc
 
 let setup_web_viz () =
-  create_html_file ();
+  create_html_file () ;
   (* Start a simple HTTP server in the background *)
   let port = 8765 in
-  let server_cmd = Printf.sprintf "cd /tmp && python3 -m http.server %d > /dev/null 2>&1 &" port in
+  let server_cmd =
+    Printf.sprintf "cd /tmp && python3 -m http.server %d > /dev/null 2>&1 &"
+      port
+  in
   let _ = Sys.command server_cmd in
-  Unix.sleepf 0.5; (* Give server time to start *)
+  Unix.sleepf 0.5 ;
+  (* Give server time to start *)
   (* Open in browser *)
-  let _ = Sys.command (Printf.sprintf "open http://localhost:%d/traffic_viz.html" port) in
+  let _ =
+    Sys.command
+      (Printf.sprintf "open http://localhost:%d/traffic_viz.html" port)
+  in
   ()
 
 (* Simulation step *)
 let step model =
   let bicycles = grid_to_list model.grid in
-  let updated_bicycles = List.map (fun bicycle ->
-    let nearby = get_nearby_bicycles model.grid model.grid_params bicycle in
-    update_bicycle model bicycle nearby
-  ) bicycles in
+  let updated_bicycles =
+    List.map
+      (fun bicycle ->
+        let nearby = get_nearby_bicycles model.grid model.grid_params bicycle in
+        update_bicycle model bicycle nearby )
+      bicycles
+  in
   let new_grid = build_grid model.grid_params updated_bicycles in
-  { model with grid = new_grid }
+  {model with grid= new_grid}
 
 (* Add a new bicycle to the model *)
 let add_bicycle model =
   let new_bicycle = mkBicycle model.world_size model.next_id in
   let bicycles = grid_to_list model.grid @ [new_bicycle] in
   let new_grid = build_grid model.grid_params bicycles in
-  { model with grid = new_grid; next_id = model.next_id + 1 }
+  {model with grid= new_grid; next_id= model.next_id + 1}
 
 let clear_bicycles model =
   let new_bicycle = mkBicycle model.world_size model.next_id in
   let new_grid = build_grid model.grid_params [new_bicycle] in
-  { model with grid = new_grid; next_id = model.next_id + 1}
+  {model with grid= new_grid; next_id= model.next_id + 1}
 
 (* Terminal handling *)
 let saved_term_attrs = ref None
@@ -462,13 +498,14 @@ let saved_term_attrs = ref None
 let setup_terminal () =
   try
     let term_attrs = Unix.tcgetattr Unix.stdin in
-    saved_term_attrs := Some term_attrs;
-    let raw_attrs = { term_attrs with
-      Unix.c_icanon = false;
-      Unix.c_echo = false;
-      Unix.c_vmin = 0;
-      Unix.c_vtime = 0;
-    } in
+    saved_term_attrs := Some term_attrs ;
+    let raw_attrs =
+      { term_attrs with
+        Unix.c_icanon= false
+      ; Unix.c_echo= false
+      ; Unix.c_vmin= 0
+      ; Unix.c_vtime= 0 }
+    in
     Unix.tcsetattr Unix.stdin Unix.TCSANOW raw_attrs
   with
   | Unix.Unix_error _ -> () (* Terminal setup not supported, skip it *)
@@ -480,52 +517,93 @@ let restore_terminal () =
 
 (* Check for keyboard input without blocking *)
 let check_input () =
-  let (ready, _, _) = Unix.select [Unix.stdin] [] [] 0.0 in
+  let ready, _, _ = Unix.select [Unix.stdin] [] [] 0.0 in
   if ready = [] then None
   else
     let buf = Bytes.create 1 in
     let n = Unix.read Unix.stdin buf 0 1 in
-    if n = 0 then None
-    else Some (Bytes.get buf 0)
+    if n = 0 then None else Some (Bytes.get buf 0)
+
+let head lst =
+  match lst with
+  | [] -> None
+  | hd :: ts -> Some hd
+
+let write_audio size arrarr =
+  print_string "finished recording" ;
+  flush stdout ;
+  let slice = Array.sub arrarr 0 size in
+  Sndfile.write_multichannel_array slice 44100 "boid2.wav" Sndfile.WAV_24
+
+let vec2sound vec2 = 
+  vec2.position |> of_vec |> Cisp.fst |> Cisp.linlin 0.0 400.0 (-1.0) 1.0
+
+let find_frame lst id = 
+  let results = lst |> List.filter (fun b -> b.id = id) in
+  match results with 
+  | [] -> None
+  | frame::_ -> Some frame
+
+let handle_frame arrarr idx channel opt = 
+  let value =
+    match opt with
+    | None -> 0.0
+    | Some vec -> vec2sound vec
+  in
+  arrarr.(channel).(idx) <- value
+
+let record_frame idx model =
+  if idx >= (rec_size - 1) then write_audio model.recording else () ;
+  let lst = model.grid |> grid_to_list in
+  [|0;1;2;3;4;5;6;7|] 
+    |> Array.map (fun channel_number -> find_frame lst (channel_number + 10) |> handle_frame model.recording idx channel_number)
+
+
+  
 
 (* Main simulation loop with visualization *)
 let rec simulate model n current_step =
   if n = 0 then model
-  else begin
-    if n mod 2 = 0 then 
+  else (
+    (if n mod 10 = 0 then
       visualize_web model current_step
-    else ()
-      ;
-      (* Check for keyboard input *)
-      let model_after_input =
-        match check_input () with
-        | Some ' ' ->
-            add_bicycle model
-        | Some 'q' ->
-            Printf.printf "Quitting...\n";
-            restore_terminal ();
-            exit 0
-        | Some 'c' ->
-            Printf.printf "Clear all\n";
-            clear_bicycles model
-        | _ -> model
-      in
-      Unix.sleepf 0.01;
-      let new_model = step model_after_input in
-      simulate new_model (n - 1) (current_step + 1)
-  end
+    else
+      ());
+    if n mod 4000 = 0 then (
+      print_int n ;
+      print_endline "ok we are here" )
+    else () ;
+    (* Check for keyboard input *)
+    let model_after_input =
+      match check_input () with
+      | Some ' ' -> add_bicycle model
+      | Some 'q' ->
+          Printf.printf "Quitting...\n" ;
+          restore_terminal () ;
+          exit 0
+      | Some 'c' ->
+          Printf.printf "Clear all\n" ;
+          clear_bicycles model
+      | Some 'r' ->
+          Printf.printf "ok writing" ;
+          write_audio current_step model.recording ;
+          model
+      | _ -> model
+    in
+    let new_model = step model_after_input in
+    let new_model2 = record_frame current_step new_model in
+    simulate new_model (n - 1) (current_step + 1) )
 
 (* Run the simulation *)
 let () =
   let model = init () in
   Printf.printf "Starting 2D traffic simulation with %d bicycles\n"
-    (List.length (grid_to_list model.grid));
-  Printf.printf "Press SPACE to add bicycles, 'q' to quit, 'c' to clear\n";
-  Printf.printf "Opening web visualization in browser...\n";
-  flush stdout;
-  setup_web_viz ();
-  setup_terminal ();
-  at_exit restore_terminal;
-  let _final_model = simulate model 1_000_000_000 0 in
-  restore_terminal ();
-  ()
+    (List.length (grid_to_list model.grid)) ;
+  Printf.printf "Press SPACE to add bicycles, 'q' to quit, 'c' to clear\n" ;
+  Printf.printf "Opening web visualization in browser...\n" ;
+  flush stdout ;
+  setup_web_viz () ;
+  setup_terminal () ;
+  at_exit restore_terminal ;
+  let _final_model = simulate model 4410000 0 in
+  restore_terminal () ; ()

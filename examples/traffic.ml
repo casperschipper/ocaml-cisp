@@ -135,15 +135,15 @@ let mkBicycles world_size count =
 let init () =
   let pars = {cell_size= 30.0} in
   let world_size = 400.0 in
-  { grid= build_grid pars (mkBicycles world_size 30)
+  { grid= build_grid pars (mkBicycles world_size 1000)
   ; grid_params= pars
   ; desired_speed= 40.0
   ; max_speed= 60.0
   ; max_force= 150.0
-  ; separation_radius= 25.0
+  ; separation_radius= 10.0
   ; alignment_radius= 50.0
   ; cohesion_radius= 50.0
-  ; dt= 1.0 /. 48.0
+  ; dt= 0.01
   ; world_size
   ; next_id= 31 }
 
@@ -154,11 +154,12 @@ let separation model bicycle nearby =
   let steering = List.fold_left (fun acc other ->
     if other.id = bicycle.id then acc
     else
+      (* Delta points FROM other TO bicycle (away direction) *)
       let delta = vec2_wrapped_delta other.position bicycle.position model.world_size in
       let dist = vec2_magnitude delta in
       if dist > 0.0 && dist < model.separation_radius then
         (* Steer away from nearby bicycle, stronger when closer *)
-        let diff = vec2_normalize (vec2_scale delta (-.1.0)) in
+        let diff = vec2_normalize delta in  (* Already pointing away, just normalize *)
         let weight = (model.separation_radius -. dist) /. model.separation_radius in
         vec2_add acc (vec2_scale diff weight)
       else acc
@@ -472,25 +473,27 @@ let check_input () =
 let rec simulate model n current_step =
   if n = 0 then model
   else begin
-    visualize_web model current_step;
-
-    (* Check for keyboard input *)
-    let model_after_input =
-      match check_input () with
-      | Some ' ' ->
-          add_bicycle model
-      | Some 'q' ->
-          Printf.printf "Quitting...\n";
-          restore_terminal ();
-          exit 0
-      | Some 'c' ->
-          Printf.printf "Clear all\n";
-          clear_bicycles model
-      | _ -> model
-    in
-    Unix.sleepf (1.0/.48.0);
-    let new_model = step model_after_input in
-    simulate new_model (n - 1) (current_step + 1)
+    if n mod 2 = 0 then 
+      visualize_web model current_step
+    else ()
+      ;
+      (* Check for keyboard input *)
+      let model_after_input =
+        match check_input () with
+        | Some ' ' ->
+            add_bicycle model
+        | Some 'q' ->
+            Printf.printf "Quitting...\n";
+            restore_terminal ();
+            exit 0
+        | Some 'c' ->
+            Printf.printf "Clear all\n";
+            clear_bicycles model
+        | _ -> model
+      in
+      Unix.sleepf 0.01;
+      let new_model = step model_after_input in
+      simulate new_model (n - 1) (current_step + 1)
   end
 
 (* Run the simulation *)

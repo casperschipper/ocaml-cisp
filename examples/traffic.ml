@@ -49,7 +49,7 @@ let rvf a b =
   Random.float (high -. low) +. low
 
 (* 2D Bicycle with position, velocity, and acceleration vectors *)
-type bicycle = {id: int; position: vec2; velocity: vec2; acceleration: vec2}
+type bicycle = {id: int; position: vec2; velocity: vec2; acceleration: vec2; tiredness : float}
 
 let rec_size = 44100 * 240
 
@@ -151,7 +151,8 @@ let mkBicycle world_size id =
   { id
   ; position= {x= Random.float world_size; y= Random.float world_size}
   ; velocity= {x= cos angle *. speed; y= sin angle *. speed}
-  ; acceleration= vec2_zero }
+  ; acceleration= vec2_zero
+  ; tiredness= 0.0 }
 
 let mkBicycles world_size count = List.init count (mkBicycle world_size)
 

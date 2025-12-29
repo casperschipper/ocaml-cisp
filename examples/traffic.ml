@@ -155,8 +155,7 @@ let update_bicycle model bicycle bicycle_ahead_opt =
   in
   (* Update position based on velocity *)
   let new_position = mod_float (bicycle.position +. (new_velocity *. model.dt)) model.world_size in
-  let randomized_velocity = new_velocity +. (rvf (-0.1) 0.1) in
-  {bicycle with velocity= randomized_velocity; position= new_position}
+  {bicycle with velocity= new_velocity; position= new_position}
 
   (* Visualization *)
 let visualize_state model step =

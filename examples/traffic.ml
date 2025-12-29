@@ -4,6 +4,11 @@ module IntMap = Map.Make (Int)
 
 type grid = bicycle list IntMap.t
 
+let rvf a b = 
+  let low = min a b in
+  let high = max a b in
+  Random.float (high -. low) +. low
+
 (* Convert grid back to a flat list of cars *)
 let grid_to_list grid =
   IntMap.fold (fun _cell_idx cars acc ->
@@ -35,25 +40,40 @@ let build_grid params bicycles =
     IntMap.empty bicycles
 
 (* Get bicycles in current cell and next cell ahead *)
-let get_nearby_bicycles grid params bicycle =
+let get_nearby_bicycles grid params bicycle world_size =
   let idx = cell_index params bicycle in
+  let max_idx = int_of_float (world_size /. params.cell_size) in
   let current_cell = Option.value (IntMap.find_opt idx grid) ~default:[] in
-  let next_cell = Option.value (IntMap.find_opt (idx + 1) grid) ~default:[] in
-  current_cell @ next_cell
+  let next_idx = if idx + 1 >= max_idx then 0 else idx + 1 in
+  let next_cell = Option.value (IntMap.find_opt next_idx grid) ~default:[] in
+  (* Also check the cell at the beginning if we're near the end (wrap-around) *)
+  let wrap_cell =
+    if idx >= max_idx - 1 then
+      Option.value (IntMap.find_opt 0 grid) ~default:[]
+    else []
+  in
+  current_cell @ next_cell @ wrap_cell
 
-(* Find the closest bicycle ahead *)
-let find_bicycle_ahead bicycle nearby_bicycles =
-  List.filter
-    (fun other -> other.id <> bicycle.id && other.position > bicycle.position)
-    nearby_bicycles
+(* Find the closest bicycle ahead, accounting for wrap-around *)
+let find_bicycle_ahead world_size bicycle nearby_bicycles =
+  List.filter (fun other -> other.id <> bicycle.id) nearby_bicycles
   |> List.fold_left
        (fun acc other ->
+         (* Calculate distance considering wrap-around *)
+         let distance =
+           if other.position >= bicycle.position then
+             other.position -. bicycle.position
+           else
+             (* Wrapped around *)
+             (world_size -. bicycle.position) +. other.position
+         in
          match acc with
-         | None -> Some other
-         | Some closest ->
-             if other.position < closest.position then Some other
-             else Some closest )
+         | None -> Some (other, distance)
+         | Some (best, min_dist) ->
+             if distance < min_dist then Some (other, distance)
+             else Some (best, min_dist) )
        None
+  |> Option.map fst
 
 type model =
   { grid: grid
@@ -65,12 +85,16 @@ type model =
   ; min_gap: float
   ; dt: float
   ; world_size: float
-  ; next_id: int }
+  ; next_id: int
+  ; minimum_speed : float }
 
-let mkBicycle world_size id =
-  {id; position= Random.float world_size; velocity= 0.0}
+let mkBicycle id =
+  {id; position= 0.1; velocity= 10.0}
 
-let mkBicycles world_size = List.init 10 (mkBicycle world_size)
+let mkRandomBicycle world_size id = 
+   {id; position= Random.float world_size; velocity= 10.0}
+
+let mkBicycles world_size = List.init 20 (mkRandomBicycle world_size)
 
 let init () =
   let pars = {cell_size= 10.0} in
@@ -78,13 +102,14 @@ let init () =
   { grid= build_grid pars (mkBicycles world_size)
   ; grid_params= pars
   ; desired_velocity= 10.0
-  ; accel_rate= 2.0
-  ; decel_rate= 4.0
-  ; min_gap= 1.0
-  ; dt= 0.1
+  ; accel_rate= 10.0
+  ; decel_rate= 10.0
+  ; min_gap= 5.0
+  ; dt= 1.0 /. 48.0
   ; world_size
   ; safe_time_gap= 0.2
-  ; next_id= 10 }
+  ; next_id= 10
+  ; minimum_speed = 1.0 }
 
 (* Calculate desired gap based on current velocity *)
 let desired_gap model velocity =
@@ -102,7 +127,13 @@ let update_bicycle model bicycle bicycle_ahead_opt =
             model.desired_velocity
         else bicycle.velocity
     | Some ahead ->
-        let gap = ahead.position -. bicycle.position in
+        (* Calculate gap considering wrap-around *)
+        let gap =
+          if ahead.position >= bicycle.position then
+            ahead.position -. bicycle.position
+          else
+            (model.world_size -. bicycle.position) +. ahead.position
+        in
         let desired = desired_gap model bicycle.velocity in
         if gap > desired then
           (* Safe distance - can accelerate *)
@@ -113,15 +144,19 @@ let update_bicycle model bicycle bicycle_ahead_opt =
           else bicycle.velocity
         else
           (* Too close - decelerate *)
-          let decel_amount =
-            model.decel_rate *. model.dt *. (1.0 -. (gap /. desired))
-          in
-          max 0.0 (bicycle.velocity -. decel_amount)
+          (* Emergency braking if gap is very small *)
+          if gap < model.min_gap then
+            max model.minimum_speed (bicycle.velocity -. (model.decel_rate *. model.dt *. 2.0))
+          else
+            let decel_amount =
+              model.decel_rate *. model.dt *. (1.0 -. (gap /. desired))
+            in
+            max model.minimum_speed (bicycle.velocity -. decel_amount)
   in
   (* Update position based on velocity *)
   let new_position = mod_float (bicycle.position +. (new_velocity *. model.dt)) model.world_size in
-  
-  {bicycle with velocity= new_velocity; position= new_position}
+  let randomized_velocity = new_velocity +. (rvf (-0.1) 0.1) in
+  {bicycle with velocity= randomized_velocity; position= new_position}
 
   (* Visualization *)
 let visualize_state model step =
@@ -197,15 +232,7 @@ let create_html_file () =
           ctx.fillStyle = '#282828';
           ctx.fillRect(0, 0, 800, 400);
 
-          // Draw road
-          ctx.fillStyle = '#3c3c3c';
-          ctx.fillRect(0, 170, 800, 60);
-
-          // Draw lane markings
-          ctx.fillStyle = '#ffffff';
-          for (let i = 0; i < 20; i++) {
-            ctx.fillRect(i * 40, 198, 20, 4);
-          }
+   
 
           // Draw bicycles
           data.bicycles.forEach(b => {
@@ -300,8 +327,8 @@ let setup_web_viz () =
 let step model =
   let bicycles = grid_to_list model.grid in
   let updated_bicycles = List.map (fun bicycle ->
-    let nearby = get_nearby_bicycles model.grid model.grid_params bicycle in
-    let bicycle_ahead = find_bicycle_ahead bicycle nearby in
+    let nearby = get_nearby_bicycles model.grid model.grid_params bicycle model.world_size in
+    let bicycle_ahead = find_bicycle_ahead model.world_size bicycle nearby in
     update_bicycle model bicycle bicycle_ahead
   ) bicycles in
   let new_grid = build_grid model.grid_params updated_bicycles in
@@ -309,10 +336,15 @@ let step model =
 
 (* Add a new bicycle to the model *)
 let add_bicycle model =
-  let new_bicycle = mkBicycle model.world_size model.next_id in
+  let new_bicycle = mkBicycle model.next_id in
   let bicycles = grid_to_list model.grid @ [new_bicycle] in
   let new_grid = build_grid model.grid_params bicycles in
   { model with grid = new_grid; next_id = model.next_id + 1 }
+
+let clear_bicycle model = 
+  let new_bicycle = mkRandomBicycle model.world_size model.next_id in
+  let new_grid = build_grid model.grid_params [new_bicycle] in
+  { model with grid = new_grid; next_id = 10}
 
 (* Terminal handling *)
 let saved_term_attrs = ref None
@@ -350,7 +382,7 @@ let check_input () =
 let rec simulate model n current_step =
   if n = 0 then model
   else begin
-    visualize_state model current_step;  (* Text visualization *)
+    (* visualize_state model current_step;  Text visualization *)
     visualize_web model current_step;    (* Web visualization *)
 
     (* Check for keyboard input *)
@@ -362,9 +394,12 @@ let rec simulate model n current_step =
           Printf.printf "Quitting...\n";
           restore_terminal ();
           exit 0
+      | Some 'c' -> 
+          Printf.printf "clear all\n";
+          clear_bicycle model
       | _ -> model
     in
-    Unix.sleepf 0.1;  (* Pause for 100ms between frames *)
+    Unix.sleepf (1.0/.48.0);  (* Pause for 100ms between frames *)
     let new_model = step model_after_input in
     simulate new_model (n - 1) (current_step + 1)
   end

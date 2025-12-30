@@ -158,14 +158,18 @@ let mkBicycles world_size count = List.init count (mkBicycle world_size)
 let init () =
   let world_size = 400.0 in
   let pars = {cell_size= 30.0; world_size} in
+<<<<<<< HEAD
   { grid= build_grid pars (mkBicycles world_size 200)
+=======
+  { grid= build_grid pars (mkBicycles world_size 1000)
+>>>>>>> parent of cc1e008 (ok this is interesting, but we need a tweak)
   ; grid_params= pars
-  ; desired_speed= 80.0
+  ; desired_speed= 40.0
   ; max_speed= 60.0
   ; max_force= 150.0
-  ; separation_radius= 5.0
+  ; separation_radius= 10.0
   ; alignment_radius= 30.0
-  ; cohesion_radius= 5.0
+  ; cohesion_radius= 50.0
   ; dt= 0.01
   ; world_size
   ; next_id= 31
@@ -607,7 +611,7 @@ let handle_frame arrarr idx channel opt =
   arrarr.(channel).(idx) <- value
 
 let record_frame idx model =
-  if idx >= (rec_size - 1) then write_audio idx model.recording else () ;
+  if idx >= (rec_size - 1) then write_audio model.recording else () ;
   let lst = model.grid |> grid_to_list in
   [|0;1;2;3;4;5;6;7|] 
     |> Array.map (fun channel_number -> find_frame lst (channel_number + 10) |> handle_frame model.recording idx channel_number)

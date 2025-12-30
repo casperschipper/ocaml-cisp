@@ -159,7 +159,7 @@ let mkBicycles world_size count = List.init count (mkBicycle world_size)
 let init () =
   let world_size = 400.0 in
   let pars = {cell_size= 30.0; world_size} in
-  { grid= build_grid pars (mkBicycles world_size 2000)
+  { grid= build_grid pars (mkBicycles world_size 200)
   ; grid_params= pars
   ; desired_speed= 80.0
   ; max_speed= 60.0
@@ -258,13 +258,61 @@ let update_bicycle model bicycle nearby =
   let sep = separation model bicycle nearby in
   let align = alignment model bicycle nearby in
   let coh = cohesion model bicycle nearby in
-  (* Combine forces with weights *)
+  (* Calculate initial total force for turn detection *)
+  let initial_total_force =
+    vec2_zero
+    |> vec2_add (vec2_scale sep 2.0)
+    |> vec2_add (vec2_scale align 1.0)
+    |> vec2_add (vec2_scale coh 1.0)
+  in
+  (* Update tiredness (detect turns based on steering force) *)
+  let force_magnitude = vec2_magnitude initial_total_force in
+  (* Detect if bicycle is turning (high force) or going straight (low force) *)
+  let is_turning = force_magnitude > model.max_force *. 0.3 in
+  let new_tiredness =
+    if is_turning then
+      0.0  (* Reset tiredness when turning *)
+    else
+      (* Accelerate tiredness after grace period for more dramatic effect *)
+      let base_increment = model.dt in
+      if bicycle.tiredness > 10.0 then
+        bicycle.tiredness +. (base_increment *. 5.0)  (* 5x faster after grace period *)
+      else
+        bicycle.tiredness +. base_increment
+  in
+
+  (* Calculate braking force: 0 for first 10 seconds, then rapidly increase *)
+  let grace_period = 10.0 in
+  let max_brake_time = 8.0 in  (* Reach max braking faster *)
+  let braking_factor =
+    if new_tiredness < grace_period then
+      0.0
+    else
+      (* Quadratic increase for more dramatic slowdown *)
+      let time_past_grace = new_tiredness -. grace_period in
+      let linear = min 1.0 (time_past_grace /. max_brake_time) in
+      linear *. linear
+  in
+
+  (* Apply STRONG braking force opposite to velocity direction *)
+  let max_deceleration = model.max_force *. 80.0 in  (* Much stronger! *)
+  let brake_force =
+    if braking_factor > 0.0 then
+      let velocity_dir = vec2_normalize bicycle.velocity in
+      vec2_scale velocity_dir (-. max_deceleration *. braking_factor)
+    else
+      vec2_zero
+  in
+
+  (* Combine forces with weights, INCLUDING braking *)
   let total_force =
     vec2_zero
     |> vec2_add (vec2_scale sep 2.0) (* Separation is most important *)
     |> vec2_add (vec2_scale align 1.0)
     |> vec2_add (vec2_scale coh 1.0)
+    |> vec2_add brake_force  (* Add braking to combined forces *)
   in
+
   (* Apply force to get acceleration *)
   let new_acceleration = total_force in
   (* Update velocity *)
@@ -272,13 +320,18 @@ let update_bicycle model bicycle nearby =
     vec2_add bicycle.velocity (vec2_scale new_acceleration model.dt)
   in
   let new_velocity = vec2_limit new_velocity model.max_speed in
-  (* Maintain minimum speed (always moving) *)
+
+  (* Only enforce minimum speed if NOT tired - allow tired bicycles to slow down *)
   let new_velocity =
-    let speed = vec2_magnitude new_velocity in
-    if speed < model.desired_speed *. 0.5 then
-      vec2_scale (vec2_normalize new_velocity) (model.desired_speed *. 0.5)
-    else new_velocity
+    if braking_factor < 0.1 then
+      let speed = vec2_magnitude new_velocity in
+      if speed < model.desired_speed *. 0.5 then
+        vec2_scale (vec2_normalize new_velocity) (model.desired_speed *. 0.5)
+      else new_velocity
+    else
+      new_velocity  (* Tired bicycles can go slower than minimum *)
   in
+
   (* Update position *)
   let new_position =
     vec2_add bicycle.position (vec2_scale new_velocity model.dt)
@@ -287,7 +340,8 @@ let update_bicycle model bicycle nearby =
   { bicycle with
     position= new_position
   ; velocity= new_velocity
-  ; acceleration= new_acceleration }
+  ; acceleration= new_acceleration
+  ; tiredness= new_tiredness }
 
 (* Web-based Visualization *)
 let html_file = "/tmp/traffic_viz.html"

@@ -171,12 +171,12 @@ let mkBicycles world_size count = List.init count (mkBicycle world_size)
 let init () =
   let world_size = 400.0 in
   let pars = {cell_size= 30.0; world_size} in
-  { grid= build_grid pars (mkBicycles world_size 1000)
+  { grid= build_grid pars (mkBicycles world_size 333)
   ; grid_params= pars
   ; desired_speed= 80.0
   ; max_speed= 60.0
   ; max_force= 150.0
-  ; separation_radius= 8.0
+  ; separation_radius= 5.0
   ; alignment_radius= 30.0
   ; cohesion_radius= 5.0
   ; dt= 0.01
@@ -265,7 +265,7 @@ let cohesion model bicycle nearby =
   else vec2_zero
 
 (* Update a single bicycle *)
-let update_bicycle model bicycle nearby =
+let update_bicycle model bicycle nearby clock =
   (* Calculate steering forces *)
   let sep = separation model bicycle nearby in
   let align = alignment model bicycle nearby in
@@ -298,10 +298,10 @@ let update_bicycle model bicycle nearby =
   in
 
   (* Apply anti-stability turn when stable for too long *)
-  let new_velocity_with_turn =
+  let new_velocity_with_turn clock =
     if new_stability_counter >= stability_trigger then
       (* Turn right by 45 degrees (π/4 radians) *)
-      let turn_angle = Float.pi /. (rvf 3.0 4.0) in
+      let turn_angle = Float.pi /. (sin (float_of_int clock /. 4410.0 *. Float.pi *. 2.0)) in
       vec2_rotate new_velocity turn_angle
     else
       new_velocity
@@ -313,14 +313,16 @@ let update_bicycle model bicycle nearby =
     else new_stability_counter
   in
 
+  let new_vol = new_velocity_with_turn clock in
+
   (* Update position *)
   let new_position =
-    vec2_add bicycle.position (vec2_scale new_velocity_with_turn model.dt)
+    vec2_add bicycle.position (vec2_scale new_vol model.dt)
   in
   let new_position = vec2_wrap new_position model.world_size in
   { bicycle with
     position= new_position
-  ; velocity= new_velocity_with_turn
+  ; velocity= new_vol
   ; acceleration= new_acceleration
   ; stability_counter= final_stability_counter }
 
@@ -526,13 +528,13 @@ let setup_web_viz () =
   ()
 
 (* Simulation step *)
-let step model =
+let step model clock =
   let bicycles = grid_to_list model.grid in
   let updated_bicycles =
     List.map
       (fun bicycle ->
         let nearby = get_nearby_bicycles model.grid model.grid_params bicycle in
-        update_bicycle model bicycle nearby )
+        update_bicycle model bicycle nearby clock )
       bicycles
   in
   let new_grid = build_grid model.grid_params updated_bicycles in
@@ -654,7 +656,7 @@ let rec simulate model n current_step =
           model
       | _ -> model
     in
-    let new_model = step model_after_input in
+    let new_model = step model_after_input current_step in
     let new_model2 = record_frame current_step new_model in
     simulate new_model (n - 1) (current_step + 1) )
 

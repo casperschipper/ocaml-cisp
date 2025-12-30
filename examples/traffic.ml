@@ -65,7 +65,7 @@ type bicycle =
 
 let rec_size = 44100 * 240
 
-let number_of_chans = 8
+let number_of_chans = 16
 
 
 let of_vec vec2 = (vec2.x, vec2.y)
@@ -171,7 +171,7 @@ let mkBicycles world_size count = List.init count (mkBicycle world_size)
 let init () =
   let world_size = 400.0 in
   let pars = {cell_size= 30.0; world_size} in
-  { grid= build_grid pars (mkBicycles world_size 100)
+  { grid= build_grid pars (mkBicycles world_size 1000)
   ; grid_params= pars
   ; desired_speed= 80.0
   ; max_speed= 60.0
@@ -288,20 +288,20 @@ let update_bicycle model bicycle nearby =
   (* Stability detection: measure if acceleration/steering has been minimal *)
   let acceleration_magnitude = vec2_magnitude new_acceleration in
   let stability_threshold = 50.0 in  (* Threshold for "stable" state *)
-  let stability_trigger () = (Random.int 10) + 50 in     (* Frames of stability before turning *)
+  let stability_trigger = 100 in     (* Frames of stability before turning *)
 
   let new_stability_counter =
     if acceleration_magnitude < stability_threshold then
-      bicycle.stability_counter - 1
+      bicycle.stability_counter + 1
     else
       0  (* Reset counter if significant steering detected *)
   in
 
   (* Apply anti-stability turn when stable for too long *)
   let new_velocity_with_turn =
-    if new_stability_counter <= 0 then
+    if new_stability_counter >= stability_trigger then
       (* Turn right by 45 degrees (π/4 radians) *)
-      let turn_angle = Float.pi /. 4.0 in
+      let turn_angle = Float.pi /. (rvf 3.0 4.0) in
       vec2_rotate new_velocity turn_angle
     else
       new_velocity
@@ -309,7 +309,7 @@ let update_bicycle model bicycle nearby =
 
   (* Reset counter after applying turn *)
   let final_stability_counter =
-    if new_stability_counter <= 0 then (stability_trigger ())
+    if new_stability_counter >= stability_trigger then 0
     else new_stability_counter
   in
 
@@ -610,10 +610,16 @@ let handle_frame arrarr idx channel opt =
   in
   arrarr.(channel).(idx) <- value
 
+let range_arr a b =
+  let rec count n () =
+    Seq.Cons(n,count (n + 1))
+  in
+  count a |> Seq.take b |> Array.of_seq
+
 let record_frame idx model =
   if idx >= (rec_size - 1) then write_audio idx model.recording else () ;
   let lst = model.grid |> grid_to_list in
-  [|0;1;2;3;4;5;6;7|] 
+  range_arr 0 number_of_chans 
     |> Array.map (fun channel_number -> find_frame lst (channel_number + 10) |> handle_frame model.recording idx channel_number)
 
 

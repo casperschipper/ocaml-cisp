@@ -272,12 +272,12 @@ let update_bicycle model bicycle nearby =
   in
   let new_velocity = vec2_limit new_velocity model.max_speed in
   (* Maintain minimum speed (always moving) *)
-  let new_velocity =
+  (* let new_velocity =
     let speed = vec2_magnitude new_velocity in
     if speed < model.desired_speed *. 0.5 then
       vec2_scale (vec2_normalize new_velocity) (model.desired_speed *. 0.5)
     else new_velocity
-  in
+  in *)
   (* Update position *)
   let new_position =
     vec2_add bicycle.position (vec2_scale new_velocity model.dt)

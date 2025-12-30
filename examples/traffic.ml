@@ -43,13 +43,25 @@ let vec2_wrapped_delta v1 v2 world_size =
   let dy = wrap_delta (v2.y -. v1.y) world_size in
   {x= dx; y= dy}
 
+(* Rotate a vector by an angle in radians *)
+let vec2_rotate v angle =
+  let cos_a = cos angle in
+  let sin_a = sin angle in
+  {x= v.x *. cos_a -. v.y *. sin_a; y= v.x *. sin_a +. v.y *. cos_a}
+
 let rvf a b =
   let low = min a b in
   let high = max a b in
   Random.float (high -. low) +. low
 
 (* 2D Bicycle with position, velocity, and acceleration vectors *)
-type bicycle = {id: int; position: vec2; velocity: vec2; acceleration: vec2}
+type bicycle =
+  { id: int
+  ; position: vec2
+  ; velocity: vec2
+  ; acceleration: vec2
+  ; stability_counter: int  (* Counts frames of stability *)
+  }
 
 let rec_size = 44100 * 240
 
@@ -151,25 +163,26 @@ let mkBicycle world_size id =
   { id
   ; position= {x= Random.float world_size; y= Random.float world_size}
   ; velocity= {x= cos angle *. speed; y= sin angle *. speed}
-  ; acceleration= vec2_zero }
+  ; acceleration= vec2_zero
+  ; stability_counter= 0 }
 
 let mkBicycles world_size count = List.init count (mkBicycle world_size)
 
 let init () =
   let world_size = 400.0 in
   let pars = {cell_size= 30.0; world_size} in
-  { grid= build_grid pars (mkBicycles world_size 2000)
+  { grid= build_grid pars (mkBicycles world_size 100)
   ; grid_params= pars
   ; desired_speed= 80.0
   ; max_speed= 60.0
   ; max_force= 150.0
-  ; separation_radius= 5.0
+  ; separation_radius= 8.0
   ; alignment_radius= 30.0
   ; cohesion_radius= 5.0
   ; dt= 0.01
   ; world_size
-  ; next_id= 31
-  ; recording= Array.make number_of_chans (Array.make rec_size 0.0)
+  ; next_id= 10
+  ; recording= Array.init number_of_chans (fun _ -> Array.make rec_size 0.0)
   }
 
 (* Steering behaviors for collision avoidance *)
@@ -271,22 +284,45 @@ let update_bicycle model bicycle nearby =
     vec2_add bicycle.velocity (vec2_scale new_acceleration model.dt)
   in
   let new_velocity = vec2_limit new_velocity model.max_speed in
-  (* Maintain minimum speed (always moving) *)
-  (* let new_velocity =
-    let speed = vec2_magnitude new_velocity in
-    if speed < model.desired_speed *. 0.5 then
-      vec2_scale (vec2_normalize new_velocity) (model.desired_speed *. 0.5)
-    else new_velocity
-  in *)
+
+  (* Stability detection: measure if acceleration/steering has been minimal *)
+  let acceleration_magnitude = vec2_magnitude new_acceleration in
+  let stability_threshold = 50.0 in  (* Threshold for "stable" state *)
+  let stability_trigger () = (Random.int 10) + 50 in     (* Frames of stability before turning *)
+
+  let new_stability_counter =
+    if acceleration_magnitude < stability_threshold then
+      bicycle.stability_counter - 1
+    else
+      0  (* Reset counter if significant steering detected *)
+  in
+
+  (* Apply anti-stability turn when stable for too long *)
+  let new_velocity_with_turn =
+    if new_stability_counter <= 0 then
+      (* Turn right by 45 degrees (π/4 radians) *)
+      let turn_angle = Float.pi /. 4.0 in
+      vec2_rotate new_velocity turn_angle
+    else
+      new_velocity
+  in
+
+  (* Reset counter after applying turn *)
+  let final_stability_counter =
+    if new_stability_counter <= 0 then (stability_trigger ())
+    else new_stability_counter
+  in
+
   (* Update position *)
   let new_position =
-    vec2_add bicycle.position (vec2_scale new_velocity model.dt)
+    vec2_add bicycle.position (vec2_scale new_velocity_with_turn model.dt)
   in
   let new_position = vec2_wrap new_position model.world_size in
   { bicycle with
     position= new_position
-  ; velocity= new_velocity
-  ; acceleration= new_acceleration }
+  ; velocity= new_velocity_with_turn
+  ; acceleration= new_acceleration
+  ; stability_counter= final_stability_counter }
 
 (* Web-based Visualization *)
 let html_file = "/tmp/traffic_viz.html"
@@ -371,6 +407,28 @@ let create_html_file () =
             }
             ctx.fillStyle = `rgb(${r},${g},${blue})`;
 
+            // Draw stability ring if counter > 0
+            if (b.stability_counter > 0) {
+              const stabilityFactor = b.stability_counter / 100.0;  // 100 is trigger
+              const ringRadius = 6 + (stabilityFactor * 6);  // Grows from 6 to 12
+
+              // Color: green -> yellow -> red as stability increases
+              let ringR, ringG;
+              if (stabilityFactor < 0.5) {
+                ringR = Math.floor(stabilityFactor * 2 * 255);
+                ringG = 255;
+              } else {
+                ringR = 255;
+                ringG = Math.floor((1 - (stabilityFactor - 0.5) * 2) * 255);
+              }
+
+              ctx.strokeStyle = `rgb(${ringR},${ringG},0)`;
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.arc(x, y, ringRadius, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+
             // Draw circle
             ctx.beginPath();
             ctx.arc(x, y, 6, 0, Math.PI * 2);
@@ -426,8 +484,8 @@ let visualize_web model step =
       (List.map
          (fun b ->
            Printf.sprintf
-             {|{"id": %d, "position": {"x": %.2f, "y": %.2f}, "velocity": {"x": %.2f, "y": %.2f}}|}
-             b.id b.position.x b.position.y b.velocity.x b.velocity.y )
+             {|{"id": %d, "position": {"x": %.2f, "y": %.2f}, "velocity": {"x": %.2f, "y": %.2f}, "stability_counter": %d}|}
+             b.id b.position.x b.position.y b.velocity.x b.velocity.y b.stability_counter )
          bicycles )
   in
   let json =
@@ -532,7 +590,7 @@ let head lst =
 let write_audio size arrarr =
   print_string "finished recording" ;
   flush stdout ;
-  let slice = Array.sub arrarr 0 size in
+  let slice = Array.map (fun arr -> Array.sub arr 0 size) arrarr in
   Sndfile.write_multichannel_array slice 44100 "boid2.wav" Sndfile.WAV_24
 
 let vec2sound vec2 = 
@@ -586,7 +644,7 @@ let rec simulate model n current_step =
           clear_bicycles model
       | Some 'r' ->
           Printf.printf "ok writing" ;
-          write_audio current_step model.recording ;
+          write_audio (current_step - 1) model.recording ;
           model
       | _ -> model
     in

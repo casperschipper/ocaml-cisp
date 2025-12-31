@@ -152,6 +152,7 @@ type model =
   ; separation_radius: float
   ; alignment_radius: float
   ; cohesion_radius: float
+  ; rotation: float
   ; dt: float
   ; world_size: float
   ; next_id: int
@@ -179,6 +180,7 @@ let init () =
   ; separation_radius= 5.0
   ; alignment_radius= 30.0
   ; cohesion_radius= 5.0
+  ; rotation= 0.0
   ; dt= 0.01
   ; world_size
   ; next_id= 10
@@ -301,7 +303,7 @@ let update_bicycle model bicycle nearby clock =
   let new_velocity_with_turn clock =
     if new_stability_counter >= stability_trigger then
       (* Turn right by 45 degrees (π/4 radians) *)
-      let turn_angle = Float.pi /. (sin (float_of_int clock /. 4410.0 *. Float.pi *. 2.0)) in
+      let turn_angle = 2.0 *. Float.pi *. model.rotation in
       vec2_rotate new_velocity turn_angle
     else
       new_velocity
@@ -331,6 +333,31 @@ let html_file = "/tmp/traffic_viz.html"
 
 let data_file = "/tmp/traffic_data.json"
 
+let params_file = "/tmp/traffic_params.json"
+
+(* Read parameters from JSON file if it exists *)
+let read_params model =
+  try
+    let json = Yojson.Basic.from_file params_file in
+    let open Yojson.Basic.Util in
+    let new_model =
+      { model with
+        max_speed= json |> member "max_speed" |> to_number
+      ; max_force= json |> member "max_force" |> to_number
+      ; separation_radius= json |> member "separation_radius" |> to_number
+      ; alignment_radius= json |> member "alignment_radius" |> to_number
+      ; cohesion_radius= json |> member "cohesion_radius" |> to_number 
+      ; rotation= json |> member "rotation_amount"|> to_number}
+    in
+    (* Debug output *)
+    Printf.printf "Params updated: speed=%.1f force=%.1f sep=%.1f align=%.1f coh=%.1f rot=%.1f \n%!"
+      new_model.max_speed new_model.max_force new_model.separation_radius
+      new_model.alignment_radius new_model.cohesion_radius new_model.rotation ;
+    new_model
+  with e ->
+    Printf.printf "Failed to read params: %s\n%!" (Printexc.to_string e) ;
+    model
+
 let create_html_file () =
   let html =
     {|<!DOCTYPE html>
@@ -356,15 +383,108 @@ let create_html_file () =
       font-size: 16px;
       margin: 10px;
     }
+    #controls {
+      max-width: 800px;
+      margin: 20px auto;
+      background: #333;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .control-row {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+    }
+    .control-row label {
+      flex: 1;
+      margin-right: 10px;
+    }
+    .control-row input {
+      flex: 2;
+      margin-right: 10px;
+    }
+    .control-row span {
+      flex: 0 0 60px;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
   <div id="info">Loading...</div>
   <canvas id="canvas" width="800" height="800"></canvas>
+  <div id="controls">
+    <h3>Parameters</h3>
+    <div class="control-row">
+      <label>Max Speed:</label>
+      <input type="range" id="max_speed" min="10" max="150" step="5" value="60">
+      <span id="max_speed_val">60</span>
+    </div>
+    <div class="control-row">
+      <label>Max Force:</label>
+      <input type="range" id="max_force" min="50" max="300" step="10" value="150">
+      <span id="max_force_val">150</span>
+    </div>
+    <div class="control-row">
+      <label>Separation Radius:</label>
+      <input type="range" id="separation_radius" min="1" max="20" step="0.5" value="5">
+      <span id="separation_radius_val">5</span>
+    </div>
+    <div class="control-row">
+      <label>Alignment Radius:</label>
+      <input type="range" id="alignment_radius" min="5" max="60" step="5" value="30">
+      <span id="alignment_radius_val">30</span>
+    </div>
+    <div class="control-row">
+      <label>Cohesion Radius:</label>
+      <input type="range" id="cohesion_radius" min="1" max="20" step="0.5" value="5">
+      <span id="cohesion_radius_val">5</span>
+    </div>
+     <div class="control-row">
+      <label>Rotation when "bored"</label>
+      <input type="range" id="rotation_amount" min="0.0" max="1.0" step="0.01" value="0.0">
+      <span id="rotation_amount_val">0.0</span>
+    </div>
+  </div>
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const info = document.getElementById('info');
+
+    // Parameter controls
+    const params = ['max_speed', 'max_force', 'separation_radius', 'alignment_radius', 'cohesion_radius', 'rotation_amount'];
+    params.forEach(param => {
+      const slider = document.getElementById(param);
+      const display = document.getElementById(param + '_val');
+      slider.addEventListener('input', () => {
+        display.textContent = slider.value;
+        writeParams();
+      });
+    });
+
+    function writeParams() {
+      const data = {
+        max_speed: parseFloat(document.getElementById('max_speed').value),
+        max_force: parseFloat(document.getElementById('max_force').value),
+        separation_radius: parseFloat(document.getElementById('separation_radius').value),
+        alignment_radius: parseFloat(document.getElementById('alignment_radius').value),
+        cohesion_radius: parseFloat(document.getElementById('cohesion_radius').value),
+        rotation_amount: parseFloat(document.getElementById('rotation_amount').value)
+      };
+
+      // Send to Flask server which writes to /tmp/traffic_params.json
+      fetch('/update_params', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {'Content-Type': 'application/json'}
+      })
+      .then(response => response.json())
+      .then(result => {
+        console.log('Parameters updated:', result);
+      })
+      .catch(error => {
+        console.error('Error updating parameters:', error);
+      });
+    }
 
     function drawSimulation() {
       fetch('traffic_data.json?' + new Date().getTime())
@@ -511,19 +631,21 @@ let visualize_web model step =
 
 let setup_web_viz () =
   create_html_file () ;
-  (* Start a simple HTTP server in the background *)
+  (* Kill any existing servers on port 8765 *)
+  let _ = Sys.command "pkill -f 'python3.*8765' 2>/dev/null || true" in
+  Unix.sleepf 0.5 ;
+  (* Start Flask server in the background *)
   let port = 8765 in
   let server_cmd =
-    Printf.sprintf "cd /tmp && python3 -m http.server %d > /dev/null 2>&1 &"
-      port
+    Printf.sprintf "python3 /tmp/traffic_server.py > /tmp/flask_server.log 2>&1 &"
   in
   let _ = Sys.command server_cmd in
-  Unix.sleepf 0.5 ;
+  Unix.sleepf 1.5 ;
   (* Give server time to start *)
   (* Open in browser *)
   let _ =
     Sys.command
-      (Printf.sprintf "open http://localhost:%d/traffic_viz.html" port)
+      (Printf.sprintf "open http://localhost:%d/" port)
   in
   ()
 
@@ -639,22 +761,26 @@ let rec simulate model n current_step =
       print_int n ;
       print_endline "ok we are here" )
     else () ;
+    (* Read parameters from web interface every 100 frames *)
+    let model_with_params =
+      if current_step mod 100 = 0 then read_params model else model
+    in
     (* Check for keyboard input *)
     let model_after_input =
       match check_input () with
-      | Some ' ' -> add_bicycle model
+      | Some ' ' -> add_bicycle model_with_params
       | Some 'q' ->
           Printf.printf "Quitting...\n" ;
           restore_terminal () ;
           exit 0
       | Some 'c' ->
           Printf.printf "Clear all\n" ;
-          clear_bicycles model
+          clear_bicycles model_with_params
       | Some 'r' ->
           Printf.printf "ok writing" ;
-          write_audio (current_step - 1) model.recording ;
-          model
-      | _ -> model
+          write_audio (current_step - 1) model_with_params.recording ;
+          model_with_params
+      | _ -> model_with_params
     in
     let new_model = step model_after_input current_step in
     let new_model2 = record_frame current_step new_model in

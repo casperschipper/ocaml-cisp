@@ -172,7 +172,7 @@ let mkBicycles world_size count = List.init count (mkBicycle world_size)
 let init () =
   let world_size = 400.0 in
   let pars = {cell_size= 30.0; world_size} in
-  { grid= build_grid pars (mkBicycles world_size 333)
+  { grid= build_grid pars (mkBicycles world_size 49)
   ; grid_params= pars
   ; desired_speed= 80.0
   ; max_speed= 60.0
@@ -181,7 +181,7 @@ let init () =
   ; alignment_radius= 30.0
   ; cohesion_radius= 5.0
   ; rotation= 0.0
-  ; dt= 0.01
+  ; dt= 0.1
   ; world_size
   ; next_id= 10
   ; recording= Array.init number_of_chans (fun _ -> Array.make rec_size 0.0)
@@ -350,9 +350,9 @@ let read_params model =
       ; rotation= json |> member "rotation_amount"|> to_number}
     in
     (* Debug output *)
-    Printf.printf "Params updated: speed=%.1f force=%.1f sep=%.1f align=%.1f coh=%.1f rot=%.1f \n%!"
+    (* Printf.printf "Params updated: speed=%.1f force=%.1f sep=%.1f align=%.1f coh=%.1f rot=%.1f \n%!"
       new_model.max_speed new_model.max_force new_model.separation_radius
-      new_model.alignment_radius new_model.cohesion_radius new_model.rotation ;
+      new_model.alignment_radius new_model.cohesion_radius new_model.rotation ; *)
     new_model
   with e ->
     Printf.printf "Failed to read params: %s\n%!" (Printexc.to_string e) ;
@@ -431,7 +431,7 @@ let create_html_file () =
     </div>
     <div class="control-row">
       <label>Alignment Radius:</label>
-      <input type="range" id="alignment_radius" min="5" max="60" step="5" value="30">
+      <input type="range" id="alignment_radius" min="1" max="60" step="0.1" value="30">
       <span id="alignment_radius_val">30</span>
     </div>
     <div class="control-row">
@@ -452,14 +452,47 @@ let create_html_file () =
 
     // Parameter controls
     const params = ['max_speed', 'max_force', 'separation_radius', 'alignment_radius', 'cohesion_radius', 'rotation_amount'];
+    let isUserInteracting = false;
+
     params.forEach(param => {
       const slider = document.getElementById(param);
       const display = document.getElementById(param + '_val');
+
+      slider.addEventListener('mousedown', () => { isUserInteracting = true; });
+      slider.addEventListener('mouseup', () => { isUserInteracting = false; });
+      slider.addEventListener('touchstart', () => { isUserInteracting = true; });
+      slider.addEventListener('touchend', () => { isUserInteracting = false; });
+
       slider.addEventListener('input', () => {
         display.textContent = slider.value;
         writeParams();
       });
     });
+
+    // Poll parameters from server and update UI
+    function updateUIFromParams() {
+      if (isUserInteracting) return; // Don't update while user is dragging
+
+      fetch('/get_params')
+        .then(r => r.json())
+        .then(data => {
+          params.forEach(param => {
+            if (data[param] !== undefined) {
+              const slider = document.getElementById(param);
+              const display = document.getElementById(param + '_val');
+              slider.value = data[param];
+              display.textContent = data[param];
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching parameters:', error);
+        });
+    }
+
+    // Poll params every second
+    setInterval(updateUIFromParams, 1000);
+    updateUIFromParams(); // Initial load
 
     function writeParams() {
       const data = {
@@ -652,6 +685,7 @@ let setup_web_viz () =
 (* Simulation step *)
 let step model clock =
   let bicycles = grid_to_list model.grid in
+  let _ = Unix.sleepf 0.1 in
   let updated_bicycles =
     List.map
       (fun bicycle ->
@@ -753,11 +787,11 @@ let record_frame idx model =
 let rec simulate model n current_step =
   if n = 0 then model
   else (
-    (if n mod 10 = 0 then
+    (if n mod 1 = 0 then
       visualize_web model current_step
     else
       ());
-    if n mod 4000 = 0 then (
+    if n mod 1 = 0 then (
       print_int n ;
       print_endline "ok we are here" )
     else () ;

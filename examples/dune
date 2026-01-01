@@ -220,6 +220,13 @@
   (pps lwt_ppx)))
 
 (executable
+ (name traffic_params_gen)
+ (modules traffic_params_gen)
+ (libraries params yojson lwt lwt.unix cohttp-lwt-unix)
+ (preprocess
+  (pps lwt_ppx)))
+
+(executable
  (name fmfb)
  (link_flags
   (-cclib -ljack -cclib -lsndfile))

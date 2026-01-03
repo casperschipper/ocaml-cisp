@@ -9,3 +9,5 @@ _build/
 .DS_Store
 *.wav(
 old_school_csound.wav
+boid.wav
+boid2.wav

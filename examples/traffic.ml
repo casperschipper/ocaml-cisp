@@ -167,12 +167,22 @@ let mkBicycle world_size id =
   ; acceleration= vec2_zero
   ; stability_counter= 0 }
 
-let mkBicycles world_size count = List.init count (mkBicycle world_size)
+type bicycles_with_id = {
+  current_id: int
+  ;bicycles: bicycle list }
+
+let mkBicycles world_size count = 
+  { current_id = count 
+  ; bicycles = List.init count (mkBicycle world_size) }
+
+let zero_id = 0
+
 
 let init () =
   let world_size = 400.0 in
   let pars = {cell_size= 30.0; world_size} in
-  { grid= build_grid pars (mkBicycles world_size 49)
+  let initial_bicycles = mkBicycles world_size 49 in
+  { grid= build_grid pars initial_bicycles.bicycles
   ; grid_params= pars
   ; desired_speed= 80.0
   ; max_speed= 60.0
@@ -183,7 +193,7 @@ let init () =
   ; rotation= 0.0
   ; dt= 0.1
   ; world_size
-  ; next_id= 10
+  ; next_id= initial_bicycles.current_id
   ; recording= Array.init number_of_chans (fun _ -> Array.make rec_size 0.0)
   }
 
@@ -492,34 +502,30 @@ let write_audio size arrarr =
   let slice = Array.map (fun arr -> Array.sub arr 0 size) arrarr in
   Sndfile.write_multichannel_array slice 44100 "boid2.wav" Sndfile.WAV_24
 
-let vec2sound vec2 = 
+let vec2sound vec2 =
   vec2.position |> of_vec |> Cisp.fst |> Cisp.linlin 0.0 400.0 (-1.0) 1.0
-
-let find_frame lst id = 
-  let results = lst |> List.filter (fun b -> b.id = id) in
-  match results with 
-  | [] -> None
-  | frame::_ -> Some frame
-
-let handle_frame arrarr idx channel opt = 
-  let value =
-    match opt with
-    | None -> 0.0
-    | Some vec -> vec2sound vec
-  in
-  arrarr.(channel).(idx) <- value
-
-let range_arr a b =
-  let rec count n () =
-    Seq.Cons(n,count (n + 1))
-  in
-  count a |> Seq.take b |> Array.of_seq
 
 let record_frame idx model =
   if idx >= (rec_size - 1) then write_audio idx model.recording else () ;
-  let lst = model.grid |> grid_to_list in
-  range_arr 0 number_of_chans 
-    |> Array.map (fun channel_number -> find_frame lst (channel_number + 10) |> handle_frame model.recording idx channel_number)
+  let bicycles = model.grid |> grid_to_list in
+  (* Build lookup array indexed by bicycle ID for O(1) access *)
+  let _ = Printf.printf "next id %d" model.next_id in
+  let max_id = model.next_id in
+  let bicycle_lookup = Array.make max_id None in
+  List.iter (fun b -> bicycle_lookup.(b.id) <- Some b) bicycles;
+  (* Record each channel *)
+  for channel = 0 to number_of_chans - 1 do
+    let bicycle_id = channel + 0 in
+    let value =
+      if bicycle_id < max_id then
+        match bicycle_lookup.(bicycle_id) with
+        | None -> 0.0
+        | Some bicycle -> vec2sound bicycle
+      else
+        0.0
+    in
+    model.recording.(channel).(idx) <- value
+  done
 
 
   

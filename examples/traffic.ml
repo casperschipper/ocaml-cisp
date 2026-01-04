@@ -601,7 +601,7 @@ let rec simulate model n current_step =
           model_with_params
       | Some 's' -> 
           Printf.printf "send points to ants";
-          update_all_ants_with_osc (model_with_params.grid |> grid_to_list |> 2vec));
+          update_all_ants_with_osc (model_with_params.grid |> grid_to_list);
           model_with_params
       | _ -> model_with_params
     in

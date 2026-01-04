@@ -32,6 +32,9 @@ let speed_of_comp = 1
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
 
+(* to protect nodes and distance_array from concurrent access *)
+let nodes_mutex = Mutex.create ()
+
 let shortest = ref 0.0
 
 let update_position x y z_opt (Node old) =
@@ -73,7 +76,7 @@ let random_nodes () =
 
 let grid_nodes () =
   Spacegen.generate_random_points_3d ~seed:124 ~count:49 ~max_x:1.0 ~max_y:1.0
-    ~max_z:0.0 ~f:mkNode
+    ~max_z:0.0 ~f:mkNode ~min_z:0.5
 
 let from_traffic_points pts = 
   Array.init 
@@ -83,7 +86,7 @@ let nodes = grid_nodes ()
 
 let distance (Node p1) (Node p2) =
   if p1.id = p2.id then 0.0
-  else
+  else 
     sqrt
       ( ((p1.x -. p2.x) ** 2.0)
       +. ((p1.y -. p2.y) ** 2.0)
@@ -164,6 +167,13 @@ let update_matrix_2 point_index new_point points (Distance dist) =
     done ;
     Distance dist (* ; pretty_print_matrix dist *) )
   else Distance dist
+
+(* Thread-safe version that locks the nodes_mutex *)
+let update_matrix_2_safe point_index new_point points dist =
+  Mutex.lock nodes_mutex ;
+  let result = update_matrix_2 point_index new_point points dist in
+  Mutex.unlock nodes_mutex ;
+  result
 
 
 (*
@@ -371,23 +381,25 @@ let update_points opt_ipoint =
   match opt_ipoint with
   | Some (IndexedPoint {idx; x; y; z}) ->
       if idx < num_nodes && idx >= 0 then
-        ignore (update_matrix_2 idx (mkNode idx x y z) nodes distance_array)
+        ignore (update_matrix_2_safe idx (mkNode idx x y z) nodes distance_array)
       else ()
   | None -> ()
 
 exception Incorrect_Points
 
-let update_all_points pts = 
+let update_all_points pts =
   let n = Array.length pts in
   let fst (x,_) = x in
   let snd (_,y) = y in
   if n != 49 then
     raise Incorrect_Points
-  else 
+  else
+  Mutex.lock nodes_mutex;
   for i = 0 to n do
     nodes.(i) <- mkNode i (fst pts.(i) /. 3.0) (snd pts.(i) /. 3.0) 0.0 (* divide by three because it is 300 instead of 100 *)
   done;
-  ignore (update_distance_matrix_inplace nodes distance_array)
+  ignore (update_distance_matrix_inplace nodes distance_array);
+  Mutex.unlock nodes_mutex
 
 let reset_points arg_number = ()
 
@@ -1251,6 +1263,22 @@ let move_node_by_promille (Node {id; x; y; z; _}) =
   in
   Node {id; x= new_x; y= new_y; z= new_z; sync= Modified}
 
+(* Brownian motion thread - runs independently from audio thread *)
+let brownian_thread_function () =
+  while true do
+    (* Sleep for a bit to control update rate *)
+    Unix.sleepf 0.01; (* 100 Hz update rate *)
+
+    (* Only update if brownian is active *)
+    if !current_buffer.brownian > 0.0 then (
+      (* Update all nodes with brownian motion *)
+      for idx = 0 to num_nodes - 1 do
+        let new_node = move_node_by_promille nodes.(idx) in
+        ignore (update_matrix_2_safe idx new_node nodes distance_array)
+      done
+    )
+  done
+
 let push_nodes () =
   let open Cisp in
   countTill (num_nodes - 1)
@@ -1621,7 +1649,7 @@ let dream_thread phers nodes () =
                          let old = nodes.(node_id) in
                          (* let (Node {z= old_z; _}) = old in *)
                          ignore
-                           (update_matrix_2 node_id (mkNode node_id x y z) nodes
+                           (update_matrix_2_safe node_id (mkNode node_id x y z) nodes
                               distance_array ) ;
                          process_messages ()
                      | Ok (Brownian amount) ->
@@ -1717,14 +1745,14 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
              get_delta x
              |> linpow 0.0 1.4
                   (1.0 /. !Process.sample_rate)
-                  (4. /. !Process.sample_rate)
+                  (64. /. !Process.sample_rate)
                   1.06 )
     in
     render_waveform_minimal (zip amps ts)
   else
-    let samps =
+    let samps = (* not used if interpreted *)
       dnodes
-      |> fmap (fun x -> get_delta x |> linlin 0.0 1.4 1.0 16.0 |> int_of_float)
+      |> fmap (fun x -> get_delta x |> linlin 0.0 1.4 1.0 20.0 |> int_of_float)
     in
     hold samps amps
 
@@ -1798,7 +1826,7 @@ let jackMain effects array () =
   let array2 = duplicateArrArr array in
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
-      [slower_compute array1; slower_compute array2; push_nodes_slower; effects]
+      [slower_compute array1; slower_compute array2; effects]
   in
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
@@ -1860,7 +1888,7 @@ let non_realtime_jackMain title motherArray =
             (!Process.sample_rate |> int_of_float)
             hd
         in
-        Cisp.effectSync push_nodes_slower counted :: tail
+        counted :: tail
   in
   record_list_of_channels title record_duration counted
 
@@ -1961,6 +1989,8 @@ let realtime rmode =
   (*
         let array1 = duplicateArrArr pheromones in *)
   let _ = Thread.create (osc_thread_function handle_end) () in
+  (* Start the Brownian motion thread *)
+  let _ = Thread.create brownian_thread_function () in
   (* let _ = Thread.create midiOut array1 in *)
   (* let _ =
           print_int

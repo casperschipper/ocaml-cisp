@@ -7,14 +7,15 @@ let generate_random_points ~seed ~count ~max_x ~max_y f =
       let y = Random.float max_y in
       f idx x y )
 
-let generate_random_points_3d ~seed ~count ~max_x ~max_y ~max_z ~f =
+
+let generate_random_points_3d ~seed ~count ~max_x ~max_y ~max_z ~min_z ~f =
   (* Set the seed for the random number generator *)
   Random.init seed ;
   (* Create an array of random points *)
   Array.init count (fun idx ->
       let x = Random.float max_x in
       let y = Random.float max_y in
-      let z = Random.float max_z in
+      let z = Random.float (abs_float (max_z -. min_z)) +. min_z in
       f idx x y z )
 
 let generate_grid n f =

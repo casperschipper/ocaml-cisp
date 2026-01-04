@@ -19,7 +19,11 @@ let vec2_normalize v =
 
 let vec2_limit v max_mag =
   let mag = vec2_magnitude v in
-  if mag > max_mag then vec2_scale (vec2_normalize v) max_mag else v
+  if mag > max_mag then
+    (* Avoid recomputing magnitude in normalize *)
+    let scale = max_mag /. mag in
+    vec2_scale v scale
+  else v
 
 let vec2_zero = {x= 0.0; y= 0.0}
 
@@ -47,7 +51,7 @@ let vec2_wrapped_delta v1 v2 world_size =
 let vec2_rotate v angle =
   let cos_a = cos angle in
   let sin_a = sin angle in
-  {x= v.x *. cos_a -. v.y *. sin_a; y= v.x *. sin_a +. v.y *. cos_a}
+  {x= (v.x *. cos_a) -. (v.y *. sin_a); y= (v.x *. sin_a) +. (v.y *. cos_a)}
 
 let rvf a b =
   let low = min a b in
@@ -60,13 +64,11 @@ type bicycle =
   ; position: vec2
   ; velocity: vec2
   ; acceleration: vec2
-  ; stability_counter: int  (* Counts frames of stability *)
-  }
+  ; stability_counter: int (* Counts frames of stability *) }
 
 let rec_size = 44100 * 240
 
 let number_of_chans = 16
-
 
 let of_vec vec2 = (vec2.x, vec2.y)
 
@@ -83,7 +85,9 @@ type grid = bicycle list GridMap.t
 
 (* Convert grid back to a flat list of bicycles *)
 let grid_to_list grid =
-  GridMap.fold (fun _cell_idx bicycles acc -> bicycles @ acc) grid []
+  GridMap.fold
+    (fun _cell_idx bicycles acc -> List.rev_append bicycles acc)
+    grid []
 
 type grid_params = {cell_size: float; world_size: float}
 
@@ -167,16 +171,12 @@ let mkBicycle world_size id =
   ; acceleration= vec2_zero
   ; stability_counter= 0 }
 
-type bicycles_with_id = {
-  current_id: int
-  ;bicycles: bicycle list }
+type bicycles_with_id = {current_id: int; bicycles: bicycle list}
 
-let mkBicycles world_size count = 
-  { current_id = count 
-  ; bicycles = List.init count (mkBicycle world_size) }
+let mkBicycles world_size count =
+  {current_id= count; bicycles= List.init count (mkBicycle world_size)}
 
 let zero_id = 0
-
 
 let init () =
   let world_size = 400.0 in
@@ -194,13 +194,13 @@ let init () =
   ; dt= 0.1
   ; world_size
   ; next_id= initial_bicycles.current_id
-  ; recording= Array.init number_of_chans (fun _ -> Array.make rec_size 0.0)
-  }
+  ; recording= Array.init number_of_chans (fun _ -> Array.make rec_size 0.0) }
 
 (* Steering behaviors for collision avoidance *)
 
 (* Separation: steer to avoid crowding local bicycles *)
 let separation model bicycle nearby =
+  let sep_radius_sq = model.separation_radius *. model.separation_radius in
   let steering =
     List.fold_left
       (fun acc other ->
@@ -210,10 +210,12 @@ let separation model bicycle nearby =
           let delta =
             vec2_wrapped_delta other.position bicycle.position model.world_size
           in
-          let dist = vec2_magnitude delta in
-          if dist > 0.0 && dist < model.separation_radius then
+          let dist_sq = vec2_magnitude_sq delta in
+          if dist_sq > 0.0 && dist_sq < sep_radius_sq then
             (* Steer away from nearby bicycle, stronger when closer *)
-            let diff = vec2_normalize delta in
+            let dist = sqrt dist_sq in
+            let diff = vec2_scale delta (1.0 /. dist) in
+            (* normalize without recomputing *)
             (* Already pointing away, just normalize *)
             let weight =
               (model.separation_radius -. dist) /. model.separation_radius
@@ -225,12 +227,13 @@ let separation model bicycle nearby =
   let mag = vec2_magnitude steering in
   if mag > 0.0 then
     (* Scale to max_force *)
-    let normalized = vec2_normalize steering in
-    vec2_scale normalized (model.max_force *. 1.5) (* Separation is important *)
+    let scale = model.max_force *. 1.5 /. mag in
+    vec2_scale steering scale (* Separation is important *)
   else vec2_zero
 
 (* Alignment: steer towards average heading of local bicycles *)
 let alignment model bicycle nearby =
+  let align_radius_sq = model.alignment_radius *. model.alignment_radius in
   let sum, count =
     List.fold_left
       (fun (sum, count) other ->
@@ -239,21 +242,26 @@ let alignment model bicycle nearby =
           let delta =
             vec2_wrapped_delta bicycle.position other.position model.world_size
           in
-          let dist = vec2_magnitude delta in
-          if dist < model.alignment_radius then
+          let dist_sq = vec2_magnitude_sq delta in
+          if dist_sq < align_radius_sq then
             (vec2_add sum other.velocity, count + 1)
           else (sum, count) )
       (vec2_zero, 0) nearby
   in
   if count > 0 then
     let avg = vec2_scale sum (1.0 /. float_of_int count) in
-    let desired = vec2_scale (vec2_normalize avg) model.desired_speed in
+    let avg_mag = vec2_magnitude avg in
+    let desired =
+      if avg_mag > 0.0001 then vec2_scale avg (model.desired_speed /. avg_mag)
+      else vec2_zero
+    in
     let steer = vec2_sub desired bicycle.velocity in
     vec2_limit steer model.max_force
   else vec2_zero
 
 (* Cohesion: steer towards average position of local bicycles *)
 let cohesion model bicycle nearby =
+  let coh_radius_sq = model.cohesion_radius *. model.cohesion_radius in
   let sum, count =
     List.fold_left
       (fun (sum, count) other ->
@@ -262,8 +270,8 @@ let cohesion model bicycle nearby =
           let delta =
             vec2_wrapped_delta bicycle.position other.position model.world_size
           in
-          let dist = vec2_magnitude delta in
-          if dist < model.cohesion_radius then
+          let dist_sq = vec2_magnitude_sq delta in
+          if dist_sq < coh_radius_sq then
             (vec2_add sum other.position, count + 1)
           else (sum, count) )
       (vec2_zero, 0) nearby
@@ -271,7 +279,12 @@ let cohesion model bicycle nearby =
   if count > 0 then
     let avg = vec2_scale sum (1.0 /. float_of_int count) in
     let delta = vec2_wrapped_delta bicycle.position avg model.world_size in
-    let desired = vec2_scale (vec2_normalize delta) model.desired_speed in
+    let delta_mag = vec2_magnitude delta in
+    let desired =
+      if delta_mag > 0.0001 then
+        vec2_scale delta (model.desired_speed /. delta_mag)
+      else vec2_zero
+    in
     let steer = vec2_sub desired bicycle.velocity in
     vec2_limit steer model.max_force
   else vec2_zero
@@ -296,47 +309,77 @@ let update_bicycle model bicycle nearby clock =
     vec2_add bicycle.velocity (vec2_scale new_acceleration model.dt)
   in
   let new_velocity = vec2_limit new_velocity model.max_speed in
-
   (* Stability detection: measure if acceleration/steering has been minimal *)
   let acceleration_magnitude = vec2_magnitude new_acceleration in
-  let stability_threshold = 50.0 in  (* Threshold for "stable" state *)
-  let stability_trigger = 100 in     (* Frames of stability before turning *)
-
+  let stability_threshold = 50.0 in
+  (* Threshold for "stable" state *)
+  let stability_trigger = 100 in
+  (* Frames of stability before turning *)
   let new_stability_counter =
     if acceleration_magnitude < stability_threshold then
       bicycle.stability_counter + 1
-    else
-      0  (* Reset counter if significant steering detected *)
+    else 0 (* Reset counter if significant steering detected *)
   in
-
   (* Apply anti-stability turn when stable for too long *)
   let new_velocity_with_turn clock =
     if new_stability_counter >= stability_trigger then
       (* Turn right by 45 degrees (π/4 radians) *)
       let turn_angle = 2.0 *. Float.pi *. model.rotation in
       vec2_rotate new_velocity turn_angle
-    else
-      new_velocity
+    else new_velocity
   in
-
   (* Reset counter after applying turn *)
   let final_stability_counter =
     if new_stability_counter >= stability_trigger then 0
     else new_stability_counter
   in
-
   let new_vol = new_velocity_with_turn clock in
-
   (* Update position *)
-  let new_position =
-    vec2_add bicycle.position (vec2_scale new_vol model.dt)
-  in
+  let new_position = vec2_add bicycle.position (vec2_scale new_vol model.dt) in
   let new_position = vec2_wrap new_position model.world_size in
   { bicycle with
     position= new_position
   ; velocity= new_vol
   ; acceleration= new_acceleration
   ; stability_counter= final_stability_counter }
+
+let update_ants_with_osc id x_pos y_pos =
+  (* Create a UDP client *)
+  let client = Osc_unix.Udp.Client.create () in
+  let open Osc.OscTypes in
+  (* Build the OSC message *)
+  let msg =
+    { address= "/point"
+    ; arguments=
+        [ Int32 (Int32.of_int id)
+        ; (* i *)
+          Float32 x_pos
+        ; (* f *)
+          Float32 y_pos (* f *) ] }
+  in
+  let packet = Message msg in
+  let addr = Unix.inet_addr_of_string "127.0.0.1" in
+  let port = 57666 in
+  let inet = Unix.ADDR_INET (addr, port) in
+  (* Send it *)
+  Osc_unix.Udp.Client.send client inet packet
+
+let update_all_ants_with_osc all_points =
+  (* Create a UDP client *)
+  let client = Osc_unix.Udp.Client.create () in
+  let open Osc.OscTypes in
+  (* Build the OSC message *)
+  let msg =
+    { address= "/all_points"
+    ; arguments=
+        List.concat_map (fun point -> [ Float32 point.x; Float32 point.y ]) all_points  }
+  in
+  let packet = Message msg in
+  let addr = Unix.inet_addr_of_string "127.0.0.1" in
+  let port = 57666 in
+  let inet = Unix.ADDR_INET (addr, port) in
+  (* Send it *)
+  Osc_unix.Udp.Client.send client inet packet
 
 (* Web-based Visualization *)
 let html_file = "/tmp/traffic_viz.html"
@@ -356,27 +399,27 @@ let read_params model =
       ; max_force= json |> member "max_force" |> to_number
       ; separation_radius= json |> member "separation_radius" |> to_number
       ; alignment_radius= json |> member "alignment_radius" |> to_number
-      ; cohesion_radius= json |> member "cohesion_radius" |> to_number 
-      ; rotation= json |> member "rotation_amount"|> to_number}
+      ; cohesion_radius= json |> member "cohesion_radius" |> to_number
+      ; rotation= json |> member "rotation_amount" |> to_number }
     in
     (* Debug output *)
     (* Printf.printf "Params updated: speed=%.1f force=%.1f sep=%.1f align=%.1f coh=%.1f rot=%.1f \n%!"
       new_model.max_speed new_model.max_force new_model.separation_radius
       new_model.alignment_radius new_model.cohesion_radius new_model.rotation ; *)
     new_model
-  with e ->
-    Printf.printf "Failed to read params: %s\n%!" (Printexc.to_string e) ;
-    model
+  with
+  | e ->
+      Printf.printf "Failed to read params: %s\n%!" (Printexc.to_string e) ;
+      model
 
 let create_html_file () =
   (* Read HTML template from file and copy it to /tmp *)
   let template_file = "examples/traffic_viz.html" in
   let ic = open_in template_file in
   let html = really_input_string ic (in_channel_length ic) in
-  close_in ic;
+  close_in ic ;
   let oc = open_out html_file in
-  output_string oc html;
-  close_out oc
+  output_string oc html ; close_out oc
 
 let visualize_web model step =
   let bicycles = grid_to_list model.grid in
@@ -391,7 +434,8 @@ let visualize_web model step =
          (fun b ->
            Printf.sprintf
              {|{"id": %d, "position": {"x": %.2f, "y": %.2f}, "velocity": {"x": %.2f, "y": %.2f}, "stability_counter": %d}|}
-             b.id b.position.x b.position.y b.velocity.x b.velocity.y b.stability_counter )
+             b.id b.position.x b.position.y b.velocity.x b.velocity.y
+             b.stability_counter )
          bicycles )
   in
   let json =
@@ -421,22 +465,20 @@ let setup_web_viz () =
   (* Start Flask server in the background *)
   let port = 8765 in
   let server_cmd =
-    Printf.sprintf "python3 /tmp/traffic_server.py > /tmp/flask_server.log 2>&1 &"
+    Printf.sprintf
+      "python3 /tmp/traffic_server.py > /tmp/flask_server.log 2>&1 &"
   in
   let _ = Sys.command server_cmd in
   Unix.sleepf 1.5 ;
   (* Give server time to start *)
   (* Open in browser *)
-  let _ =
-    Sys.command
-      (Printf.sprintf "open http://localhost:%d/" port)
-  in
+  let _ = Sys.command (Printf.sprintf "open http://localhost:%d/" port) in
   ()
 
 (* Simulation step *)
 let step model clock =
   let bicycles = grid_to_list model.grid in
-  let _ = Unix.sleepf 0.1 in
+  (* let _ = Unix.sleepf 0.1 in *)
   let updated_bicycles =
     List.map
       (fun bicycle ->
@@ -506,13 +548,12 @@ let vec2sound vec2 =
   vec2.position |> of_vec |> Cisp.fst |> Cisp.linlin 0.0 400.0 (-1.0) 1.0
 
 let record_frame idx model =
-  if idx >= (rec_size - 1) then write_audio idx model.recording else () ;
+  if idx >= rec_size - 1 then write_audio idx model.recording else () ;
   let bicycles = model.grid |> grid_to_list in
   (* Build lookup array indexed by bicycle ID for O(1) access *)
-  let _ = Printf.printf "next id %d" model.next_id in
   let max_id = model.next_id in
   let bicycle_lookup = Array.make max_id None in
-  List.iter (fun b -> bicycle_lookup.(b.id) <- Some b) bicycles;
+  List.iter (fun b -> bicycle_lookup.(b.id) <- Some b) bicycles ;
   (* Record each channel *)
   for channel = 0 to number_of_chans - 1 do
     let bicycle_id = channel + 0 in
@@ -521,23 +562,16 @@ let record_frame idx model =
         match bicycle_lookup.(bicycle_id) with
         | None -> 0.0
         | Some bicycle -> vec2sound bicycle
-      else
-        0.0
+      else 0.0
     in
     model.recording.(channel).(idx) <- value
   done
-
-
-  
 
 (* Main simulation loop with visualization *)
 let rec simulate model n current_step =
   if n = 0 then model
   else (
-    (if n mod 1 = 0 then
-      visualize_web model current_step
-    else
-      ());
+    if n mod 1 = 0 then visualize_web model current_step else () ;
     if n mod 1 = 0 then (
       print_int n ;
       print_endline "ok we are here" )

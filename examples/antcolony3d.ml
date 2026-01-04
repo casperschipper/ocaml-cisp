@@ -61,21 +61,21 @@ let paths : node list list ref = ref []
 
 let mkNode id x y z = Node {id; x; y; z; sync= Pristine}
 
-
 (* |> Array.mapi (fun idx (x, y) -> mkNode idx x y) *)
 (* [|(0.25, 0.25); (0.75, 0.25); (0.75, 0.75); (0.25, 0.75)|] *)
 
 (** Function to generate an array of random points *)
-let random_nodes () = 
+let random_nodes () =
   let seed = 124 (*121*) |> Cisp.debugi "my random seed" in
   let seed = Random.int 12000 |> Cisp.debugi "myseed" in
   Spacegen.generate_random_points_3d ~seed ~count:num_nodes ~max_x:1.0
-    ~max_y:1.0 ~max_z:0.0 ~f:mkNode 
+    ~max_y:1.0 ~max_z:0.0 ~f:mkNode
 
-let grid_nodes () = Spacegen.generate_random_points_3d ~seed:124 ~count:49 ~max_x:1.0 ~max_y:1.0 ~max_z:0.0 ~f:mkNode
+let grid_nodes () =
+  Spacegen.generate_random_points_3d ~seed:124 ~count:49 ~max_x:1.0 ~max_y:1.0
+    ~max_z:0.0 ~f:mkNode
 
 let nodes = grid_nodes ()
- 
 
 let distance (Node p1) (Node p2) =
   if p1.id = p2.id then 0.0
@@ -109,6 +109,23 @@ let generate_distance_matrix points =
              let dist = distance points.(i) points.(j) in
              mkEdge points.(i) points.(j) dist ) ) )
 
+let update_distance_matrix_inplace points (Distance matrix) =
+  let n = Array.length points in
+  let matrix_size = Array.length matrix in
+  if n <> matrix_size then
+    Error (Printf.sprintf "Size mismatch: points array has %d elements but matrix has %d rows" n matrix_size)
+  else if Array.exists (fun row -> Array.length row <> n) matrix then
+    Error "Matrix is not square or has inconsistent row sizes"
+  else begin
+    for i = 0 to n - 1 do
+      for j = 0 to n - 1 do
+        let dist = distance points.(i) points.(j) in
+        matrix.(i).(j) <- mkEdge points.(i) points.(j) dist
+      done
+    done;
+    Ok ()
+  end
+
 let get_distance i j (Distance dists) =
   let line = dists.(i) in
   line.(j)
@@ -139,8 +156,7 @@ let update_matrix_2 point_index new_point points (Distance dist) =
         let edge_forward = mkEdge new_point points.(i) dist_val in
         let edge_backward = mkEdge points.(i) new_point dist_val in
         dist.(point_index).(i) <- edge_forward ;
-        dist.(i).(point_index) <- edge_backward
-      )
+        dist.(i).(point_index) <- edge_backward )
     done ;
     Distance dist (* ; pretty_print_matrix dist *) )
   else Distance dist
@@ -206,6 +222,7 @@ type oscMessage =
   | CtrlUpdate of ctrlMsg
   | WriteHistory
   | MovePoint of indexed_point
+  | MoveAllPoints of (float * float) Array.t
   | Noop
 
 let update_ctrl msg ctrl =
@@ -290,6 +307,40 @@ let handle_int_float_float datas =
       Some (IndexedPoint {idx; x; y; z})
   | _ -> None
 
+exception Parse_failure
+
+let partition_and_parse_imperative arr =
+  let parse x =
+    match x with
+    | `Float f -> Some f
+    | _ -> None
+  in
+  let n = Array.length arr / 2 in
+  let result = Array.make n (0.0, 0.0) in
+  try
+    for i = 0 to n - 1 do
+      let x =
+        match parse arr.(2 * i) with
+        | Some v -> v
+        | None -> raise Parse_failure
+      in
+      let y =
+        match parse arr.((2 * i) + 1) with
+        | Some v -> v
+        | None -> raise Parse_failure
+      in
+      result.(i) <- (x, y)
+    done ;
+    Some result
+  with
+  | Parse_failure -> None
+
+let handle_float_array dts =
+  if Array.length dts = 98 then partition_and_parse_imperative dts
+  else (
+    print_endline "array of unexpected size" ;
+    None )
+
 let handle_int_arg datas =
   let data = Array.to_list datas in
   match data with
@@ -319,10 +370,10 @@ let update_points opt_ipoint =
       else ()
   | None -> ()
 
- let reset_points arg_number =
-  ()
-
+let update_all_points pts = 
   
+
+let reset_points arg_number = ()
 
 let handle_osc_message path data =
   let update ~update opt =
@@ -360,6 +411,8 @@ let parse_osc_message path data =
       data |> handle_int_arg |> withDefault (fun n -> CtrlUpdate (NumAnts n))
   | "/point" ->
       data |> handle_int_float_float |> withDefault (fun p -> MovePoint p)
+  | "/all_points" ->
+      data |> handle_float_array |> withDefault (fun pts -> MoveAllPoints pts)
   | "/exploration_bias" ->
       data |> handle_float_arg
       |> withDefault (fun e -> CtrlUpdate (Exploration e))
@@ -383,6 +436,7 @@ let handle_osc_message_parse finish_history_callback path data =
   | WriteHistory -> finish_history_callback ()
   | CtrlUpdate ctrl -> update_and_swap ~update:update_ctrl ctrl
   | Noop -> ()
+  | MoveAllPoints pts -> update_all_points pts 
 
 let osc_thread_function write_history_callback () =
   let server =
@@ -1642,7 +1696,13 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
   let amps = nodes |> fmap (fun x -> (node_to_amp x *. 2.0) -. 1.0) in
   if interp then
     let ts =
-      dnodes |> fmap (fun x -> get_delta x |> linpow 0.0 1.4 (1.0 /. !Process.sample_rate) (4. /. !Process.sample_rate) 1.06)
+      dnodes
+      |> fmap (fun x ->
+             get_delta x
+             |> linpow 0.0 1.4
+                  (1.0 /. !Process.sample_rate)
+                  (4. /. !Process.sample_rate)
+                  1.06 )
     in
     render_waveform_minimal (zip amps ts)
   else
@@ -1686,7 +1746,6 @@ let freq_to_sinewave (samplerate : float) (freq_seq : float Seq.t) : float Seq.t
   in
   next 0.0 freq_seq
 
-
 type event = {frequency: float; duration: float; pos: float}
 
 let test_event f p = {frequency= f; duration= 0.1; pos= p}
@@ -1729,8 +1788,8 @@ let jackMain effects array () =
   let nodes = nodesStream array1 () in
   (* let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in *)
   let ssp = ssp_signal ~interp:true get_node_x nodes in
-  let silence = Cisp.st(0.0) in
-  let channels = [ applyEffects ssp; ssp ] in
+  let silence = Cisp.st 0.0 in
+  let channels = [applyEffects ssp; ssp] in
   Jack.playSeqs 0 Process.sample_rate channels
 
 let monitor_sample_count label n_interval sq =
@@ -1856,7 +1915,6 @@ let createCsound filename nodes =
   in
   render_cscore_to_file filename score
 
-
 type realmode = RealtimeRecord | RealtimeBundles
 
 type mode = Realtime of realmode | NonRealtime | FromNodes
@@ -1883,13 +1941,7 @@ let realtime rmode =
   (* let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in *)
   let _ = Thread.create (dream_thread phers nodes) () in
   let node_stream = nodesStream phers () in
-  let _ =
-    Thread.create
-      (jackMain
-         Cisp.masterClock
-         phers )
-      ()
-  in
+  let _ = Thread.create (jackMain Cisp.masterClock phers) () in
   (*
         let array1 = duplicateArrArr pheromones in *)
   let _ = Thread.create (osc_thread_function handle_end) () in

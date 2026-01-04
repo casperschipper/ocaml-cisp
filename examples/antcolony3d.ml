@@ -75,6 +75,10 @@ let grid_nodes () =
   Spacegen.generate_random_points_3d ~seed:124 ~count:49 ~max_x:1.0 ~max_y:1.0
     ~max_z:0.0 ~f:mkNode
 
+let from_traffic_points pts = 
+  Array.init 
+
+
 let nodes = grid_nodes ()
 
 let distance (Node p1) (Node p2) =
@@ -160,6 +164,7 @@ let update_matrix_2 point_index new_point points (Distance dist) =
     done ;
     Distance dist (* ; pretty_print_matrix dist *) )
   else Distance dist
+
 
 (*
   0    1   2
@@ -370,8 +375,19 @@ let update_points opt_ipoint =
       else ()
   | None -> ()
 
+exception Incorrect_Points
+
 let update_all_points pts = 
-  
+  let n = Array.length pts in
+  let fst (x,_) = x in
+  let snd (_,y) = y in
+  if n != 49 then
+    raise Incorrect_Points
+  else 
+  for i = 0 to n do
+    nodes.(i) <- mkNode i (fst pts.(i) /. 3.0) (snd pts.(i) /. 3.0) 0.0 (* divide by three because it is 300 instead of 100 *)
+  done;
+  ignore (update_distance_matrix_inplace nodes distance_array)
 
 let reset_points arg_number = ()
 

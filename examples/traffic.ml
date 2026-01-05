@@ -368,12 +368,14 @@ let update_all_ants_with_osc all_bicycles =
   (* Create a UDP client *)
   let client = Osc_unix.Udp.Client.create () in
   let open Osc.OscTypes in
-  (* Build the OSC message *)
-  let msg =
-    { address= "/all_points"
-    ; arguments=
-        List.concat_map (fun bicycle -> [ Float32 bicycle.position.x; Float32 bicycle.position.y ]) all_bicycles  }
+  let data_args =
+    List.concat_map
+      (fun bicycle -> [Float32 bicycle.position.x; Float32 bicycle.position.y])
+      all_bicycles
   in
+  let _ = Printf.printf "Encoded %d bicycles in OSC message" (List.length data_args) in
+  (* Build the OSC message *)
+  let msg = {address= "/all_points"; arguments= data_args} in
   let packet = Message msg in
   let addr = Unix.inet_addr_of_string "127.0.0.1" in
   let port = 57666 in
@@ -544,9 +546,6 @@ let write_audio size arrarr =
   let slice = Array.map (fun arr -> Array.sub arr 0 size) arrarr in
   Sndfile.write_multichannel_array slice 44100 "boid2.wav" Sndfile.WAV_24
 
-
-
-
 let vec2sound vec2 =
   vec2.position |> of_vec |> Cisp.fst |> Cisp.linlin 0.0 400.0 (-1.0) 1.0
 
@@ -572,6 +571,7 @@ let record_frame idx model =
 
 (* Main simulation loop with visualization *)
 let rec simulate model n current_step =
+  Unix.sleepf 0.1 ;
   if n = 0 then model
   else (
     if n mod 1 = 0 then visualize_web model current_step else () ;
@@ -599,9 +599,9 @@ let rec simulate model n current_step =
           Printf.printf "ok writing" ;
           write_audio (current_step - 1) model_with_params.recording ;
           model_with_params
-      | Some 's' -> 
-          Printf.printf "send points to ants";
-          update_all_ants_with_osc (model_with_params.grid |> grid_to_list);
+      | Some 's' ->
+          Printf.printf "send points to ants" ;
+          update_all_ants_with_osc (model_with_params.grid |> grid_to_list) ;
           model_with_params
       | _ -> model_with_params
     in

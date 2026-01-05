@@ -331,6 +331,7 @@ let partition_and_parse_imperative arr =
     | _ -> None
   in
   let n = Array.length arr / 2 in
+  let _ = Printf.printf "received OSC message vec2 array of size %d" n in
   let result = Array.make n (0.0, 0.0) in
   try
     for i = 0 to n - 1 do
@@ -351,6 +352,7 @@ let partition_and_parse_imperative arr =
   | Parse_failure -> None
 
 let handle_float_array dts =
+  Printf.printf "hi seems ok %d" (Array.length dts);
   if Array.length dts = 98 then partition_and_parse_imperative dts
   else (
     print_endline "array of unexpected size" ;

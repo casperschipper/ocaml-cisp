@@ -8,16 +8,18 @@ app = Flask(__name__)
 def index():
     return send_file('/tmp/traffic_viz.html')
 
-@app.route('/data')
+@app.route('/traffic_data.json')
 def data():
     try:
         with open('/tmp/traffic_data.json', 'r') as f:
-            return f.read()
-    except FileNotFoundError:
+            data = json.load(f)
+            return jsonify(data)
+    except (FileNotFoundError, json.JSONDecodeError):
         return jsonify({'error': 'Data not found'}), 404
 
 @app.route('/get_params')
 def get_params():
+    print("the fuck is going on")
     try:
         with open('/tmp/traffic_params.json', 'r') as f:
             data = json.load(f)

@@ -331,7 +331,7 @@ let partition_and_parse_imperative arr =
     | _ -> None
   in
   let n = Array.length arr / 2 in
-  let _ = Printf.printf "received OSC message vec2 array of size %d" n in
+  (* let _ = Printf.printf "received OSC message vec2 array of size %d" n in *)
   let result = Array.make n (0.0, 0.0) in
   try
     for i = 0 to n - 1 do

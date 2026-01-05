@@ -397,7 +397,7 @@ let update_all_points pts =
     raise Incorrect_Points
   else
   Mutex.lock nodes_mutex;
-  for i = 0 to n do
+  for i = 0 to n - 1 do
     nodes.(i) <- mkNode i (fst pts.(i) /. 3.0) (snd pts.(i) /. 3.0) 0.0 (* divide by three because it is 300 instead of 100 *)
   done;
   ignore (update_distance_matrix_inplace nodes distance_array);

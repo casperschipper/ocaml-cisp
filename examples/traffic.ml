@@ -424,6 +424,16 @@ let create_html_file () =
   let oc = open_out html_file in
   output_string oc html ; close_out oc
 
+let create_python_server () =
+  (* Read Python server from file and copy it to /tmp *)
+  let server_file = "examples/traffic_server.py" in
+  let ic = open_in server_file in
+  let python_code = really_input_string ic (in_channel_length ic) in
+  close_in ic ;
+  let oc = open_out "/tmp/traffic_server.py" in
+  output_string oc python_code ;
+  close_out oc
+
 let visualize_web model step =
   let bicycles = grid_to_list model.grid in
   let avg_speed =
@@ -462,6 +472,7 @@ let visualize_web model step =
 
 let setup_web_viz () =
   create_html_file () ;
+  create_python_server () ;
   (* Kill any existing servers on port 8765 *)
   let _ = Sys.command "pkill -f 'python3.*8765' 2>/dev/null || true" in
   Unix.sleepf 0.5 ;

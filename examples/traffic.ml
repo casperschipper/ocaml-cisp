@@ -191,7 +191,7 @@ let init () =
   ; alignment_radius= 30.0
   ; cohesion_radius= 5.0
   ; rotation= 0.0
-  ; dt= 0.1
+  ; dt= 0.01
   ; world_size
   ; next_id= initial_bicycles.current_id
   ; recording= Array.init number_of_chans (fun _ -> Array.make rec_size 0.0) }
@@ -366,14 +366,15 @@ let update_ants_with_osc id x_pos y_pos =
 
 let update_all_ants_with_osc all_bicycles =
   (* Create a UDP client *)
+  let scale_factor = 1.0 /. 400.0 in
   let client = Osc_unix.Udp.Client.create () in
   let open Osc.OscTypes in
   let data_args =
     List.concat_map
-      (fun bicycle -> [Float32 bicycle.position.x; Float32 bicycle.position.y])
+      (fun bicycle -> [Float32 (bicycle.position.x *. scale_factor); Float32 (bicycle.position.y *. scale_factor)])
       all_bicycles
   in
-  let _ = Printf.printf "Encoded %d bicycles in OSC message" (List.length data_args) in
+  (* let _ = Printf.printf "Encoded %d bicycles in OSC message" (List.length data_args) in *)
   (* Build the OSC message *)
   let msg = {address= "/all_points"; arguments= data_args} in
   let packet = Message msg in
@@ -470,7 +471,9 @@ let setup_web_viz () =
     Printf.sprintf
       "python3 /tmp/traffic_server.py > /tmp/flask_server.log 2>&1 &"
   in
-  let _ = Sys.command server_cmd in
+  let _ = Printf.printf "Starting flask server with:  %s" server_cmd in
+  let r = Sys.command server_cmd in
+  let _ = Printf.printf "server cmd completed with: %d" r; flush stdout in
   Unix.sleepf 1.5 ;
   (* Give server time to start *)
   (* Open in browser *)
@@ -575,10 +578,11 @@ let rec simulate model n current_step =
   if n = 0 then model
   else (
     if n mod 1 = 0 then visualize_web model current_step else () ;
-    if n mod 1 = 0 then (
+    if n mod 1 = 0 then update_all_ants_with_osc (model.grid |> grid_to_list) ;
+    (* if n mod 1 = 0 then (
       print_int n ;
-      print_endline "ok we are here" )
-    else () ;
+       print_endline "ok we are here" ) 
+    ) *)
     (* Read parameters from web interface every 100 frames *)
     let model_with_params =
       read_params model

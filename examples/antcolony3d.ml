@@ -352,7 +352,7 @@ let partition_and_parse_imperative arr =
   | Parse_failure -> None
 
 let handle_float_array dts =
-  Printf.printf "hi seems ok %d" (Array.length dts);
+  (* Printf.printf "hi seems ok %d" (Array.length dts); *)
   if Array.length dts = 98 then partition_and_parse_imperative dts
   else (
     print_endline "array of unexpected size" ;
@@ -398,7 +398,7 @@ let update_all_points pts =
   else
   Mutex.lock nodes_mutex;
   for i = 0 to n - 1 do
-    nodes.(i) <- mkNode i (fst pts.(i) /. 3.0) (snd pts.(i) /. 3.0) 0.0 (* divide by three because it is 300 instead of 100 *)
+    nodes.(i) <- mkNode i (fst pts.(i)) (snd pts.(i)) 0.0 (* divide by three because it is 300 instead of 100 *)
   done;
   ignore (update_distance_matrix_inplace nodes distance_array);
   Mutex.unlock nodes_mutex

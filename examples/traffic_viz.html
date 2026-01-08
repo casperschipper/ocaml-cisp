@@ -6,15 +6,15 @@
     body {
       margin: 0;
       padding: 20px;
-      background: #1a1a1a;
-      color: white;
+      background: #ffffff;
+      color: rgb(0, 0, 0);
       font-family: monospace;
     }
     canvas {
       border: 2px solid #444;
       display: block;
       margin: 20px auto;
-      background: #282828;
+      background: #000;
     }
     #info {
       text-align: center;
@@ -24,7 +24,7 @@
     #controls {
       max-width: 800px;
       margin: 20px auto;
-      background: #333;
+      background: #ffffff;
       padding: 20px;
       border-radius: 8px;
     }
@@ -82,6 +82,11 @@
       <input type="range" id="rotation_amount" min="0.0" max="1.0" step="0.01" value="0.0">
       <span id="rotation_amount_val">0.0</span>
     </div>
+    <div class="control-row">
+      <label>dt step size</label>
+      <input type="range" id="dt_step" min="0.0" max="0.1" step="0.0001" value="0.01">
+      <span id="dt_step_val">0.01</span>
+    </div>
   </div>
   <script>
     const canvas = document.getElementById('canvas');
@@ -89,7 +94,7 @@
     const info = document.getElementById('info');
 
     // Parameter controls
-    const params = ['max_speed', 'max_force', 'separation_radius', 'alignment_radius', 'cohesion_radius', 'rotation_amount'];
+    const params = ['max_speed', 'max_force', 'separation_radius', 'alignment_radius', 'cohesion_radius', 'rotation_amount','dt_step'];
     let isUserInteracting = false;
 
     params.forEach(param => {
@@ -139,7 +144,8 @@
         separation_radius: parseFloat(document.getElementById('separation_radius').value),
         alignment_radius: parseFloat(document.getElementById('alignment_radius').value),
         cohesion_radius: parseFloat(document.getElementById('cohesion_radius').value),
-        rotation_amount: parseFloat(document.getElementById('rotation_amount').value)
+        rotation_amount: parseFloat(document.getElementById('rotation_amount').value),
+        dt_step: parseFloat(document.getElementById('dt_step').value),
       };
 
       // Send to Flask server which writes to /tmp/traffic_params.json
@@ -162,11 +168,11 @@
         .then(r => r.json())
         .then(data => {
           // Clear canvas
-          ctx.fillStyle = '#282828';
+          ctx.fillStyle = '#fff';
           ctx.fillRect(0, 0, 800, 800);
 
           // Draw grid
-          ctx.strokeStyle = '#333';
+          ctx.strokeStyle = '#eee';
           ctx.lineWidth = 1;
           const gridSize = 50;
           for (let i = 0; i <= 800; i += gridSize) {
@@ -249,7 +255,7 @@
           });
 
           // Update info
-          info.textContent = `Step: ${data.step} | Bicycles: ${data.count} | Avg speed: ${data.avg_speed.toFixed(2)} | Press SPACE to add bicycles, 'q' to quit`;
+          info.textContent = `Step: ${data.step} | Bicycles: ${data.count} | Avg speed: ${data.avg_speed.toFixed(2)} |`;
         })
         .catch(e => {
           info.textContent = 'Waiting for simulation data...';

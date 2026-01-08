@@ -1747,7 +1747,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
              get_delta x
              |> linpow 0.0 1.4
                   (1.0 /. !Process.sample_rate)
-                  (64. /. !Process.sample_rate)
+                  (1024. /. !Process.sample_rate)
                   1.06 )
     in
     render_waveform_minimal (zip amps ts)
@@ -1823,19 +1823,21 @@ let supercollider_sched nodes_stream =
   in
   Cisp.hold (Cisp.st scheduler_samps) sched_sq
 
-let jackMain effects array () =
+let jackMain  array () =
+  let effect = Cisp.masterClock in  
   let array1 = array in
-  let array2 = duplicateArrArr array in
+  (* let array2 = duplicateArrArr array in *)
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
-      [slower_compute array1; slower_compute array2; effects]
+      [slower_compute array1; effect]
   in
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
+  let nodes2 = nodesStream array1 () in
   (* let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in *)
   let ssp = ssp_signal ~interp:true get_node_x nodes in
-  let silence = Cisp.st 0.0 in
-  let channels = [applyEffects ssp; ssp] in
+  let ssp2 = ssp_signal ~interp:true get_node_x nodes in
+  let channels = [applyEffects ssp; ssp2] in
   Jack.playSeqs 0 Process.sample_rate channels
 
 let monitor_sample_count label n_interval sq =
@@ -1987,7 +1989,7 @@ let realtime rmode =
   (* let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in *)
   let _ = Thread.create (dream_thread phers nodes) () in
   let node_stream = nodesStream phers () in
-  let _ = Thread.create (jackMain Cisp.masterClock phers) () in
+  let _ = Thread.create (jackMain phers) () in
   (*
         let array1 = duplicateArrArr pheromones in *)
   let _ = Thread.create (osc_thread_function handle_end) () in

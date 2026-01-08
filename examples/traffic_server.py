@@ -19,7 +19,6 @@ def data():
 
 @app.route('/get_params')
 def get_params():
-    print("the fuck is going on")
     try:
         with open('/tmp/traffic_params.json', 'r') as f:
             data = json.load(f)
@@ -32,7 +31,8 @@ def get_params():
             'separation_radius': 25.0,
             'alignment_radius': 50.0,
             'cohesion_radius': 50.0,
-            'rotation_amount': 0.0
+            'rotation_amount': 0.0,
+            'dt_step': 0.01,
         })
 
 @app.route('/update_params', methods=['POST'])

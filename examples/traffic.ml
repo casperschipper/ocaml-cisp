@@ -371,7 +371,9 @@ let update_all_ants_with_osc all_bicycles =
   let open Osc.OscTypes in
   let data_args =
     List.concat_map
-      (fun bicycle -> [Float32 (bicycle.position.x *. scale_factor); Float32 (bicycle.position.y *. scale_factor)])
+      (fun bicycle ->
+        [ Float32 (bicycle.position.x *. scale_factor)
+        ; Float32 (bicycle.position.y *. scale_factor) ] )
       all_bicycles
   in
   (* let _ = Printf.printf "Encoded %d bicycles in OSC message" (List.length data_args) in *)
@@ -403,7 +405,8 @@ let read_params model =
       ; separation_radius= json |> member "separation_radius" |> to_number
       ; alignment_radius= json |> member "alignment_radius" |> to_number
       ; cohesion_radius= json |> member "cohesion_radius" |> to_number
-      ; rotation= json |> member "rotation_amount" |> to_number }
+      ; rotation= json |> member "rotation_amount" |> to_number
+      ; dt= json |> member "dt_step" |> to_number }
     in
     (* Debug output *)
     (* Printf.printf "Params updated: speed=%.1f force=%.1f sep=%.1f align=%.1f coh=%.1f rot=%.1f \n%!"
@@ -484,7 +487,10 @@ let setup_web_viz () =
   in
   let _ = Printf.printf "Starting flask server with:  %s" server_cmd in
   let r = Sys.command server_cmd in
-  let _ = Printf.printf "server cmd completed with: %d" r; flush stdout in
+  let _ =
+    Printf.printf "server cmd completed with: %d" r ;
+    flush stdout
+  in
   Unix.sleepf 1.5 ;
   (* Give server time to start *)
   (* Open in browser *)

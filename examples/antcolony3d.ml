@@ -78,15 +78,13 @@ let grid_nodes () =
   Spacegen.generate_random_points_3d ~seed:124 ~count:49 ~max_x:1.0 ~max_y:1.0
     ~max_z:0.0 ~f:mkNode ~min_z:0.5
 
-let from_traffic_points pts = 
-  Array.init 
-
+let from_traffic_points pts = Array.init
 
 let nodes = grid_nodes ()
 
 let distance (Node p1) (Node p2) =
   if p1.id = p2.id then 0.0
-  else 
+  else
     sqrt
       ( ((p1.x -. p2.x) ** 2.0)
       +. ((p1.y -. p2.y) ** 2.0)
@@ -120,18 +118,20 @@ let update_distance_matrix_inplace points (Distance matrix) =
   let n = Array.length points in
   let matrix_size = Array.length matrix in
   if n <> matrix_size then
-    Error (Printf.sprintf "Size mismatch: points array has %d elements but matrix has %d rows" n matrix_size)
+    Error
+      (Printf.sprintf
+         "Size mismatch: points array has %d elements but matrix has %d rows" n
+         matrix_size )
   else if Array.exists (fun row -> Array.length row <> n) matrix then
     Error "Matrix is not square or has inconsistent row sizes"
-  else begin
+  else (
     for i = 0 to n - 1 do
       for j = 0 to n - 1 do
         let dist = distance points.(i) points.(j) in
         matrix.(i).(j) <- mkEdge points.(i) points.(j) dist
       done
-    done;
-    Ok ()
-  end
+    done ;
+    Ok () )
 
 let get_distance i j (Distance dists) =
   let line = dists.(i) in
@@ -172,9 +172,7 @@ let update_matrix_2 point_index new_point points (Distance dist) =
 let update_matrix_2_safe point_index new_point points dist =
   Mutex.lock nodes_mutex ;
   let result = update_matrix_2 point_index new_point points dist in
-  Mutex.unlock nodes_mutex ;
-  result
-
+  Mutex.unlock nodes_mutex ; result
 
 (*
   0    1   2
@@ -383,7 +381,8 @@ let update_points opt_ipoint =
   match opt_ipoint with
   | Some (IndexedPoint {idx; x; y; z}) ->
       if idx < num_nodes && idx >= 0 then
-        ignore (update_matrix_2_safe idx (mkNode idx x y z) nodes distance_array)
+        ignore
+          (update_matrix_2_safe idx (mkNode idx x y z) nodes distance_array)
       else ()
   | None -> ()
 
@@ -391,16 +390,17 @@ exception Incorrect_Points
 
 let update_all_points pts =
   let n = Array.length pts in
-  let fst (x,_) = x in
-  let snd (_,y) = y in
-  if n != 49 then
-    raise Incorrect_Points
-  else
-  Mutex.lock nodes_mutex;
+  let fst (x, _) = x in
+  let snd (_, y) = y in
+  if n != 49 then raise Incorrect_Points else Mutex.lock nodes_mutex ;
   for i = 0 to n - 1 do
-    nodes.(i) <- mkNode i (fst pts.(i)) (snd pts.(i)) 0.0 (* divide by three because it is 300 instead of 100 *)
-  done;
-  ignore (update_distance_matrix_inplace nodes distance_array);
+    nodes.(i) <-
+      mkNode i
+        (fst pts.(i))
+        (snd pts.(i))
+        0.0 (* divide by three because it is 300 instead of 100 *)
+  done ;
+  ignore (update_distance_matrix_inplace nodes distance_array) ;
   Mutex.unlock nodes_mutex
 
 let reset_points arg_number = ()
@@ -466,7 +466,7 @@ let handle_osc_message_parse finish_history_callback path data =
   | WriteHistory -> finish_history_callback ()
   | CtrlUpdate ctrl -> update_and_swap ~update:update_ctrl ctrl
   | Noop -> ()
-  | MoveAllPoints pts -> update_all_points pts 
+  | MoveAllPoints pts -> update_all_points pts
 
 let osc_thread_function write_history_callback () =
   let server =
@@ -1269,16 +1269,18 @@ let move_node_by_promille (Node {id; x; y; z; _}) =
 let brownian_thread_function () =
   while true do
     (* Sleep for a bit to control update rate *)
-    Unix.sleepf 0.01; (* 100 Hz update rate *)
+    Unix.sleepf 0.01 ;
+    (* 100 Hz update rate *)
 
     (* Only update if brownian is active *)
-    if !current_buffer.brownian > 0.0 then (
-      (* Update all nodes with brownian motion *)
-      for idx = 0 to num_nodes - 1 do
+    if !current_buffer.brownian > 0.0 then
+      for
+        (* Update all nodes with brownian motion *)
+        idx = 0 to num_nodes - 1
+      do
         let new_node = move_node_by_promille nodes.(idx) in
         ignore (update_matrix_2_safe idx new_node nodes distance_array)
       done
-    )
   done
 
 let push_nodes () =
@@ -1651,8 +1653,8 @@ let dream_thread phers nodes () =
                          let old = nodes.(node_id) in
                          (* let (Node {z= old_z; _}) = old in *)
                          ignore
-                           (update_matrix_2_safe node_id (mkNode node_id x y z) nodes
-                              distance_array ) ;
+                           (update_matrix_2_safe node_id (mkNode node_id x y z)
+                              nodes distance_array ) ;
                          process_messages ()
                      | Ok (Brownian amount) ->
                          ignore (update_and_swap ~update:set_brownian amount) ;
@@ -1752,7 +1754,8 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
     in
     render_waveform_minimal (zip amps ts)
   else
-    let samps = (* not used if interpreted *)
+    let samps =
+      (* not used if interpreted *)
       dnodes
       |> fmap (fun x -> get_delta x |> linlin 0.0 1.4 1.0 20.0 |> int_of_float)
     in
@@ -1823,13 +1826,12 @@ let supercollider_sched nodes_stream =
   in
   Cisp.hold (Cisp.st scheduler_samps) sched_sq
 
-let jackMain  array () =
-  let effect = Cisp.masterClock in  
+let jackMain array () =
+  let effect = Cisp.masterClock in
   let array1 = array in
   (* let array2 = duplicateArrArr array in *)
   let applyEffects master =
-    List.fold_left Cisp.syncEffect master
-      [slower_compute array1; effect]
+    List.fold_left Cisp.syncEffect master [slower_compute array1; effect]
   in
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
@@ -2005,6 +2007,8 @@ let realtime rmode =
               "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in" ) ;
           ignore (Sys.command "jack_lsp -c -A | grep ocaml")
         in*)
+  let port = 8080 in
+  let _ = Sys.command (Printf.sprintf "open http://localhost:%d/" port) in
   while true do
     Unix.sleep 1
   done

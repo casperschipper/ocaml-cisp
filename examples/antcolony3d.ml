@@ -1844,7 +1844,7 @@ let jackMain array () =
   (* let ssp = ssp_signal ~interp:true get_node_x nodes in
   let ssp2 = ssp_signal ~interp:true get_node_x nodes in
   let channels = [applyEffects ssp; ssp2] in *)
-  let channels = just_the_path_from_nodes nodes 1 in
+  let channels = just_the_path_from_nodes nodes 2 in
   Jack.playSeqs 0 Process.sample_rate [applyEffects (Cisp.fst channels);Cisp.snd channels]
 
 let monitor_sample_count label n_interval sq =

@@ -968,6 +968,7 @@ module SuperAnts = struct
 end
 
 let signal pheromones () =
+  (* produces node indexes as ints *)
   let nodes_list = nodes |> Array.to_list in
   let init =
     State
@@ -1070,6 +1071,9 @@ let justThePath pheromones repeats =
   nodesStreamNoisy pheromones ()
   |> Cisp.hold (Cisp.st repeats)
   |> Seq.map play_node_stereo |> Cisp.unzip
+
+let just_the_path_from_nodes nodes_sq repeats =
+  nodes_sq |> Cisp.hold (Cisp.st repeats) |> Seq.map play_node_stereo |> Cisp.unzip
 
 let node_scalar n =
   sqrt (get_node_x n ** 2.0) *. (get_node_y n ** 2.0) *. (get_node_z n -. 0.5)
@@ -1748,8 +1752,8 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
       |> fmap (fun x ->
              get_delta x
              |> linpow 0.0 1.4
-                  (1.0 /. !Process.sample_rate)
-                  (1024. /. !Process.sample_rate)
+                  (1.0 /. !Process.sample_rate)   (* low speed *)
+                  (128. /. !Process.sample_rate) (* top speed *)
                   1.06 )
     in
     render_waveform_minimal (zip amps ts)
@@ -1837,10 +1841,11 @@ let jackMain array () =
   let nodes = nodesStream array1 () in
   let nodes2 = nodesStream array1 () in
   (* let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in *)
-  let ssp = ssp_signal ~interp:true get_node_x nodes in
+  (* let ssp = ssp_signal ~interp:true get_node_x nodes in
   let ssp2 = ssp_signal ~interp:true get_node_x nodes in
-  let channels = [applyEffects ssp; ssp2] in
-  Jack.playSeqs 0 Process.sample_rate channels
+  let channels = [applyEffects ssp; ssp2] in *)
+  let channels = just_the_path_from_nodes nodes 1 in
+  Jack.playSeqs 0 Process.sample_rate [applyEffects (Cisp.fst channels);Cisp.snd channels]
 
 let monitor_sample_count label n_interval sq =
   let open Cisp in

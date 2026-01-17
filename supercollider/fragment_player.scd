@@ -1,8 +1,5 @@
 // SynthDef for playing audio fragments from a buffer
 // Each fragment is 1 second apart (44100 samples at 44.1kHz)
-s.boot;
-
-Server.allBootedServers;
 
 (
 SynthDef(\fragmentPlayer, {
@@ -20,7 +17,7 @@ SynthDef(\fragmentPlayer, {
 
 	// Calculate the starting position in the buffer
 	// offset is multiplied by 44100 to get the sample position
-	startPos = offset * 44100;
+	startPos = offset * 48000;
 
 	// Create fixed-duration envelope
 	// Attack + Decay + Sustain + Release = duration

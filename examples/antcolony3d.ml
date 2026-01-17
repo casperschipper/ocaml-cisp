@@ -1812,7 +1812,7 @@ type jv_event = {out: int; dur: float; amp: float; offset: int}
 
 let test_event f p = {frequency= f; duration= 0.1; pos= p}
 
-let test_jv_event offset = {out= 0; dur= 0.05; amp= 0.1; offset}
+let test_jv_event offset = {out= offset |> Toolkit.modBy 8 ; dur= 0.05; amp= 0.1; offset}
 
 let from_jv_event_to_bundle time {out; dur; amp; offset} =
   Supercollider.simple_jv ~out ~time ~dur ~amp ~offset
@@ -1827,7 +1827,7 @@ let send_osc sender time evt =
 let supercollider_sched nodes_stream =
   let scheduler_samps = 4048 in
   let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
-  let event_of_node node = (0.03, test_jv_event (get_node_id node |> (fun x -> (x + 3) mod 49))) in
+  let event_of_node node = (0.03, test_jv_event (get_node_id node |> (fun x -> (x + 9) mod 49))) in
   let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
   let sched =
     Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 ~seq:event_sq

@@ -3,7 +3,9 @@ open Ants
 
 let () = Process.sample_rate := 48000.0
 
-let () = print_float !Process.sample_rate ; flush stdout
+let () =
+  print_float !Process.sample_rate ;
+  flush stdout
 
 let record_duration = 5.0
 
@@ -1075,7 +1077,9 @@ let justThePath pheromones repeats =
   |> Seq.map play_node_stereo |> Cisp.unzip
 
 let just_the_path_from_nodes nodes_sq repeats =
-  nodes_sq |> Cisp.hold (Cisp.st repeats) |> Seq.map play_node_stereo |> Cisp.unzip
+  nodes_sq
+  |> Cisp.hold (Cisp.st repeats)
+  |> Seq.map play_node_stereo |> Cisp.unzip
 
 let node_scalar n =
   sqrt (get_node_x n ** 2.0) *. (get_node_y n ** 2.0) *. (get_node_z n -. 0.5)
@@ -1754,7 +1758,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
       |> fmap (fun x ->
              get_delta x
              |> linpow 0.0 1.4
-                  (1.0 /. !Process.sample_rate)   (* low speed *)
+                  (1.0 /. !Process.sample_rate) (* low speed *)
                   (128. /. !Process.sample_rate) (* top speed *)
                   1.06 )
     in
@@ -1833,21 +1837,43 @@ let supercollider_sched nodes_stream =
   Cisp.hold (Cisp.st scheduler_samps) sched_sq
 
 let jackMain array () =
-  let effect = Cisp.masterClock in
+  let clock = Cisp.masterClock in
   let array1 = array in
-  (* let array2 = duplicateArrArr array in *)
+  let array2 = duplicateArrArr array in
+  let array3 = duplicateArrArr array in
+  let array4 = duplicateArrArr array in
   let applyEffects master =
-    List.fold_left Cisp.syncEffect master [slower_compute array1; effect]
+    List.fold_left Cisp.syncEffect master
+      [ slower_compute array1
+      ; slower_compute array2
+      ; slower_compute array3
+      ; slower_compute array4
+      ; clock ]
   in
   let ptl (x, y) = [x; y] in
   let nodes = nodesStream array1 () in
-  let nodes2 = nodesStream array1 () in
+  let nodes2 = nodesStream array2 () in
+  let nodes3 = nodesStream array3 () in
+  let nodes4 = nodesStream array4 () in
+  let channels = just_the_path_from_nodes nodes 10 in
+  let channels2 = just_the_path_from_nodes nodes2 10 in
+  let channels3 = just_the_path_from_nodes nodes3 10 in
+  let channels4 = just_the_path_from_nodes nodes4 10 in
   (* let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in *)
   (* let ssp = ssp_signal ~interp:true get_node_x nodes in
   let ssp2 = ssp_signal ~interp:true get_node_x nodes in
-  let channels = [applyEffects ssp; ssp2] in *)
-  let channels = just_the_path_from_nodes nodes 2 in
-  Jack.playSeqs 0 Process.sample_rate [applyEffects (Cisp.fst channels);Cisp.snd channels]
+  let all_channels = [applyEffects ssp; ssp2] in *)
+  let all_channels =
+    [ applyEffects (Cisp.fst channels)
+    ; Cisp.snd channels
+    ; Cisp.fst channels2
+    ; Cisp.snd channels2
+    ; Cisp.fst channels3
+    ; Cisp.snd channels3
+    ; Cisp.fst channels4
+    ; Cisp.snd channels4 ]
+  in
+  Jack.playSeqs 0 Process.sample_rate all_channels
 
 let monitor_sample_count label n_interval sq =
   let open Cisp in

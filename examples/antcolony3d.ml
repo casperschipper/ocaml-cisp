@@ -1759,7 +1759,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
              get_delta x
              |> linpow 0.0 1.4
                   (1.0 /. !Process.sample_rate) (* low speed *)
-                  (128. /. !Process.sample_rate) (* top speed *)
+                  (1024. /. !Process.sample_rate) (* top speed *)
                   1.06 )
     in
     render_waveform_minimal (zip amps ts)
@@ -1855,15 +1855,17 @@ let jackMain array () =
   let nodes2 = nodesStream array2 () in
   let nodes3 = nodesStream array3 () in
   let nodes4 = nodesStream array4 () in
-  let channels = just_the_path_from_nodes nodes 10 in
+  (* let channels = just_the_path_from_nodes nodes 10 in
   let channels2 = just_the_path_from_nodes nodes2 10 in
   let channels3 = just_the_path_from_nodes nodes3 10 in
-  let channels4 = just_the_path_from_nodes nodes4 10 in
+  let channels4 = just_the_path_from_nodes nodes4 10 in *)
   (* let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in *)
-  (* let ssp = ssp_signal ~interp:true get_node_x nodes in
-  let ssp2 = ssp_signal ~interp:true get_node_x nodes in
-  let all_channels = [applyEffects ssp; ssp2] in *)
-  let all_channels =
+  let ssp = ssp_signal ~interp:true get_node_x nodes in
+  let ssp2 = ssp_signal ~interp:true get_node_x nodes2 in
+  let ssp3 = ssp_signal ~interp:true get_node_x nodes3 in
+  let ssp4 = ssp_signal ~interp:true get_node_x nodes4 in
+  let all_channels = [applyEffects ssp; ssp2; ssp3;ssp4] in
+  (* let all_channels =
     [ applyEffects (Cisp.fst channels)
     ; Cisp.snd channels
     ; Cisp.fst channels2
@@ -1871,8 +1873,8 @@ let jackMain array () =
     ; Cisp.fst channels3
     ; Cisp.snd channels3
     ; Cisp.fst channels4
-    ; Cisp.snd channels4 ]
-  in
+    ; Cisp.snd channels4 ] 
+  in*)
   Jack.playSeqs 0 Process.sample_rate all_channels
 
 let monitor_sample_count label n_interval sq =

@@ -1812,7 +1812,7 @@ type jv_event = {out: int; dur: float; amp: float; offset: int}
 
 let test_event f p = {frequency= f; duration= 0.1; pos= p}
 
-let test_jv_event offset = {out= 0; dur= 0.05; amp= 0.25; offset}
+let test_jv_event offset = {out= 0; dur= 0.05; amp= 0.1; offset}
 
 let from_jv_event_to_bundle time {out; dur; amp; offset} =
   Supercollider.simple_jv ~out ~time ~dur ~amp ~offset

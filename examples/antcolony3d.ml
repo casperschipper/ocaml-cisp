@@ -29,8 +29,9 @@ let max_tour = 49
 
 let brownian = 0.0
 
-
 let speed_of_comp = 8
+
+let supercollider_entrydelay = 0.01
 
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()
@@ -201,7 +202,8 @@ type controllers =
   ; max_tour: int
   ; brownian: float
   ; speed_of_comp: int
-  }
+  ; supercollider_entrydelay: float }
+
 let controllers_to_string ctr =
   Printf.sprintf
     "Controllers {\n\
@@ -213,9 +215,10 @@ let controllers_to_string ctr =
     \  max_tour: %d\n\
     \  brownian: %.2f\n\
     \  speed_of_comp: %d\n\
+    \  supercollider_entrydelay: %.3f\n\
      }"
     ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants ctr.max_tour
-    ctr.brownian ctr.speed_of_comp
+    ctr.brownian ctr.speed_of_comp ctr.supercollider_entrydelay
 
 type indexed_point = IndexedPoint of {idx: int; x: float; y: float; z: float}
 
@@ -229,8 +232,8 @@ type ctrlMsg =
   | MaxTour of int
   | Brownian of float
   | SpeedOfComp of int
-  | ViableThreshold of float
   | ResetPoints of int
+  | Supercollider_Entrydelay of float
 
 type oscMessage =
   | CtrlUpdate of ctrlMsg
@@ -251,6 +254,7 @@ let update_ctrl msg ctrl =
   | Brownian brown -> {ctrl with brownian= brown}
   | SpeedOfComp sp -> {ctrl with speed_of_comp= sp}
   | ResetPoints x -> ctrl
+  | Supercollider_Entrydelay dt -> {ctrl with supercollider_entrydelay= dt}
 
 let initial =
   { alpha
@@ -262,7 +266,7 @@ let initial =
   ; max_tour
   ; brownian
   ; speed_of_comp
-  }
+  ; supercollider_entrydelay }
 
 let set_alpha a ctrl = {ctrl with alpha= a}
 
@@ -275,6 +279,8 @@ let set_evaporation e ctrl = {ctrl with evaporation= e}
 let set_ants a ctrl = {ctrl with num_ants= a}
 
 let set_brownian a ctrl = {ctrl with brownian= a}
+
+let set_supercollider_entrydelay a ctrl = {ctrl with supercollider_entrydelay= a}
 
 let set_max_tour a ctrl =
   let mx = if a > 1 then a else 1 in
@@ -405,25 +411,6 @@ let update_all_points pts =
 
 let reset_points arg_number = ()
 
-let handle_osc_message path data =
-  let update ~update opt =
-    opt |> Option.iter (fun x -> update_and_swap ~update x)
-  in
-  match path with
-  | "/alpha" -> data |> handle_float_arg |> update ~update:set_alpha
-  | "/beta" -> data |> handle_float_arg |> update ~update:set_beta
-  | "/evaporation" -> data |> handle_float_arg |> update ~update:set_evaporation
-  | "/deposit" -> data |> handle_float_arg |> update ~update:set_deposit
-  | "/num_ants" ->
-      data |> handle_int_arg
-      |> Option.iter (fun f -> update_and_swap ~update:set_ants f)
-  | "/point" -> data |> handle_int_float_float |> update_points
-  | "/resetpoints" -> data |> handle_int_arg |> reset_points
-  | "/exploration_bias" ->
-      data |> handle_float_arg |> update ~update:set_exploration_bias
-  | "/max_tour" -> data |> handle_int_arg |> update ~update:set_max_tour
-  | "/brownian" -> data |> handle_float_arg |> update ~update:set_brownian
-  | _ -> Printf.printf "Unhandled OSC path or arguments\n"
 
 let parse_osc_message path data =
   let withDefault f arg = arg |> Option.map f |> Option.value ~default:Noop in
@@ -454,9 +441,8 @@ let parse_osc_message path data =
   | "/speed_of_comp" ->
       data |> handle_int_arg
       |> withDefault (fun s -> CtrlUpdate (SpeedOfComp s))
-  | "/viable_threshold" ->
-      data |> handle_float_arg
-      |> withDefault (fun v -> CtrlUpdate (ViableThreshold v))
+  | "/supercollider_entrydelay" ->
+      data |> handle_float_arg |> withDefault (fun sced -> CtrlUpdate (Supercollider_Entrydelay sced))
   | _ -> Noop
 
 let handle_osc_message_parse finish_history_callback path data =
@@ -1119,7 +1105,7 @@ let node_scalar n =
   *)
 
 (* this turns the segments into points that we can render in a csound score *)
-type point = {x: float; y: float; z: float; t: float} 
+type point = {x: float; y: float; z: float; t: float}
 
 (* let distance a b =
   let dx = a.x -. b.x in
@@ -1809,7 +1795,8 @@ type jv_event = {out: int; dur: float; amp: float; offset: int}
 
 let test_event f p = {frequency= f; duration= 0.1; pos= p}
 
-let test_jv_event offset = {out= offset |> Toolkit.modBy 8 ; dur= 0.05; amp= 0.1; offset}
+let test_jv_event offset =
+  {out= offset |> Toolkit.modBy 16; dur= 0.05; amp= 0.1; offset}
 
 let from_jv_event_to_bundle time {out; dur; amp; offset} =
   Supercollider.simple_jv ~out ~time ~dur ~amp ~offset
@@ -1824,7 +1811,10 @@ let send_osc sender time evt =
 let supercollider_sched nodes_stream =
   let scheduler_samps = 4048 in
   let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
-  let event_of_node node = (0.03, test_jv_event (get_node_id node |> (fun x -> (x + 9) mod 49))) in
+  let event_of_node node =
+    ( !current_buffer.supercollider_entrydelay
+    , test_jv_event (get_node_id node |> fun x -> (x + 9) mod 49) )
+  in
   let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
   let sched =
     Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 ~seq:event_sq
@@ -1841,7 +1831,11 @@ let jackMain array () =
   let clock = Cisp.masterClock in
   let array1 = array in
   let sq = nodesStream array1 () in
-  let final = Cisp.effectsSync [ slower_compute array1; clock; supercollider_sched sq ]( Cisp.st 0.0) in
+  let final =
+    Cisp.effectsSync
+      [slower_compute array1; clock; supercollider_sched sq]
+      (Cisp.st 0.0)
+  in
   Jack.playSeqs 0 Process.sample_rate [final]
 
 let monitor_sample_count label n_interval sq =
@@ -1854,8 +1848,9 @@ let monitor_sample_count label n_interval sq =
       else x )
     count sq
 
+(*
 let non_realtime_jackMain title motherArray =
-  (* let voice phers =
+   let voice phers =
     let clone = duplicateArrArr phers in
     let withEffect =        
       nodesStream clone () |> Cisp.effectSync (slower_compute clone)
@@ -1867,7 +1862,7 @@ let non_realtime_jackMain title motherArray =
     |> Seq.map (fun i -> voice motherArray)
     |> List.of_seq
   in *)
-  (* let array1 = duplicateArrArr motherArray in
+(* let array1 = duplicateArrArr motherArray in
    let array2 = duplicateArrArr motherArray in
     let applyEffects master =
     List.fold_left Cisp.syncEffect master
@@ -1880,9 +1875,9 @@ let non_realtime_jackMain title motherArray =
   let channels =
     [applyEffects (only_noisy_paths array1); only_noisy_paths array2]
   in *)
-  let one_voice ps =
+(* let one_voice ps =
     let clone = duplicateArrArr ps in
-    Cisp.effectSync (only_compute ps) (only_noisy_paths ps)
+    Cisp.effectSync (only_compute ps) (justThePath ps)
   in
   let channels =
     Cisp.rangei 0 31 |> Seq.map (fun i -> one_voice motherArray) |> List.of_seq
@@ -1898,7 +1893,7 @@ let non_realtime_jackMain title motherArray =
         in
         counted :: tail
   in
-  record_list_of_channels title record_duration counted
+  record_list_of_channels title record_duration counted *)
 
 let floatToMidi flt = flt *. 128.0 |> floor |> int_of_float
 
@@ -2022,6 +2017,7 @@ let () =
       (* let pheromones = mkPheromonesArr in
       non_realtime2 120 pheromones
         "/Users/casperschipper/Music/ants/slower_convolve.wav" *)
-      non_realtime_jackMain "sing_ants_" mkPheromonesArr
+      ()
+      (* non_realtime_jackMain "sing_ants_" mkPheromonesArr *)
   | FromNodes ->
       Ants.read_node_seq_from_file "nodes.json" |> createCsound3 "antscore3.sco"

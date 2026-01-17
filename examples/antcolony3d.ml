@@ -1759,7 +1759,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
              get_delta x
              |> linpow 0.0 1.4
                   (1.0 /. !Process.sample_rate) (* low speed *)
-                  (8. /. !Process.sample_rate) (* top speed *)
+                  (512. /. !Process.sample_rate) (* top speed *)
                   1.06 )
     in
     render_waveform_minimal (zip amps ts)
@@ -1807,29 +1807,33 @@ let freq_to_sinewave (samplerate : float) (freq_seq : float Seq.t) : float Seq.t
 
 type event = {frequency: float; duration: float; pos: float}
 
+type jv_event = {out: int; dur: float; amp: float; offset: int}
+(* { [("out", I out); ("duration", F dur); ("amp", F amp); ("offset", I offset)] |> to_args *)
+
 let test_event f p = {frequency= f; duration= 0.1; pos= p}
+
+let test_jv_event offset = {out= 0; dur= 1.0; amp= 0.25; offset}
+
+let from_jv_event_to_bundle time {out; dur; amp; offset} =
+  Supercollider.simple_jv ~out ~time ~dur ~amp ~offset
 
 let from_event_to_bundle start_time {frequency; duration; pos} =
   Supercollider.simple_tone ~time:start_time ~freq:frequency ~dur:duration ~pos
 
 let send_osc sender time evt =
-  let bytes = from_event_to_bundle time evt in
+  let bytes = from_jv_event_to_bundle time evt in
   Supercollider.send_message sender bytes
 
 let supercollider_sched nodes_stream =
   let scheduler_samps = 4048 in
   let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
-  let event_of_node node =
-    let f = node |> get_frequency in
-    let p = node |> get_node_z in
-    (0.0006, test_event f p)
-  in
+  let event_of_node node = (0.01, test_jv_event (get_node_id node)) in
   let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
   let sched =
     Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 ~seq:event_sq
       ~latency:0.3 ~max_events_per_buffer:10000
   in
-  let sender = Supercollider.init_sender ~ip:"127.0.0.1" ~port:57110 in
+  let sender = Supercollider.init_sender ~ip:"127.0.0.1" ~port:58000 in
   let create_event time event = send_osc sender time event in
   let sched_sq =
     Cisp.simpleRecursive sched (Clockscheduler.update create_event) ignore
@@ -1839,43 +1843,9 @@ let supercollider_sched nodes_stream =
 let jackMain array () =
   let clock = Cisp.masterClock in
   let array1 = array in
-  let array2 = duplicateArrArr array in
-  let array3 = duplicateArrArr array in
-  let array4 = duplicateArrArr array in
-  let applyEffects master =
-    List.fold_left Cisp.syncEffect master
-      [ slower_compute array1
-      ; slower_compute array2
-      ; slower_compute array3
-      ; slower_compute array4
-      ; clock ]
-  in
-  let ptl (x, y) = [x; y] in
-  let nodes = nodesStream array1 () in
-  let nodes2 = nodesStream array2 () in
-  let nodes3 = nodesStream array3 () in
-  let nodes4 = nodesStream array4 () in
-  (* let channels = just_the_path_from_nodes nodes 10 in
-  let channels2 = just_the_path_from_nodes nodes2 10 in
-  let channels3 = just_the_path_from_nodes nodes3 10 in
-  let channels4 = just_the_path_from_nodes nodes4 10 in *)
-  (* let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in *)
-  let ssp = ssp_signal ~interp:true get_node_x nodes in
-  let ssp2 = ssp_signal ~interp:true get_node_x nodes2 in
-  let ssp3 = ssp_signal ~interp:true get_node_x nodes3 in
-  let ssp4 = ssp_signal ~interp:true get_node_x nodes4 in
-  let all_channels = [applyEffects ssp; ssp2; ssp3;ssp4] in
-  (* let all_channels =
-    [ applyEffects (Cisp.fst channels)
-    ; Cisp.snd channels
-    ; Cisp.fst channels2
-    ; Cisp.snd channels2
-    ; Cisp.fst channels3
-    ; Cisp.snd channels3
-    ; Cisp.fst channels4
-    ; Cisp.snd channels4 ] 
-  in*)
-  Jack.playSeqs 0 Process.sample_rate all_channels
+  let sq = nodesStream array1 () in
+  let final = Cisp.effectsSync [ slower_compute array1; clock; supercollider_sched sq ]( Cisp.st 0.0) in
+  Jack.playSeqs 0 Process.sample_rate [final]
 
 let monitor_sample_count label n_interval sq =
   let open Cisp in

@@ -109,9 +109,9 @@ type newSynth =
       ; target: int
       ; params: (string * osc_arg) list }
 
-let simple_synth_with_pars parameters =
+let synth_with_pars synth_def_name parameters =
   NewSynth
-    { synth_name= "simple"
+    { synth_name= synth_def_name
     ; synth_id= -1
     ; add_action= 1
     ; target= 0
@@ -146,7 +146,7 @@ SynthDef(\simple, {
 )
 *)
   let args =
-    simple_synth_with_pars [("freq", F freq); ("dur", F dur); ("pos", F pos)]
+    synth_with_pars "simple" [("freq", F freq); ("dur", F dur); ("pos", F pos)]
     |> to_args
   in
   let message = encode_osc_message ~address:"/s_new" ~args in
@@ -204,7 +204,7 @@ SynthDef(\fragmentPlayer, {
 
 let simple_jv ~out ~time ~dur ~amp ~offset =
   let args =
-    simple_synth_with_pars
+    synth_with_pars "fragmentPlayer"
       [("out", I out); ("duration", F dur); ("amp", F amp); ("offset", I offset)] |> to_args
   in
   let message = encode_osc_message ~address:"/s_new" ~args:args in

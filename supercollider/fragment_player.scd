@@ -2,6 +2,8 @@
 // Each fragment is 1 second apart (44100 samples at 44.1kHz)
 s.boot;
 
+Server.allBootedServers;
+
 (
 SynthDef(\fragmentPlayer, {
 	arg out = 0,

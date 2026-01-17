@@ -56,7 +56,8 @@ type newSynth =
       ; target: int
       ; params: (string * osc_arg) list }
 
-val simple_synth_with_pars : (string * osc_arg) list -> newSynth
+val synth_with_pars :
+  string -> (string * osc_arg) list -> newSynth
 
 val params_to_bytes : (string * osc_arg) list -> osc_arg list
 
@@ -73,3 +74,6 @@ val send_multiple_synths :
 
 val simple_jv :
   out:int -> time:float -> dur:float -> amp:float -> offset:int -> bytes
+  
+
+

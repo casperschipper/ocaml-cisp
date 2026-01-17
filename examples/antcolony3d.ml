@@ -29,7 +29,6 @@ let max_tour = 49
 
 let brownian = 0.0
 
-let viable_threshold = 0.0
 
 let speed_of_comp = 8
 
@@ -202,8 +201,7 @@ type controllers =
   ; max_tour: int
   ; brownian: float
   ; speed_of_comp: int
-  ; viable_threshold: float }
-
+  }
 let controllers_to_string ctr =
   Printf.sprintf
     "Controllers {\n\
@@ -215,10 +213,9 @@ let controllers_to_string ctr =
     \  max_tour: %d\n\
     \  brownian: %.2f\n\
     \  speed_of_comp: %d\n\
-    \  viable_threshold: %f\n\
      }"
     ctr.alpha ctr.beta ctr.deposit ctr.evaporation ctr.num_ants ctr.max_tour
-    ctr.brownian ctr.speed_of_comp ctr.viable_threshold
+    ctr.brownian ctr.speed_of_comp
 
 type indexed_point = IndexedPoint of {idx: int; x: float; y: float; z: float}
 
@@ -253,7 +250,6 @@ let update_ctrl msg ctrl =
   | MaxTour mt -> {ctrl with max_tour= mt}
   | Brownian brown -> {ctrl with brownian= brown}
   | SpeedOfComp sp -> {ctrl with speed_of_comp= sp}
-  | ViableThreshold v -> {ctrl with viable_threshold= v}
   | ResetPoints x -> ctrl
 
 let initial =
@@ -266,7 +262,7 @@ let initial =
   ; max_tour
   ; brownian
   ; speed_of_comp
-  ; viable_threshold }
+  }
 
 let set_alpha a ctrl = {ctrl with alpha= a}
 
@@ -1084,7 +1080,7 @@ let just_the_path_from_nodes nodes_sq repeats =
 let node_scalar n =
   sqrt (get_node_x n ** 2.0) *. (get_node_y n ** 2.0) *. (get_node_z n -. 0.5)
 
-let only_noisy_paths pheromones =
+(* let only_noisy_paths pheromones =
   let f viable_threshold acc ph =
     if ph > viable_threshold then acc else if ph > 0.1 then 1 + acc else acc
   in
@@ -1120,9 +1116,10 @@ let only_noisy_paths pheromones =
   in
   let init = (random_index (), 0) in
   Cisp.recursive c init u eval |> Cisp.hold (st repeats) |> Seq.unzip *)
+  *)
 
 (* this turns the segments into points that we can render in a csound score *)
-type point = {x: float; y: float; z: float; t: float}
+type point = {x: float; y: float; z: float; t: float} 
 
 (* let distance a b =
   let dx = a.x -. b.x in

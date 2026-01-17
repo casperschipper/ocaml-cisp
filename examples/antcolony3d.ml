@@ -31,7 +31,7 @@ let brownian = 0.0
 
 let viable_threshold = 0.0
 
-let speed_of_comp = 1
+let speed_of_comp = 8
 
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()

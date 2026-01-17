@@ -1759,7 +1759,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
              get_delta x
              |> linpow 0.0 1.4
                   (1.0 /. !Process.sample_rate) (* low speed *)
-                  (128. /. !Process.sample_rate) (* top speed *)
+                  (8. /. !Process.sample_rate) (* top speed *)
                   1.06 )
     in
     render_waveform_minimal (zip amps ts)

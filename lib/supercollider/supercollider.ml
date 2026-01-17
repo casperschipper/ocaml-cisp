@@ -130,10 +130,7 @@ let to_args (NewSynth {synth_name; synth_id; add_action; target; params}) =
     I target (* Target group *) ]
   @ params_to_bytes params
 
-
-
-
-let simple_tone ~time:start_t ~freq:freq ~dur:dur ~pos:pos =
+let simple_tone ~time:start_t ~freq ~dur ~pos =
   (*
 Simple synth to be used in supercollider:
 
@@ -149,10 +146,69 @@ SynthDef(\simple, {
 )
 *)
   let args =
-    simple_synth_with_pars [("freq", F freq); ("dur", F dur); ("pos", F pos)] |> to_args
+    simple_synth_with_pars [("freq", F freq); ("dur", F dur); ("pos", F pos)]
+    |> to_args
   in
   let message = encode_osc_message ~address:"/s_new" ~args in
   encode_osc_bundle ~time:start_t ~messages:[message]
+
+(*
+(
+SynthDef(\fragmentPlayer, {
+	arg out = 0,
+	    buf = 0,
+	    duration = 1.0,
+	    amp = 0.5,
+	    offset = 0;
+
+	var sig, env;
+	var attackTime, decayTime, releaseTime, startPos;
+
+	// Calculate envelope times from duration
+	// Attack: 5% of duration
+	// Decay: 20% of duration
+	// Release: 25% of duration
+	// Sustain time: remaining 50%
+	attackTime = duration * 0.05;
+	decayTime = duration * 0.2;
+	releaseTime = duration * 0.25;
+
+	// Calculate the starting position in the buffer
+	// offset is multiplied by 44100 to get the sample position
+	startPos = offset * 44100;
+
+	// Create fixed-duration envelope
+	// Attack + Decay + Sustain + Release = duration
+	env = EnvGen.kr(
+		Env.linen(attackTime, duration - attackTime - releaseTime, releaseTime, amp),
+		doneAction: 2
+	);
+
+	// Read from buffer starting at the calculated position
+	sig = PlayBuf.ar(
+		numChannels: 1,
+		bufnum: buf,
+		rate: BufRateScale.kr(buf),
+		startPos: startPos,
+		loop: 0
+	);
+
+	// Apply envelope
+	sig = sig * env;
+
+	// Output
+	Out.ar(out, sig ! 2); // Duplicate mono to stereo
+}).add;
+)
+*)
+
+let simple_jv ~out ~time ~dur ~amp ~offset =
+  let args =
+    simple_synth_with_pars
+      [("out", I out); ("duration", F dur); ("amp", F amp); ("offset", I offset)] |> to_args
+  in
+  let message = encode_osc_message ~address:"/s_new" ~args:args in
+  encode_osc_bundle ~time ~messages:[message]
 
 let send_multiple_synths absolute_time sender synths =
   let messages =

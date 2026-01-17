@@ -1,7 +1,9 @@
 module S = Lo.Server
 open Ants
 
-let () = Process.sample_rate := 44100.0
+let () = Process.sample_rate := 48000.0
+
+let () = print_float !Process.sample_rate ; flush stdout
 
 let record_duration = 5.0
 

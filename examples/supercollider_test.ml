@@ -5,6 +5,15 @@ let test_event () =
   let l = Toolkit.rvi 1 60 |> float_of_int in
   {frequency= f; duration= l /. f}
 
+let test_event_sampler time () =
+  let offset = Toolkit.rvi 0 60 in
+  let buf = 1 in
+  let dur = 0.1 in
+  let amp = 0.25 in
+  let out = 0  in
+  Supercollider.simple_jv ~out:0 ~time ~dur ~amp ~offset
+    
+
 let from_event_to_bundle start_time {frequency; duration} =
   Supercollider.simple_tone ~time:start_time ~freq:frequency ~dur:duration ~pos:0.0
 

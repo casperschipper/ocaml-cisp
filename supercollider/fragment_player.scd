@@ -15,14 +15,8 @@ SynthDef(\fragmentPlayer, {
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	// Calculate envelope times from duration
-	// Attack: 5% of duration
-	// Decay: 20% of duration
-	// Release: 25% of duration
-	// Sustain time: remaining 50%
-	attackTime = duration * 0.05;
-	decayTime = duration * 0.2;
-	releaseTime = duration * 0.25;
+	attackTime = duration * 0.0;
+	releaseTime = duration * 0.5;
 
 	// Calculate the starting position in the buffer
 	// offset is multiplied by 44100 to get the sample position
@@ -31,7 +25,7 @@ SynthDef(\fragmentPlayer, {
 	// Create fixed-duration envelope
 	// Attack + Decay + Sustain + Release = duration
 	env = EnvGen.kr(
-		Env.linen(attackTime, duration - attackTime - releaseTime, releaseTime, amp),
+		Env.linen(attackTime, max(0.0,duration - attackTime - releaseTime), releaseTime, 1.0,curve:-3.0),
 		doneAction: 2
 	);
 
@@ -48,7 +42,7 @@ SynthDef(\fragmentPlayer, {
 	sig = sig * env;
 
 	// Output
-	Out.ar(out, sig ! 2); // Duplicate mono to stereo
+	OffsetOut.ar(out, sig ! 2); // Duplicate mono to stereo
 }).add;
 )
 

@@ -13,7 +13,7 @@ SynthDef(\fragmentPlayer, {
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	duration = duration * 1;
+	duration = duration * 10;
 
 	attackTime = duration * 0.0;
 	releaseTime = duration * 0.0;
@@ -33,7 +33,7 @@ SynthDef(\fragmentPlayer, {
 	sig = PlayBuf.ar(
 		numChannels: 1,
 		bufnum: buf,
-		rate: BufRateScale.kr(buf) * ((transpose-0).midiratio),
+		rate: BufRateScale.kr(buf) * ((transpose-20).midiratio),
 		startPos: startPos,
 		loop: 0
 	);

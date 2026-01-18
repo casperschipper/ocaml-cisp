@@ -9,7 +9,7 @@ let () =
 
 let record_duration = 5.0
 
-let alpha = 0.9 (*  prefer paths with lots of pheromone *)
+let alpha = 1.4 (*  prefer paths with lots of pheromone *)
 
 let beta = 1.0 (* prefer paths that are shorter *)
 
@@ -29,9 +29,9 @@ let max_tour = 49
 
 let brownian = 0.0
 
-let speed_of_comp = 8
+let speed_of_comp = 10
 
-let supercollider_entrydelay = 0.01
+let supercollider_entrydelay = 0.093
 
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()

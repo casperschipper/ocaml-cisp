@@ -1842,12 +1842,20 @@ let jackMain array () =
   let array2 = duplicateArrArr array in
   let array3 = duplicateArrArr array in
   let array4 = duplicateArrArr array in
+  let array5 = duplicateArrArr array in
+  let array6 = duplicateArrArr array in
+  let array7 = duplicateArrArr array in
+  let array8 = duplicateArrArr array in
   let applyEffects master =
     List.fold_left Cisp.syncEffect master
       [ slower_compute array1
       ; slower_compute array2
       ; slower_compute array3
       ; slower_compute array4
+      ; slower_compute array5
+      ; slower_compute array6
+      ; slower_compute array7
+      ; slower_compute array8
       ; clock ]
   in
   let ptl (x, y) = [x; y] in
@@ -1855,10 +1863,18 @@ let jackMain array () =
   let nodes2 = nodesStream array2 () in
   let nodes3 = nodesStream array3 () in
   let nodes4 = nodesStream array4 () in
+  let nodes5 = nodesStream array5 () in
+  let nodes6 = nodesStream array6 () in
+  let nodes7 = nodesStream array7 () in
+  let nodes8 = nodesStream array8 () in
   let channels = just_the_path_from_nodes nodes 1 in
-  let channels2 = just_the_path_from_nodes nodes2 10 in
-  let channels3 = just_the_path_from_nodes nodes3 100 in
-  let channels4 = just_the_path_from_nodes nodes4 28 in
+  let channels2 = just_the_path_from_nodes nodes2 2 in
+  let channels3 = just_the_path_from_nodes nodes3 3 in
+  let channels4 = just_the_path_from_nodes nodes4 5 in
+  let channels5 = just_the_path_from_nodes nodes5 8 in
+  let channels6 = just_the_path_from_nodes nodes6 13 in
+  let channels7 = just_the_path_from_nodes nodes7 21 in
+  let channels8 = just_the_path_from_nodes nodes8 34 in
   (* let freq_sig = frequency_from_nodes nodes |> Cisp.timed (Cisp.st 0.005) in *)
   (* let ssp = ssp_signal ~interp:true get_node_x nodes in
   let ssp2 = ssp_signal ~interp:true get_node_x nodes in
@@ -1871,7 +1887,15 @@ let jackMain array () =
     ; Cisp.fst channels3
     ; Cisp.snd channels3
     ; Cisp.fst channels4
-    ; Cisp.snd channels4 ]
+    ; Cisp.snd channels4
+    ; Cisp.fst channels5
+    ; Cisp.snd channels5
+    ; Cisp.fst channels6
+    ; Cisp.snd channels6
+    ; Cisp.fst channels7
+    ; Cisp.snd channels7
+    ; Cisp.fst channels8
+    ; Cisp.snd channels8 ]
   in
   Jack.playSeqs 0 Process.sample_rate all_channels
 

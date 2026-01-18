@@ -1790,13 +1790,13 @@ let freq_to_sinewave (samplerate : float) (freq_seq : float Seq.t) : float Seq.t
 
 type event = {frequency: float; duration: float; pos: float}
 
-type jv_event = {out: int; dur: float; amp: float; offset: int}
+type jv_event = {out: int; dur: float; amp: float; offset: int;transpose:int}
 (* { [("out", I out); ("duration", F dur); ("amp", F amp); ("offset", I offset)] |> to_args *)
 
 let test_event f p = {frequency= f; duration= 0.1; pos= p}
 
-let test_jv_event offset =
-  {out= offset |> Toolkit.modBy 24; dur= 0.05; amp= 0.1; offset}
+let test_jv_event offset transpose =
+  {out= offset |> Toolkit.modBy 24; dur= 0.05; amp= 0.1; offset=offset; transpose}
 
 let from_jv_event_to_bundle time {out; dur; amp; offset} =
   Supercollider.simple_jv ~out ~time ~dur ~amp ~offset
@@ -1808,14 +1808,14 @@ let send_osc sender time evt =
   let bytes = from_jv_event_to_bundle time evt in
   Supercollider.send_message sender bytes
 
-let supercollider_sched nodes_stream =
+let supercollider_sched nodes_stream nodes_stream2 =
   let scheduler_samps = 4048 in
   let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
-  let event_of_node node =
+  let event_of_node node node2 =
     ( !current_buffer.supercollider_entrydelay
-    , test_jv_event (get_node_id node |> fun x -> (x + 9) mod 49) )
+    , test_jv_event (get_node_id node |> fun x -> (x + 0) mod 49) (get_node_id node2))
   in
-  let event_sq = nodes_stream |> Infseq.of_seq |> Infseq.map event_of_node in
+  let event_sq = Infseq.map2 event_of_node (nodes_stream |> Infseq.of_seq) (nodes_stream2 |> Infseq.of_seq)  in
   let sched =
     Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 ~seq:event_sq
       ~latency:0.3 ~max_events_per_buffer:10000
@@ -1830,10 +1830,12 @@ let supercollider_sched nodes_stream =
 let jackMain array () =
   let clock = Cisp.masterClock in
   let array1 = array in
+  let array2 = duplicateArrArr array in
+  let sq2 = nodesStream array2 () in
   let sq = nodesStream array1 () in
   let final =
     Cisp.effectsSync
-      [slower_compute array1; clock; supercollider_sched sq]
+      [slower_compute array1; clock; supercollider_sched sq sq2]
       (Cisp.st 0.0)
   in
   Jack.playSeqs 0 Process.sample_rate [final]

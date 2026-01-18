@@ -1795,8 +1795,8 @@ type jv_event = {out: int; dur: float; amp: float; offset: int;transpose:int}
 
 let test_event f p = {frequency= f; duration= 0.1; pos= p}
 
-let test_jv_event offset transpose =
-  {out= offset |> Toolkit.modBy 24; dur= 0.05; amp= 0.1; offset=offset; transpose}
+let jv_event offset transpose duration =
+  {out= offset |> Toolkit.modBy 24; dur= duration; amp= 0.1; offset=offset; transpose}
 
 let from_jv_event_to_bundle time {out; dur; amp; offset; transpose} =
   Supercollider.simple_jv ~out ~time ~dur ~amp ~offset ~transpose
@@ -1808,20 +1808,23 @@ let send_osc sender time evt =
   let bytes = from_jv_event_to_bundle time evt in
   Supercollider.send_message sender bytes
  
-let supercollider_sched nodes_stream nodes_stream2 =
+let supercollider_sched nodes_stream nodes_stream2 nodes_stream3 =
   let scheduler_samps = 4048 in
   let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
-  let event_of_node dnode node2 =
+  let event_of_node dnode node2 node3 =
     let tmapping dist = 
       Cisp.linlin 0.0 1.414 (-48.0) 48.0 dist |> Cisp.mtor
+    in
+    let durmapping node_id = 
+      Cisp.linlin 0.0 49.0 (-12.0) 12.0 node_id |> Cisp.mtor
     in
     let node = 
       dnode |> get_dist_node 
     in
     ( Float.max 0.0003 (!current_buffer.supercollider_entrydelay *. (tmapping (get_delta dnode)))
-    , test_jv_event (get_node_id node |> fun x -> (x + 0) mod 49) (get_node_id node2))
+    , jv_event (get_node_id node |> fun x -> (x + 0) mod 49) (get_node_id node2) (get_node_id node3 |> float_of_int |> durmapping ))
   in
-  let event_sq = Infseq.map2 event_of_node (nodes_stream |> distanced_nodes |> Infseq.of_seq) (nodes_stream2 |> Infseq.of_seq)  in
+  let event_sq = Infseq.map3 event_of_node (nodes_stream |> distanced_nodes |> Infseq.of_seq) (Infseq.of_seq nodes_stream2) (Infseq.of_seq nodes_stream3)  in
   let sched =
     Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 ~seq:event_sq
       ~latency:0.3 ~max_events_per_buffer:10000
@@ -1837,11 +1840,13 @@ let jackMain array () =
   let clock = Cisp.masterClock in
   let array1 = array in
   let array2 = duplicateArrArr array in
+  let array3 = duplicateArrArr array in
   let sq2 = nodesStream array2 () in
   let sq = nodesStream array1 () in
+  let sq3 = nodesStream array3 in
   let final =
     Cisp.effectsSync
-      [slower_compute array1; slower_compute array2; clock; supercollider_sched sq sq2]
+      [slower_compute array1; slower_compute array2;slower_compute array3; clock; supercollider_sched sq sq2 sq3]
       (Cisp.st 0.0)
   in
   Jack.playSeqs 0 Process.sample_rate [final]

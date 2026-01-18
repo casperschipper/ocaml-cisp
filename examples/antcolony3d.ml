@@ -17,21 +17,21 @@ let num_nodes = 49
 
 let n_side = num_nodes |> float_of_int |> sqrt |> int_of_float
 
-let evaporation = 0.4
+let evaporation = 0.39
 
-let exploration_bias = 0.0
+let exploration_bias = 0.0007
 
 let deposit = 1.0
 
 let num_ants = 10
 
-let max_tour = 49
+let max_tour = 4
 
-let brownian = 0.0
+let brownian = 0.00002
 
-let speed_of_comp = 10
+let speed_of_comp = 20
 
-let supercollider_entrydelay = 0.093
+let supercollider_entrydelay = 0.009
 
 (* to update parameters over OSC and/or websocket while the audio thread is running *)
 let buffer_mutex = Mutex.create ()

@@ -13,7 +13,7 @@ SynthDef(\fragmentPlayer, {
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	duration = duration * 6.0;
+	duration = duration * 1.0;
 
 	attackTime = duration * 0.0;
 	releaseTime = duration * 0.0;

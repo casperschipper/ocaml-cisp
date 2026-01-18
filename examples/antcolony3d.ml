@@ -1816,7 +1816,7 @@ let supercollider_sched nodes_stream nodes_stream2 nodes_stream3 =
       Cisp.linlin 0.0 1.414 (-48.0) 48.0 dist |> Cisp.mtor
     in
     let durmapping node_id = 
-      Cisp.linlin 0.0 49.0 (-12.0) 12.0 node_id |> Cisp.mtor
+      Cisp.linlin 0.0 49.0 (-48.0) 12.0 node_id |> Cisp.mtor
     in
     let node = 
       dnode |> get_dist_node 
@@ -1843,7 +1843,7 @@ let jackMain array () =
   let array3 = duplicateArrArr array in
   let sq2 = nodesStream array2 () in
   let sq = nodesStream array1 () in
-  let sq3 = nodesStream array3 in
+  let sq3 = nodesStream array3 () in
   let final =
     Cisp.effectsSync
       [slower_compute array1; slower_compute array2;slower_compute array3; clock; supercollider_sched sq sq2 sq3]

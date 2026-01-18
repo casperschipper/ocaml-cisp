@@ -13,14 +13,25 @@ SynthDef(\fragmentPlayer, {
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	duration = duration * 1.0;
+	duration = duration * 0.1;
 
 	attackTime = duration * 0.0;
 	releaseTime = duration * 0.0;
 
 	// Calculate the starting position in the buffer
 	// offset is multiplied by 44100 to get the sample position
-	startPos = offset.wrap(0,4) * 44100;
+	startPos = 50 * 44100;
+
+	// Favorates 18, 4, 17, 20,
+	// 27 Metal but also breath
+	// 18 Very metally organ
+	// 38 more breath
+	// 40 tuned tamtam
+	// 45 Cowbell
+	// 50 yell
+	// 54 bass
+	// 64 ??
+
 
 	// Create fixed-duration envelope
 	// Attack + Decay + Sustain + Release = duration

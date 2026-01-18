@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 255.0, 97.0, 655.0, 747.0 ],
+		"rect" : [ 813.0, 174.0, 655.0, 747.0 ],
 		"gridsize" : [ 15.0, 15.0 ],
 		"boxes" : [ 			{
 				"box" : 				{
@@ -33,7 +33,6 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 502.0, 187.0, 116.0, 22.0 ],
-					"presentation_linecount" : 2,
 					"text" : "/viable_threshold $1"
 				}
 
@@ -95,7 +94,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "", "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 389.0, 239.0, 50.0, 22.0 ]
+					"patching_rect" : [ 389.0, 239.0, 84.0, 22.0 ]
 				}
 
 			}
@@ -204,6 +203,10 @@
 , 						{
 							"number" : 9,
 							"data" : [ 5, "obj-21", "number", "float", 1.0, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.389999985694885, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-15", "number", "float", 1.0, 5, "obj-18", "number", "float", 0.0, 5, "obj-35", "number", "int", 4, 5, "obj-10", "number", "float", 0.009999999776483 ]
+						}
+, 						{
+							"number" : 16,
+							"data" : [ 5, "obj-21", "number", "float", 1.0, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.230000004172325, 5, "obj-31", "number", "float", 10.0, 5, "obj-36", "number", "int", 1, 5, "obj-15", "number", "float", 1.0, 5, "obj-18", "number", "float", 0.000159999995958, 5, "obj-35", "number", "int", 14, 5, "obj-10", "number", "float", 0.001000000047497, 5, "obj-17", "number", "int", 20, 5, "obj-23", "number", "float", 4.456999778747559 ]
 						}
 , 						{
 							"number" : 17,
@@ -595,7 +598,7 @@
 
 			}
  ],
-		"originid" : "pat-4",
+		"originid" : "pat-6",
 		"dependency_cache" : [  ],
 		"autosave" : 0
 	}

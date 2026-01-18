@@ -73,7 +73,7 @@ val send_multiple_synths :
   -> unit
 
 val simple_jv :
-  out:int -> time:float -> dur:float -> amp:float -> offset:int -> bytes
+  out:int -> time:float -> dur:float -> amp:float -> offset:int -> transpose:int -> bytes
   
 
 

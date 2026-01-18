@@ -1798,8 +1798,8 @@ let test_event f p = {frequency= f; duration= 0.1; pos= p}
 let test_jv_event offset transpose =
   {out= offset |> Toolkit.modBy 24; dur= 0.05; amp= 0.1; offset=offset; transpose}
 
-let from_jv_event_to_bundle time {out; dur; amp; offset} =
-  Supercollider.simple_jv ~out ~time ~dur ~amp ~offset
+let from_jv_event_to_bundle time {out; dur; amp; offset; transpose} =
+  Supercollider.simple_jv ~out ~time ~dur ~amp ~offset ~transpose
 
 let from_event_to_bundle start_time {frequency; duration; pos} =
   Supercollider.simple_tone ~time:start_time ~freq:frequency ~dur:duration ~pos
@@ -1835,7 +1835,7 @@ let jackMain array () =
   let sq = nodesStream array1 () in
   let final =
     Cisp.effectsSync
-      [slower_compute array1; clock; supercollider_sched sq sq2]
+      [slower_compute array1; slower_compute array2; clock; supercollider_sched sq sq2]
       (Cisp.st 0.0)
   in
   Jack.playSeqs 0 Process.sample_rate [final]

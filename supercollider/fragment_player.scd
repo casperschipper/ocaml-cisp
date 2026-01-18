@@ -7,20 +7,20 @@ SynthDef(\fragmentPlayer, {
 	    buf = 0,
 	    duration = 1.0,
 	    amp = 0.5,
-	    offset = 0;
+	    offset = 0,
 	    transpose = 0;
 
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	duration = duration * 1.0;
+	duration = duration * 8.0;
 
 	attackTime = duration * 0.0;
 	releaseTime = duration * 1.0;
 
 	// Calculate the starting position in the buffer
 	// offset is multiplied by 44100 to get the sample position
-	startPos = offset * 44100;
+	startPos = 31 * 44100;
 
 	// Create fixed-duration envelope
 	// Attack + Decay + Sustain + Release = duration

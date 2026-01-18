@@ -202,10 +202,10 @@ SynthDef(\fragmentPlayer, {
 )
 *)
 
-let simple_jv ~out ~time ~dur ~amp ~offset =
+let simple_jv ~out ~time ~dur ~amp ~offset ~transpose =
   let args =
     synth_with_pars "fragmentPlayer"
-      [("out", I out); ("duration", F dur); ("amp", F amp); ("offset", I offset)] |> to_args
+      [("out", I out); ("duration", F dur); ("amp", F amp); ("offset", I offset); ("transpose",I transpose)] |> to_args
   in
   let message = encode_osc_message ~address:"/s_new" ~args:args in
   encode_osc_bundle ~time ~messages:[message]

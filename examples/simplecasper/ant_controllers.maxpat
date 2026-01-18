@@ -10,9 +10,21 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 66.0, 153.0, 1044.0, 848.0 ],
+		"rect" : [ 793.0, 108.0, 677.0, 833.0 ],
 		"gridsize" : [ 15.0, 15.0 ],
 		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-32",
+					"linecount" : 2,
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 378.0, 544.0, 150.0, 33.0 ],
+					"text" : "445 DENSE WATCH OUT VOLUME"
+				}
+
+			}
+, 			{
 				"box" : 				{
 					"id" : "obj-20",
 					"linecount" : 2,
@@ -306,6 +318,10 @@
 , 						{
 							"number" : 341,
 							"data" : [ 5, "obj-21", "number", "float", 1.039999961853027, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.370000004768372, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-15", "number", "float", 0.0, 5, "obj-18", "number", "float", 0.000380000012228, 5, "obj-35", "number", "int", 12, 5, "obj-10", "number", "float", 0.001500000013039, 5, "obj-17", "number", "int", 1, 5, "obj-28", "number", "float", 0.000300000014249 ]
+						}
+, 						{
+							"number" : 445,
+							"data" : [ 5, "obj-21", "number", "float", 1.5, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.400000005960464, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-15", "number", "float", 0.0, 5, "obj-18", "number", "float", 0.000099999997474, 5, "obj-35", "number", "int", 2, 5, "obj-10", "number", "float", 0.00054999999702, 5, "obj-17", "number", "int", 15, 5, "obj-28", "number", "float", 0.000300000014249 ]
 						}
  ]
 				}

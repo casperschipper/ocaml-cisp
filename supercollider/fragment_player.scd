@@ -13,10 +13,10 @@ SynthDef(\fragmentPlayer, {
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	duration = duration * 1.0;
+	duration = duration * 3;
 
 	attackTime = duration * 0.0;
-	releaseTime = duration * 1.0;
+	releaseTime = duration * 0.0;
 
 	// Calculate the starting position in the buffer
 	// offset is multiplied by 44100 to get the sample position
@@ -33,7 +33,7 @@ SynthDef(\fragmentPlayer, {
 	sig = PlayBuf.ar(
 		numChannels: 1,
 		bufnum: buf,
-		rate: BufRateScale.kr(buf) * ((transpose).midiratio),
+		rate: BufRateScale.kr(buf) * ((transpose-0).midiratio),
 		startPos: startPos,
 		loop: 0
 	);

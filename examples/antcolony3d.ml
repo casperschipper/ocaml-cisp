@@ -1807,15 +1807,21 @@ let from_event_to_bundle start_time {frequency; duration; pos} =
 let send_osc sender time evt =
   let bytes = from_jv_event_to_bundle time evt in
   Supercollider.send_message sender bytes
-
+ 
 let supercollider_sched nodes_stream nodes_stream2 =
   let scheduler_samps = 4048 in
   let scheduler_sec = Cisp.seconds_from_samples scheduler_samps in
-  let event_of_node node node2 =
-    ( !current_buffer.supercollider_entrydelay
+  let event_of_node dnode node2 =
+    let tmapping dist = 
+      Cisp.linlin 0.0 1.414 (-48.0) 48.0 dist |> Cisp.mtor
+    in
+    let node = 
+      dnode |> get_dist_node 
+    in
+    ( Float.max 0.0003 (!current_buffer.supercollider_entrydelay *. (tmapping (get_delta dnode)))
     , test_jv_event (get_node_id node |> fun x -> (x + 0) mod 49) (get_node_id node2))
   in
-  let event_sq = Infseq.map2 event_of_node (nodes_stream |> Infseq.of_seq) (nodes_stream2 |> Infseq.of_seq)  in
+  let event_sq = Infseq.map2 event_of_node (nodes_stream |> distanced_nodes |> Infseq.of_seq) (nodes_stream2 |> Infseq.of_seq)  in
   let sched =
     Clockscheduler.create ~interval:scheduler_sec ~overlap:1.25 ~seq:event_sq
       ~latency:0.3 ~max_events_per_buffer:10000

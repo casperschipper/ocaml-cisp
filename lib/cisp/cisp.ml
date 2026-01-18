@@ -719,7 +719,8 @@ let addChannelLsts channelAList channelBList =
   let aChs, bChs = normalizeNumberOfChannels channelAList channelBList in
   List.map2 ( +.~ ) aChs bChs
 
-(* linlin from sc *)
+(** [linlin inA inB outA outB input] maps [input] from range [[inA, inB]] to [[outA, outB]].
+    Ranges are auto-normalized. From SuperCollider. *)
 let linlin inA inB outA outB input =
   let a = minimum inA inB in
   let b = maximum inA inB in

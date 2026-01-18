@@ -13,19 +13,19 @@ SynthDef(\fragmentPlayer, {
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	duration = duration * 8.0;
+	duration = duration * 1.0;
 
 	attackTime = duration * 0.0;
 	releaseTime = duration * 1.0;
 
 	// Calculate the starting position in the buffer
 	// offset is multiplied by 44100 to get the sample position
-	startPos = 31 * 44100;
+	startPos = offset * 44100;
 
 	// Create fixed-duration envelope
 	// Attack + Decay + Sustain + Release = duration
 	env = EnvGen.kr(
-		Env.linen(attackTime, max(0.0,duration - attackTime - releaseTime), releaseTime, amp*1,curve:-3.0),
+		Env.linen(attackTime, max(0.0,duration - attackTime - releaseTime), releaseTime, amp*1,curve:-1.0),
 		doneAction: 2
 	);
 
@@ -33,7 +33,7 @@ SynthDef(\fragmentPlayer, {
 	sig = PlayBuf.ar(
 		numChannels: 1,
 		bufnum: buf,
-		rate: BufRateScale.kr(buf) * transpose.midiratio,
+		rate: BufRateScale.kr(buf) * ((transpose).midiratio),
 		startPos: startPos,
 		loop: 0
 	);
@@ -42,7 +42,7 @@ SynthDef(\fragmentPlayer, {
 	sig = sig * env;
 
 	// Output
-	OffsetOut.ar(out % 25, sig); // Duplicate mono to stereo
+	OffsetOut.ar(out.wrap(0,25), sig); // Duplicate mono to stereo
 }).add;
 
 

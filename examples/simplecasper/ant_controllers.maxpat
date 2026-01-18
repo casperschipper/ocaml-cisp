@@ -10,15 +10,27 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 813.0, 174.0, 655.0, 747.0 ],
+		"rect" : [ 66.0, 153.0, 1044.0, 848.0 ],
 		"gridsize" : [ 15.0, 15.0 ],
 		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-20",
+					"linecount" : 2,
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 378.0, 439.0, 150.0, 33.0 ],
+					"text" : "334, 49 points, for drumming"
+				}
+
+			}
+, 			{
 				"box" : 				{
 					"format" : 6,
 					"id" : "obj-28",
 					"maxclass" : "flonum",
-					"maximum" : 0.1,
-					"minimum" : 0.001,
+					"maximum" : 0.5,
+					"minimum" : 0.0003,
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "bang" ],
@@ -286,6 +298,14 @@
 , 						{
 							"number" : 68,
 							"data" : [ 5, "obj-21", "number", "float", 1.0, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.397000014781952, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-15", "number", "float", 1.0, 5, "obj-18", "number", "float", 0.000600000028498, 5, "obj-35", "number", "int", 8, 5, "obj-10", "number", "float", 0.00289999996312, 5, "obj-17", "number", "int", 10 ]
+						}
+, 						{
+							"number" : 334,
+							"data" : [ 5, "obj-21", "number", "float", 1.5, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.400000005960464, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-15", "number", "float", 0.0, 5, "obj-18", "number", "float", 0.000099999997474, 5, "obj-35", "number", "int", 49, 5, "obj-10", "number", "float", 0.0, 5, "obj-17", "number", "int", 1, 5, "obj-28", "number", "float", 0.100000001490116 ]
+						}
+, 						{
+							"number" : 341,
+							"data" : [ 5, "obj-21", "number", "float", 1.039999961853027, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.370000004768372, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-15", "number", "float", 0.0, 5, "obj-18", "number", "float", 0.000380000012228, 5, "obj-35", "number", "int", 12, 5, "obj-10", "number", "float", 0.001500000013039, 5, "obj-17", "number", "int", 1, 5, "obj-28", "number", "float", 0.000300000014249 ]
 						}
  ]
 				}
@@ -656,7 +676,7 @@
 
 			}
  ],
-		"originid" : "pat-6",
+		"originid" : "pat-129",
 		"dependency_cache" : [  ],
 		"autosave" : 0
 	}

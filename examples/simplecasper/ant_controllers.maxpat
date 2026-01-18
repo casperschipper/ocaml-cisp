@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 793.0, 108.0, 677.0, 833.0 ],
+		"rect" : [ 793.0, 108.0, 277.0, 833.0 ],
 		"gridsize" : [ 15.0, 15.0 ],
 		"boxes" : [ 			{
 				"box" : 				{
@@ -52,7 +52,7 @@
 					"format" : 6,
 					"id" : "obj-28",
 					"maxclass" : "flonum",
-					"maximum" : 0.5,
+					"maximum" : 8.0,
 					"minimum" : 0.0003,
 					"numinlets" : 1,
 					"numoutlets" : 2,

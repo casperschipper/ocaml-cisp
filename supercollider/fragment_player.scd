@@ -18,18 +18,12 @@ SynthDef(\fragmentPlayer, {
 	attackTime = duration * 0.0;
 	releaseTime = duration * 0.0;
 
-	// Calculate the starting position in the buffer
-	// offset is multiplied by 44100 to get the sample position
 	startPos = offset.wrap(0,4) * 44100;
 
-	// Create fixed-duration envelope
-	// Attack + Decay + Sustain + Release = duration
 	env = EnvGen.kr(
 		Env.linen(attackTime, max(0.0,duration - attackTime - releaseTime), releaseTime, amp*1,curve:-1.0),
 		doneAction: 2
 	);
-
-	// Read from buffer starting at the calculated position
 	sig = PlayBuf.ar(
 		numChannels: 1,
 		bufnum: buf,
@@ -38,10 +32,8 @@ SynthDef(\fragmentPlayer, {
 		loop: 0
 	);
 
-	// Apply envelope
 	sig = sig * env;
 
-	// Output
 	OffsetOut.ar(out.wrap(0,24), sig); // Duplicate mono to stereo
 }).add;
 

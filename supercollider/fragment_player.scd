@@ -13,18 +13,21 @@ SynthDef(\fragmentPlayer, {
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	duration = duration * 0.9;
+	duration = duration * 0.1;
 	attackTime = duration * 0.0;
 	releaseTime = duration * 0.0;
 
-	startPos = 18 * 44100;
+	startPos = offset * 44100;
 	//0 hh
 	//3 tsss
 	//4 mesh
 	//7 tom, 8 heavy
 	//11 kick
 	//17 glass
+	//37 breath
 	//18
+	//25 conga
+	//46 cowbell
 
 
 
@@ -36,7 +39,7 @@ SynthDef(\fragmentPlayer, {
 	sig = PlayBuf.ar(
 		numChannels: 1,
 		bufnum: buf,
-		rate: BufRateScale.kr(buf) * ((transpose-25).midiratio),
+		rate: BufRateScale.kr(buf) * (transpose-20.midiratio),
 		startPos: startPos,
 		loop: 0
 	);

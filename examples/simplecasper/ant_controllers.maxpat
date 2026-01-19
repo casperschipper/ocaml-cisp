@@ -190,7 +190,7 @@
 						}
 , 						{
 							"number" : 3,
-							"data" : [ 5, "obj-21", "number", "float", 1.230000019073486, 5, "obj-24", "number", "float", 3.0, 5, "obj-29", "number", "float", 0.0, 5, "obj-31", "number", "float", 3.0, 5, "obj-36", "number", "int", 0, 5, "obj-15", "number", "float", 0.0, 5, "obj-18", "number", "float", 0.050000000745058, 5, "obj-35", "number", "int", 6 ]
+							"data" : [ 5, "obj-21", "number", "float", 1.200000047683716, 5, "obj-24", "number", "float", 2.0, 5, "obj-29", "number", "float", 0.409999996423721, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-15", "number", "float", 1.0, 5, "obj-18", "number", "float", 0.000009999999747, 5, "obj-35", "number", "int", 49, 5, "obj-10", "number", "float", 0.0, 5, "obj-17", "number", "int", 12, 5, "obj-23", "number", "float", 0.0 ]
 						}
 , 						{
 							"number" : 4,

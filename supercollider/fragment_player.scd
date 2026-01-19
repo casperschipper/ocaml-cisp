@@ -13,11 +13,11 @@ SynthDef(\fragmentPlayer, {
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	duration = duration * 1;
+	duration = duration * 0.9;
 	attackTime = duration * 0.0;
 	releaseTime = duration * 0.0;
 
-	startPos = offset * 44100;
+	startPos = 18 * 44100;
 	//0 hh
 	//3 tsss
 	//4 mesh

@@ -182,7 +182,7 @@
 					"patching_rect" : [ 14.0, 16.0, 100.0, 40.0 ],
 					"preset_data" : [ 						{
 							"number" : 1,
-							"data" : [ 5, "obj-21", "number", "float", 1.0, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.400000005960464, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-15", "number", "float", 1.0, 5, "obj-18", "number", "float", 0.001000000047497, 5, "obj-35", "number", "int", 12, 5, "obj-10", "number", "float", 0.003000000026077, 5, "obj-17", "number", "int", 0, 5, "obj-23", "number", "float", 0.0 ]
+							"data" : [ 5, "obj-21", "number", "float", 1.450000047683716, 5, "obj-24", "number", "float", 1.0, 5, "obj-29", "number", "float", 0.409999996423721, 5, "obj-31", "number", "float", 1.0, 5, "obj-36", "number", "int", 10, 5, "obj-15", "number", "float", 1.0, 5, "obj-18", "number", "float", 0.0, 5, "obj-35", "number", "int", 49, 5, "obj-10", "number", "float", 0.0, 5, "obj-17", "number", "int", 10, 5, "obj-23", "number", "float", 0.0 ]
 						}
 , 						{
 							"number" : 2,
@@ -594,7 +594,7 @@
 
 			}
  ],
-		"originid" : "pat-129",
+		"originid" : "pat-12",
 		"dependency_cache" : [  ],
 		"autosave" : 0
 	}

@@ -1,6 +1,5 @@
 // SynthDef for playing audio fragments from a buffer
 // Each fragment is 1 second apart (44100 samples at 44.1kHz)
-s.boot;
 
 (
 SynthDef(\fragmentPlayer, {
@@ -8,28 +7,36 @@ SynthDef(\fragmentPlayer, {
 	    buf = 0,
 	    duration = 1.0,
 	    amp = 0.5,
-	    offset = 0;
+	    offset = 0,
+	    transpose = 0;
 
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	// Calculate envelope times from duration
-	// Attack: 5% of duration
-	// Decay: 20% of duration
-	// Release: 25% of duration
-	// Sustain time: remaining 50%
-	attackTime = duration * 0.05;
-	decayTime = duration * 0.2;
-	releaseTime = duration * 0.25;
+	duration = duration * 0.5;
+
+	attackTime = duration * 0.5;
+	releaseTime = duration * 0.5;
 
 	// Calculate the starting position in the buffer
 	// offset is multiplied by 44100 to get the sample position
-	startPos = offset * 44100;
+	startPos = 18 * 44100;
+
+	// Favorates 18, 4, 17, 20,
+	// 27 Metal but also breath
+	// 18 Very metally organ
+	// 38 more breath
+	// 40 tuned tamtam
+	// 45 Cowbell
+	// 50 yell
+	// 54 bass
+	// 64 ??
+
 
 	// Create fixed-duration envelope
 	// Attack + Decay + Sustain + Release = duration
 	env = EnvGen.kr(
-		Env.linen(attackTime, duration - attackTime - releaseTime, releaseTime, amp),
+		Env.linen(attackTime, max(0.0,duration - attackTime - releaseTime), releaseTime, amp*1,curve:-1.0),
 		doneAction: 2
 	);
 
@@ -37,7 +44,7 @@ SynthDef(\fragmentPlayer, {
 	sig = PlayBuf.ar(
 		numChannels: 1,
 		bufnum: buf,
-		rate: BufRateScale.kr(buf),
+		rate: BufRateScale.kr(buf) * ((transpose-40).midiratio),
 		startPos: startPos,
 		loop: 0
 	);
@@ -46,14 +53,22 @@ SynthDef(\fragmentPlayer, {
 	sig = sig * env;
 
 	// Output
-	Out.ar(out, sig ! 2); // Duplicate mono to stereo
+	OffsetOut.ar(out.wrap(0,24), sig); // Duplicate mono to stereo
 }).add;
+
+
 )
 
 // Example usage:
 
 // First, load your buffer
+(
 b = Buffer.read(s, "/Users/casperschipper/devel/ocaml/cisp/examples/csound/concatJV1010.wav");
+)
+
+(
+b = Buffer.read(s, "/Users/casperschipper/Library/CloudStorage/GoogleDrive-casper.schipper@gmail.com/My Drive/GuineaPigs/BowieMono.wav");
+)
 
 b.inspect;
 

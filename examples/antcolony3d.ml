@@ -1864,7 +1864,8 @@ let jackMain array () =
   let ssp2 = ssp_signal ~interp:true get_node_x nodes2 in
   let ssp3 = ssp_signal ~interp:true get_node_x nodes3 in
   let ssp4 = ssp_signal ~interp:true get_node_x nodes4 in
-  let all_channels = [applyEffects ssp; ssp2; ssp3;ssp4] in
+  let z = Cisp.st 0.0 in
+  let all_channels = [applyEffects ssp;z; z;ssp2;z;z; ssp3;z;z;ssp4] in
   (* let all_channels =
     [ applyEffects (Cisp.fst channels)
     ; Cisp.snd channels

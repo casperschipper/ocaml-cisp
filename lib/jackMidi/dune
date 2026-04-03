@@ -2,5 +2,6 @@
  (name            jackMidi)
  (libraries threads bigarray ctypes.foreign process infseq time)
  (ocamlopt_flags -O3)	
- (foreign_stubs (language c) (names caml_jack_midi))
- (flags (-cclib -ljack)))
+ (foreign_stubs (language c) (names caml_jack) (flags (-I/opt/homebrew/include)))
+ (c_library_flags (-L/opt/homebrew/lib -ljack)))
+

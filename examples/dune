@@ -168,16 +168,12 @@
 
 (executable
  (name simplesine)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules simplesine)
  (libraries bigarray ctypes jack))
 
 (executable
  (name simplesineosc)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules simplesineosc)
  (libraries cisp lo bigarray ctypes jack))
@@ -186,8 +182,6 @@
  (name antcolony)
  (flags
   (:standard -w -26-32-69-34))
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules antcolony)
  (libraries lwt lwt.unix graphsvg lo cisp jack svg_gen dream spacegen sndfile ants)
@@ -199,8 +193,6 @@
  (name antcolony3d)
  (flags
   (:standard -w -26-27-32-34-37-69))
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules antcolony3d)
  (libraries wfs csound lwt lwt.unix graphsvg lo cisp jack jackMidi svg_gen dream spacegen sndfile midi history ants clockscheduler supercollider)
@@ -211,8 +203,6 @@
  (name traffic)
  (flags
   (:standard -w -26-27-32-34-37-69))
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules traffic)
  (libraries cisp jack unix sndfile yojson osc_unix)
@@ -276,24 +266,18 @@
 
 (executable
  (name fluct)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules fluct)
  (libraries bigarray ctypes jack sndfile yojson))
 
 (executable
  (name cispTest)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules cispTest)
  (libraries midi cisp bigarray ctypes jack jackMidi sndfile fqueue))
 
 (executable
  (name cisp1)
- (link_flags
-  (-cclib -ljack))
  (flags
   (:standard -w -26-27-32))
  (modules cisp1)
@@ -311,8 +295,6 @@
 
 (executable
  (name simplesinecisp)
- (link_flags
-  (-cclib -ljack))
  (flags
   (:standard -w -26-27-32))
  (modules simplesinecisp)
@@ -329,8 +311,6 @@
 
 (executable
  (name graphpath)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules graphpath)
  (libraries
@@ -347,32 +327,24 @@
 
 (executable
  (name midiStartFile)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules midiStartFile)
  (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
 
 (executable
  (name simpleMidi)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules simpleMidi)
  (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
 
 (executable
  (name midiStartFile2)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules midiStartFile2)
  (libraries infseq lwt.unix midi cisp bigarray ctypes jack jackMidi))
 
 (executable
  (name cisp2)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules cisp2)
  (preprocess
@@ -490,8 +462,6 @@
 
 (executable
  (name cispOsc)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules cispOsc)
  (libraries
@@ -509,8 +479,6 @@
 
 (executable
  (name cispOsc2)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules cispOsc2)
  (libraries
@@ -528,8 +496,6 @@
 
 (executable
  (name cispOsc3)
- (link_flags
-  (-cclib -ljack))
  (flags
   (:standard -w -32-34-39-69))
  (ocamlopt_flags -O3)
@@ -559,8 +525,6 @@
 
 (executable
  (name receiveOsc)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules receiveOsc)
  (libraries threads lo midi cisp jackMidi))
@@ -573,8 +537,6 @@
 
 (executable
  (name ivo)
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules ivo)
  (libraries lo oscParser midi cisp jackMidi))
@@ -583,8 +545,6 @@
  (name supercollider_test)
  (flags
   (:standard -w -26-27-32-34-37-69))
- (link_flags
-  (-cclib -ljack))
  (ocamlopt_flags -O3)
  (modules supercollider_test)
  (libraries supercollider clockscheduler jack cisp unix)

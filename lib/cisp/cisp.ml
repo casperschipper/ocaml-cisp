@@ -15,7 +15,6 @@ open Seq
    this is the same as
    let thunk x = fun () -> x
 *)
-
 let compare a b = if a > b then 1 else if a < b then -1 else 0
 
 let samplerate = ref !Process.sample_rate
@@ -123,7 +122,7 @@ let syncEffect sq effectSq =
      sq is the actual result stream, effect the side effect.
   *)
   let both = zip sq effectSq in
-  map (fun (signal, effect) -> effect ; signal) both
+  map (fun (signal, eff) -> eff ; signal) both
 
 let effectSync effectSq sq =
   (* same as syncEffect but flipped *)
@@ -134,7 +133,6 @@ let rec effectsSync lst sq =
   | [] -> sq
   | eff :: rest -> effectSync eff (effectsSync rest sq)
 
-let effect = effectSync
 
 (* this is a global ref used to keep time, for lines and time based sync
    You have to sync this clock with yout output stream, for example by syncing it with the input seqs of Jack.playSeq
@@ -152,9 +150,9 @@ let inTime lst =
   | h :: ts -> syncEffect h masterClock :: ts
   | [] -> []
 
-let withEffect effect lst =
+let withEffect effec lst =
   match lst with
-  | h :: ts -> syncEffect h effect :: ts
+  | h :: ts -> syncEffect h effec :: ts
   | [] -> []
 
 let test sq = map print_float sq
@@ -540,7 +538,7 @@ let transcat sq = sq |> transpose |> concat
 let transList lst = lst |> ofList |> transcat
 
 let effect_lst (first : unit Seq.t) (rest : unit Seq.t list) =
-  List.fold_left effect first rest
+  List.fold_left effectSync first rest
 
 let rec transpose_list lst =
   let foldHeads acc x =
@@ -1681,8 +1679,8 @@ let syncEffectClock triggerSq effectSq =
         if t then (
           match eSq () with
           | Nil -> None
-          | Cons (effect, effTail) ->
-              effect ;
+          | Cons (ef, effTail) ->
+              ef ;
               Some ((), (effTail, ttail)) )
         else Some ((), (eSq, ttail))
   in

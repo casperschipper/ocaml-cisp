@@ -4,7 +4,7 @@
 (
 SynthDef(\fragmentPlayer, {
 	arg out = 0,
-	    buf = 0,
+	    buf = 1,
 	    duration = 1.0,
 	    amp = 0.5,
 	    offset = 0,
@@ -13,11 +13,11 @@ SynthDef(\fragmentPlayer, {
 	var sig, env;
 	var attackTime, decayTime, releaseTime, startPos;
 
-	duration = duration * 0.1;
+	duration = duration * 0.2;
 	attackTime = duration * 0.0;
 	releaseTime = duration * 0.0;
 
-	startPos = offset * 44100;
+	startPos = 1 * 44100;
 	//0 hh
 	//3 tsss
 	//4 mesh

@@ -1,23 +1,17 @@
 (executable
  (name collatz)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules collatz)
  (libraries cisp bigarray ctypes jack sndfile))
 
 (executable
  (name scheduler)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules scheduler)
  (libraries cisp bigarray ctypes jack sndfile))
 
 (executable
  (name decoherence)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules decoherence)
  (libraries cisp bigarray ctypes jack sndfile))
@@ -160,8 +154,6 @@
 
 (executable
  (name multisine)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules multisine)
  (libraries bigarray ctypes jack sndfile))
@@ -218,48 +210,36 @@
 
 (executable
  (name fmfb)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules fmfb)
  (libraries bigarray ctypes jack))
 
 (executable
  (name kuramoto)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules kuramoto)
  (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name inputexample)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules inputexample)
  (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name filtertest)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules filtertest)
  (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name sndfiletest)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules sndfiletest)
  (libraries bigarray ctypes jack sndfile))
 
 (executable
  (name nonrt)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules nonrt)
  (libraries bigarray ctypes jack sndfile))
@@ -353,7 +333,6 @@
 
 (executable
  (name cisp3)
- (link_flags -cclib -ljack)
  (ocamlopt_flags -O3)
  (modules cisp3)
  (libraries
@@ -371,8 +350,6 @@
 
 (executable
  (name cisp4)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules cisp4)
  (libraries
@@ -389,8 +366,6 @@
 
 (executable
  (name cisp5)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules cisp5)
  (libraries
@@ -408,8 +383,6 @@
 
 (executable
  (name cisp6)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules cisp6)
  (libraries
@@ -426,8 +399,6 @@
 
 (executable
  (name cisp7)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules cisp7)
  (libraries
@@ -444,8 +415,6 @@
 
 (executable
  (name cisp8)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules cisp8)
  (libraries
@@ -504,8 +473,6 @@
 
 (executable
  (name sendOsc)
- (link_flags
-  (-cclib -ljack -cclib -lsndfile))
  (ocamlopt_flags -O3)
  (modules sendOsc)
  (libraries

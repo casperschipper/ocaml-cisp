@@ -1,0 +1,4 @@
+(env
+ (_
+  (c_flags (:standard -I/opt/homebrew/include))
+  (link_flags (:standard -cclib -L/opt/homebrew/lib))))

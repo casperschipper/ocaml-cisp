@@ -80,8 +80,6 @@
 #X connect 18 1 2 0;
 #X restore 242 72 pd vu;
 #X obj 140 16 adc~ 1 2;
-#X obj 428 84 *~ 0.1;
-#X obj 401 54 noise~;
 #X connect 2 0 4 1;
 #X connect 4 0 1 0;
 #X connect 5 0 3 0;
@@ -89,5 +87,3 @@
 #X connect 6 0 4 0;
 #X connect 6 1 0 1;
 #X connect 6 1 5 0;
-#X connect 7 0 0 0;
-#X connect 8 0 7 0;

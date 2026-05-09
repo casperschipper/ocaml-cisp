@@ -1,6 +1,8 @@
 (library
  (name            jack)
  (libraries bigarray ctypes.foreign process)
- (ocamlopt_flags -O3)	
+  (flags
+  (:standard -w -32))
+ (ocamlopt_flags (:standard -O3)	)
  (foreign_stubs (language c) (names caml_jack))
- (flags (-cclib -L/opt/homebrew/lib -cclib -ljack)))
+ (c_library_flags (-L/usr/local/lib -ljack)))

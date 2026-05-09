@@ -417,11 +417,33 @@
         if (element) element.innerText = txt;
       }
 
+      // --- WebSocket status indicator ----------------------------------------
+      const statusBar = document.createElement('div');
+      statusBar.style.cssText = 'position:fixed;top:0;left:0;right:0;padding:4px 10px;font-family:monospace;font-size:13px;z-index:999;';
+      document.body.prepend(statusBar);
+
+      function setStatus(msg, color) {
+        statusBar.textContent = 'WebSocket: ' + msg;
+        statusBar.style.background = color;
+        statusBar.style.color = (color === '#ffd700') ? '#000' : '#fff';
+      }
+
       // --- WebSocket + lifecycle --------------------------------------------
+      setStatus('connecting…', '#888');
       var socket = new WebSocket("ws://" + window.location.host + "/websocket");
 
       socket.onopen = function () {
+        setStatus('connected ✓', '#2a7');
         socket.send('init');
+      };
+
+      socket.onclose = function (e) {
+        setStatus('closed (code ' + e.code + ')', '#c44');
+      };
+
+      socket.onerror = function (e) {
+        setStatus('error — check console', '#c44');
+        console.error('WebSocket error', e);
       };
 
       function init(state) {

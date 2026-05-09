@@ -456,7 +456,17 @@ let handle_osc_message_parse finish_history_callback path data =
 
 let osc_thread_function write_history_callback () =
   let server =
-    S.create 57666 (handle_osc_message_parse write_history_callback)
+    let rec try_create retries =
+      try S.create 57666 (handle_osc_message_parse write_history_callback)
+      with Lo.Error ->
+        if retries > 0 then begin
+          Printf.eprintf "OSC: port 57666 busy, retrying in 1s (%d attempts left)...\n%!" retries ;
+          Unix.sleepf 1.0 ;
+          try_create (retries - 1)
+        end else
+          failwith "OSC: could not bind to port 57666 after retries"
+    in
+    try_create 5
   in
   while true do
     S.recv server ;
@@ -1847,15 +1857,11 @@ let supercollider_sched nodes_stream nodes_stream2 nodes_stream3 =
 let jackMain array () =
   let clock = Cisp.masterClock in
   let array1 = array in
-  let array2 = duplicateArrArr array in
-  let array3 = duplicateArrArr array in
-  let sq2 = nodesStream array2 () in
-  let sq = nodesStream array1 () in
-  let sq3 = nodesStream array3 () in
+  let (left,right) = stereosig 1 array1 in
   let final =
     Cisp.effectsSync
-      [slower_compute array1; slower_compute array2;slower_compute array3; clock; supercollider_sched sq sq2 sq3]
-      (Cisp.st 0.0)
+      [slower_compute array1;  clock]
+      left
   in
   Jack.playSeqs 0 Process.sample_rate [final]
 
@@ -2023,7 +2029,7 @@ let realtime rmode =
   (* Start the Brownian motion thread *)
   let _ = Thread.create brownian_thread_function () in
   (* let _ = Thread.create midiOut array1 in *)
-  (* let _ =
+  let _ =
           print_int
             (Sys.command
               "jack_connect ocaml_midi:ocaml_midi_out system_midi:playback_1" ) ;
@@ -2031,7 +2037,7 @@ let realtime rmode =
             (Sys.command
               "jack_connect system_midi:capture_2 ocaml_midi:ocaml_midi_in" ) ;
           ignore (Sys.command "jack_lsp -c -A | grep ocaml")
-        in*)
+        in
   let port = 8080 in
   let _ = Sys.command (Printf.sprintf "open http://localhost:%d/" port) in
   (* Dream.run uses Lwt_main.run internally — must be on the main thread,

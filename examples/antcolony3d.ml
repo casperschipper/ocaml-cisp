@@ -1857,13 +1857,15 @@ let supercollider_sched nodes_stream nodes_stream2 nodes_stream3 =
 let jackMain array () =
   let clock = Cisp.masterClock in
   let array1 = array in
-  let (left,right) = stereosig 1 array1 in
+  let array2 = Array.copy array1 in
+  let (left,right) = stereosig 2 array1 in
+  let (l2,r2) = stereosig 2 array2 in
   let final =
     Cisp.effectsSync
       [slower_compute array1;  clock]
       left
   in
-  Jack.playSeqs 0 Process.sample_rate [final]
+  Jack.playSeqs 0 Process.sample_rate [final;l2]
 
 let monitor_sample_count label n_interval sq =
   let open Cisp in

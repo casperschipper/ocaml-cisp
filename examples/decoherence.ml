@@ -29,7 +29,7 @@ let mkLoops channelN =
   let loopIndex = countTill (sec loopSize |> Int.of_float) |> floatify in
   let offset () = (st <| sec 0.5) *.~ (tmd (st 10.0) (rv (st 1) (st 100)) |> floatify) in
   let reader () = indexLin buffer (offset () +.~ loopIndex) in
-  (effect writer <| mkLots 2 reader)
+  (effectSync writer <| mkLots 2 reader)
                              
   
 let mkBrown cutoff attenuate =
@@ -39,7 +39,7 @@ let mkBrown cutoff attenuate =
    let step =  (ch [|(-1.0);1.0|]) |> zipWith repeat top |> concat  in
    let index = walk 0.0 step  in
    let reader () = indexLin buffer index |> bhpf_static cutoff 0.9|> ( *.-) attenuate in
-   (effect writer <| reader (), reader ())
+   (effectSync writer <| reader (), reader ())
                             
    
                
@@ -51,7 +51,7 @@ let mkDigi () =
   let writer = write buffer (countTill <| cap buffer) (sumEight  |> map tanh |> ( ( *.~ ) (st 4.0) )) in
   let myIndex = tline (tmd (rvf (st 0.5) (st 5.0)) wl) ([bottom;top] |> ofList |> transpose |> concat) in
   let mkOut ()= indexLin buffer myIndex in
-  (effect writer (mkLots 3 mkOut),mkLots 3 mkOut)
+  (effectSync writer (mkLots 3 mkOut),mkLots 3 mkOut)
 
 
 let mkZigzag channelN =
@@ -64,7 +64,7 @@ let mkZigzag channelN =
   let idx = walk 0.0 speed |> map (clip 0.0 (sec 4.9)) in
   let randEnv = tline (ch [|0.5;1.0;3.0;5.0|]) (seq [0.1;1.0;1.0;0.1]) in
   let reader () = indexCub buffer idx *.~ randEnv in
-  effect writer (reader ())
+  effectSync writer (reader ())
   
 let mkMirror channelN = 
   let buffer = Array.make (sec 20.0 |> Int.of_float) 0.0 in
@@ -73,7 +73,7 @@ let mkMirror channelN =
   let speed = ([|1.0;1.1;1.2;1.3;1.4;1.5;1.6;1.7;1.8|]).(channelN) in
   let idx = tline (speed *. 20.0 |> st) (seq [0.0;sec 20.0]) in
   let reader = indexCub buffer idx in
-  effect writer reader     
+  effectSync writer reader     
                
 let mkStutter channelN =
   let pitch = tmd (st samplesize) (ch [|1.0;0.9;1.1;1.25;0.8;0.2;3.0|] |> hold (seq [2;3;2;1;4])) in
@@ -92,7 +92,7 @@ let mkStutter channelN =
   let myReader () = (indexCub buffer (jumpyLine)) *.~ percEnv () in
   
   let writer = write buffer (countTill (cap buffer)) hpf in
-  let joined = effect writer (myReader ()) in
+  let joined = effectSync writer (myReader ()) in
   joined
 
 
@@ -110,7 +110,7 @@ let mkBoerman nInput =
   let input = Process.inputSeq nInput |> bhpf_static 100.0 0.9 in
   let writer = write buffer (countTill <| cap buffer) input in
   let myReader = indexCub buffer myLineTest in
-  let joined = effect writer myReader in
+  let joined = effectSync writer myReader in
   joined
   
 let mkBoermanFading nInput =
@@ -138,7 +138,7 @@ let mkBoermanFading nInput =
   let mupInput = input *.~ env in
   let writer =  write buffer writerIdx mupInput in
   let myReader = (indexCub buffer bufIndex) *.~ (myLineTest |> map (taper 0.05 )) in
-  let joined = effect writer myReader in
+  let joined = effectSync writer myReader in
   joined
 
 let mkBoermanFading2 nInput =
@@ -166,7 +166,7 @@ let mkBoermanFading2 nInput =
   let mupInput = input *.~ env in
   let writer =  write buffer writerIdx mupInput in
   let myReader = (indexCub buffer bufIndex) *.~ (myLineTest |> map (taper 0.05 )) in
-  let joined = effect writer myReader in
+  let joined = effectSync writer myReader in
   joined
 
 
@@ -185,7 +185,7 @@ let mkBoerman3 nInput =
   let input = Process.inputSeq nInput |> map (( *. ) 0.2) |> map tanh |> bhpf_static 100.0 0.9 |> ( *.- ) 10.0  in
   let writer = write buffer (countTill <| cap buffer) input in
   let myReader () = indexCub buffer myLineTest in
-  let joined = effect writer (myReader ()) in
+  let joined = effectSync writer (myReader ()) in
   joined
 
 let mkBoermanFading3 nInput=
@@ -213,7 +213,7 @@ let mkBoermanFading3 nInput=
   let mupInput = input *.~ env in
   let writer =  write buffer writerIdx mupInput in
   let myReader = (indexCub buffer bufIndex) *.~ (myLineTest |> map (taper 0.05 )) in
-  let joined = effect writer myReader in
+  let joined = effectSync writer myReader in
   joined
 
      
@@ -225,7 +225,7 @@ let mkSlowNoiseBuff nInput =
   let input = Process.inputSeq nInput |> map (( *. ) 0.2) in
   let writer = write buffer (countTill <| cap buffer) input in
   let myReader () = indexCub buffer (index ()) in
-  let joined = effect writer (myReader ()) in
+  let joined = effectSync writer (myReader ()) in
   joined
   
 let softclip signal = map tanh signal
@@ -282,7 +282,7 @@ let test f =
   let l1,r1 = mks 0.0 900.0 (makeStereo f) in
   let scoreL = playScore (mkScore [l1]) in
   let scoreR = playScore (mkScore [r1]) in
-  Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]
+  Jack.playSeqs 8 Process.sample_rate [effectSync (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]
 
   
 let () =
@@ -300,6 +300,6 @@ let scoreR = playScore (mkScore [r1;r2;r2a;r3;r4;r5;r6;r7;r8;r10;r11;r12;r13;r14
 
             
 let () = 
-  Jack.playSeqs 8 Process.sample_rate [effect (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]
+  Jack.playSeqs 8 Process.sample_rate [effectSync (masterClock) scoreL |> hardClip |> saneValue ;scoreR |> hardClip |> saneValue]
 
 

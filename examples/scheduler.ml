@@ -42,9 +42,9 @@ let () =
   let input = Process.inputSeq 0 in
   let hpf = bhpf_static  50.0  0.9 input in
   let myReader () = (indexCub buffer (jumpyLine)) *.~ env () in
-  let timefied = effect masterClock (myReader ()) in
+  let timefied = effectSync masterClock (myReader ()) in
   let writer = write buffer (countTill (cap buffer)) hpf in
-  let joined = effect writer timefied in*)
+  let joined = effectSync writer timefied in*)
   (*let _ = testScheduler () in ()*)
   Jack.playSeqs 0 Process.sample_rate [myOut *.~ (st 0.01);myOut *.~ (st 0.01)]
 

@@ -47,7 +47,7 @@ let () =
   let signal () = play_index_table steps |> Infseq.index noise |> Infseq.to_seq in
   let channels = rangei 0 8 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
   
-  let with_effect = ((effect eff (signal ())) :: channels) in
+  let with_effect = ((effectSync eff (signal ())) :: channels) in
    if false then
     let size = !Process.sample_rate *. 120.0 |> int_of_float in
     let t = Sndfile.from_seq size (int_of_float !Process.sample_rate) with_effect in

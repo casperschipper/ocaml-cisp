@@ -12,7 +12,7 @@ let mkBoermanFading2 () =
   let myReader =
     indexCub buffer readpos 
   in
-  let joined = effect writer myReader in
+  let joined = effectSync writer myReader in
   joined 
 *)
 
@@ -58,7 +58,7 @@ let () =
   let f () =
     let () =
       Jack.playSeqs 1 Process.sample_rate
-        (effect masterClock (mkLookup ()) :: all_channels)
+        (effectSync masterClock (mkLookup ()) :: all_channels)
     in
     while true do
       Unix.sleep 60

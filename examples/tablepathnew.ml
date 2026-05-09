@@ -59,4 +59,4 @@ let () =
   let signal () =
     play_index_table steps |> Infseq.index noise |> Infseq.to_seq
   in
-  Jack.playSeqs 0 Process.sample_rate [ effect eff (signal ()) ]
+  Jack.playSeqs 0 Process.sample_rate [ effectSync eff (signal ()) ]

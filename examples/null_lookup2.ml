@@ -42,7 +42,7 @@ let () =
   let f () =
     let () =
       Jack.playSeqs 1 Process.sample_rate
-        (effect masterClock (st (0.0)) :: (st 0.0) :: all_channels)
+        (effectSync masterClock (st (0.0)) :: (st 0.0) :: all_channels)
     in
     while true do
       Unix.sleep 60

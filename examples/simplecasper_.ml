@@ -82,6 +82,6 @@ let traverse (Graph nodes) =
 
 let () =
   Jack.playSeqs 0 Process.sample_rate
-    [ Cisp.effect Cisp.masterClock (noisysine ()); noisysine () ];
+    [ Cisp.effectSync Cisp.masterClock (noisysine ()); noisysine () ];
   Unix.sleep 1;
   ignore (Sys.command "jack_connect ocaml:playback_1 ocaml:output_0")

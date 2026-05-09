@@ -1608,10 +1608,20 @@ let handle_websocket_json_update str =
       Ok (Brownian amount)
   | _ -> Error "Unexpected JSON format"
 
+(* Dream runs the Lwt event loop via Lwt_main.run internally.
+   This MUST be called on the main thread — running it inside Thread.create
+   breaks signal delivery and Lwt internals in OCaml 5.x domains.
+   See: realtime() below, where all other threads are spawned first and then
+   this function is called directly (not via Thread.create) as the last step. *)
 let dream_thread phers nodes () =
   Dream.run ~port:8080 @@ Dream.logger
   @@ Dream.router
        [ Dream.get "/" (fun _ -> Dream.html home)
+         (* WebSocket protocol (client is simplecasper3d.html):
+            1. client connects and sends "init" → server replies with full node/edge snapshot
+            2. client sends "tick" every ~80 ms → server replies with incremental update
+               (only nodes whose sync field is Modified, plus all edge weights)
+            3. client can send drag/brownian JSON → server updates shared node state *)
        ; Dream.get "/websocket" (fun _ ->
              Dream.websocket (fun websocket ->
                  let rec process_messages () =
@@ -1641,10 +1651,8 @@ let dream_thread phers nodes () =
                        process_messages ()
                    | Some str -> (
                      match handle_websocket_json_update str with
-                     (* --- Updated handler usage --- *)
                      | Ok (Drag {node_id; x; y; z}) ->
-                         let old = nodes.(node_id) in
-                         (* let (Node {z= old_z; _}) = old in *)
+                         (* node drag from browser: update position + recompute distances *)
                          ignore
                            (update_matrix_2_safe node_id (mkNode node_id x y z)
                               nodes distance_array ) ;
@@ -1660,7 +1668,7 @@ let dream_thread phers nodes () =
                          process_messages () )
                    | None -> Dream.close_websocket websocket
                  in
-                 process_messages () (* Start processing messages *) ) ) ]
+                 process_messages () ) ) ]
 
 (* oscSender.ml *)
 
@@ -1994,13 +2002,20 @@ let handle_end () =
   let _ = Thread.create finalWrite record_array in
   ()
 
+(* Thread layout:
+     main thread  → dream_thread (Dream/Lwt event loop — must be last, blocks forever)
+     Thread 1     → jackMain     (Jack audio processing loop)
+     Thread 2     → osc_thread   (UDP OSC listener on port 57666)
+     Thread 3     → brownian     (100 Hz node position jitter)
+   Shared mutable state:
+     nodes[]        protected by nodes_mutex
+     current_buffer protected by buffer_mutex (double-buffered controller params)
+     pheromones[][] unprotected — intentional approximation, written by Jack thread *)
 let realtime rmode =
   let phers = mkPheromonesArr in
   (* recording materials *)
   (* let otherEffect = nodes_history record_array phers in *)
   (* let countedEffect = monitor_sample_count "*rec*" 4096 otherEffect in *)
-  let _ = Thread.create (dream_thread phers nodes) () in
-  let node_stream = nodesStream phers () in
   let _ = Thread.create (jackMain phers) () in
   (*
         let array1 = duplicateArrArr pheromones in *)
@@ -2019,9 +2034,9 @@ let realtime rmode =
         in*)
   let port = 8080 in
   let _ = Sys.command (Printf.sprintf "open http://localhost:%d/" port) in
-  while true do
-    Unix.sleep 1
-  done
+  (* Dream.run uses Lwt_main.run internally — must be on the main thread,
+     not inside Thread.create. It blocks here until the server is killed. *)
+  dream_thread phers nodes ()
 
 let () =
   match program_mode with

@@ -60,7 +60,7 @@ let () =
   
   in
   let channels = rangei 0 14 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
-  let with_effect = effect eff (signal ()) :: channels in
+  let with_effect = effectSync eff (signal ()) :: channels in
   if false then
     let size = !Process.sample_rate *. (60.0 *. 3.0) |> int_of_float in
     let t =

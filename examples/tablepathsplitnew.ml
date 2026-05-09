@@ -84,7 +84,7 @@ let () =
   let signal channel = play_index_table steps.(channel) |> Infseq.index (sawtooth 4096) |> Infseq.to_seq |> Seq.map (fun x -> x *. 0.1) |> Cisp.bhpf_static 150.0 0.99 in
   let channels = rangei 1 (n_channels-1)  |> Seq.map (fun n -> signal n) |> List.of_seq in
   
-  let with_effect = ((effect eff (signal 0)) :: channels) in
+  let with_effect = ((effectSync eff (signal 0)) :: channels) in
    if true then
     let size = !Process.sample_rate *. 90.0 |> int_of_float in
     let t = Sndfile.from_seq size (int_of_float !Process.sample_rate) with_effect in

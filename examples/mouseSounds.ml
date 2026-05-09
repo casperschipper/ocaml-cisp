@@ -77,4 +77,4 @@ let () =
   let channels =
     rangei 0 1 |> Seq.map (fun _ -> mkLots 5 signal) |> List.of_seq
   in
-  Jack.playSeqs 0 Process.sample_rate (effect eff (mkLots 4 signal) :: channels)
+  Jack.playSeqs 0 Process.sample_rate (effectSync eff (mkLots 4 signal) :: channels)

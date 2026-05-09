@@ -4,7 +4,7 @@ open Cisp
 let () = 
   let env = triangle (st 50.0) |> Seq.map (linlin (-1.0) 1.0 400.0 12000.0) in
   let oscil () = osc env in
-  Jack.playSeqs 0 Process.sample_rate [effect masterClock (oscil ());oscil ();oscil ();oscil ()]
+  Jack.playSeqs 0 Process.sample_rate [effectSync masterClock (oscil ());oscil ();oscil ();oscil ()]
 *)
 
 let topD, bottomD = ref 0.0, ref 0.0
@@ -26,7 +26,7 @@ let () =
   (* let mupper = hold (st 44100) (seq [0.5;1.0;0.75;1.5])  in  *)
   let signal () = index amp_array (walki 0 holder)  |> hold duras in 
   let effs = effect_lst masterClock [a;b;c;d] in 
-  let eff = effect masterClock effs in
+  let eff = effectSync masterClock effs in
   let channels = rangei 0 14 |> Seq.map (fun _ -> signal ()) |> List.of_seq in 
-  Jack.playSeqs 0 Process.sample_rate ((effect eff (signal ())) :: channels)
+  Jack.playSeqs 0 Process.sample_rate ((effectSync eff (signal ())) :: channels)
   

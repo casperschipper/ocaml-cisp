@@ -12,7 +12,7 @@ let mkBoermanFading2 () =
   let myReader =
     indexCub buffer readpos 
   in
-  let joined = effect writer myReader in
+  let joined = effectSync writer myReader in
   joined 
 *)
 
@@ -82,7 +82,7 @@ let loopr () =
   let ratios = timed (triangle (st 0.01) |> Seq.map (linlin (-1.0) 1.0 0.01 1.0)) (seq [-4.0;-1.0;0.5;1.0;2.0;0.25]) in
   let readIdx = ramps starts durations ratios in
   let reader = indexCub buffer readIdx in
-  effect writer reader
+  effectSync writer reader
 
 let clock = generator (fun () -> Some (getSampleCount ()))
 
@@ -104,7 +104,7 @@ let () =
       (* let clock = Seq.map (fun x () -> x) masterClock in *)
       (* let effects = effect_lst [blow_sq;bhigh_sq;clock] in *)
       let effs = effect_lst masterClock [ blow_sq; bhigh_sq ] in
-      let first = effect effs (loopr ()) in
+      let first = effectSync effs (loopr ()) in
       Jack.playSeqs 1 Process.sample_rate (first :: all_channels)
     in
     while true do

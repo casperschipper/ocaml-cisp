@@ -48,5 +48,5 @@ let () =
   let eff = effect_lst masterClock [chaos;peace] in 
   let signal () = play_index_table steps |> Infseq.index noise |> Infseq.to_seq |> Cisp.blpf_static 60.0 0.9 |> Seq.map (fun x -> x *. 40000.0 |> sin) in
   let channels = rangei 0 14 |> Seq.map (fun _ -> signal ()) |> List.of_seq in
-  Jack.playSeqs 0 Process.sample_rate ((effect eff (signal ())) :: channels)
+  Jack.playSeqs 0 Process.sample_rate ((effectSync eff (signal ())) :: channels)
  

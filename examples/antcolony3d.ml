@@ -1760,7 +1760,7 @@ let ssp_signal ?(interp = true) node_to_amp nodes =
              get_delta x
              |> linpow 0.0 1.4
                   (1.0 /. !Process.sample_rate) (* low speed *)
-                  (512. /. !Process.sample_rate) (* top speed *)
+                  (128. /. !Process.sample_rate) (* top speed *)
                   1.06 )
     in
     render_waveform_minimal (zip amps ts)
@@ -1856,16 +1856,16 @@ let supercollider_sched nodes_stream nodes_stream2 nodes_stream3 =
 
 let jackMain array () =
   let clock = Cisp.masterClock in
-  let array1 = array in
-  let array2 = Array.copy array1 in
-  let (left,right) = stereosig 2 array1 in
-  let (l2,r2) = stereosig 2 array2 in
-  let final =
-    Cisp.effectsSync
-      [slower_compute array1;  clock]
-      left
+  let mk_sig arr = 
+    let array1 = Array.copy arr in
+    let nodes = nodesStream array1 () in
+    Cisp.effectSync (slower_compute array1)
+      (ssp_signal ~interp:true get_node_x nodes)
   in
-  Jack.playSeqs 0 Process.sample_rate [final;l2]
+  let master =
+    Cisp.effectSync clock (mk_sig array)
+  in
+  Jack.playSeqs 0 Process.sample_rate [master;mk_sig array;mk_sig array; mk_sig array]
 
 let monitor_sample_count label n_interval sq =
   let open Cisp in

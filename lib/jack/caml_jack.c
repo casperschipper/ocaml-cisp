@@ -102,11 +102,11 @@ int process (jack_nframes_t nframes, void *arg)
  * JACK calls this shutdown_callback if the server ever shuts down or
  * decides to disconnect the client.
  */
-/* void */
-/* jack_shutdown (void *arg) */
-/* { */
-/* 	exit (1); */
-/* } */
+void jack_shutdown (void *arg)
+{
+	fprintf(stderr, "JACK server shut down, exiting...\n");
+	exit(0);
+}
 
 CAMLprim value open_stream (value output_array, value input_array, value closure, value n_channels, value set_sr_closure)
 {
@@ -172,7 +172,7 @@ CAMLprim value open_stream (value output_array, value input_array, value closure
 	   just decides to stop calling us.
 	*/
 
-	//	jack_on_shutdown (client, jack_shutdown, 0);
+	jack_on_shutdown (client, jack_shutdown, 0);
 	
         // output_ports allocation
 	output_ports = malloc(sizeof(jack_port_t *) * n_out_channels);
